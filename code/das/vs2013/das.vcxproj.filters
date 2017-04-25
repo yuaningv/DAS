@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="res">
+      <UniqueIdentifier>{dd0101fd-795c-4478-adfa-cba24b307a6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{4b20d7fd-caac-4328-85fb-2bc1130d9867}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>moc;h;cpp</Extensions>
+      <ParseFiles>true</ParseFiles>
+    </Filter>
+    <Filter Include="src\app">
+      <UniqueIdentifier>{2555b1d8-6b05-4fc7-883d-2b6203c4a6dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\framework">
+      <UniqueIdentifier>{d1a4553a-14bf-4ff7-9a23-e51358976bad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\comm">
+      <UniqueIdentifier>{8483c9f1-d60a-45cf-9021-248c3dd438d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\comm\controller">
+      <UniqueIdentifier>{750f8e61-fd72-4ec7-8714-dc3ee7148d92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\comm\utility">
+      <UniqueIdentifier>{fc3d0f39-26c8-4434-8795-9644f70c083e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files\Debug">
+      <UniqueIdentifier>{9fad5409-84fe-49f1-8b4c-d7fc32cc467a}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Release">
+      <UniqueIdentifier>{483f5669-e130-497f-996d-99c80e5e1ba0}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\res\dict.qrc">
+      <Filter>res</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\src\framework\das.h">
+      <Filter>src\framework</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\src\framework\das.ui">
+      <Filter>src\framework</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\res\das.qrc">
+      <Filter>res</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\res\dict\mes_zh_cn.qm">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GeneratedFiles\qrc_dict.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\framework\das.cpp">
+      <Filter>src\framework</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_das.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_das.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_das.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\res\images\logo.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\comm\constant.h">
+      <Filter>src\comm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\comm\global.h">
+      <Filter>src\comm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\comm\image.h">
+      <Filter>src\comm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\comm\type.h">
+      <Filter>src\comm</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_das.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

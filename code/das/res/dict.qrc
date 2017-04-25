@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>dict/das_zh_cn.qm</file>
+    </qresource>
+</RCC>
