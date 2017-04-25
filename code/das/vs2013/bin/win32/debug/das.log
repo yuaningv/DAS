@@ -1,5 +1,28 @@
-﻿生成启动时间为 2017/4/24 19:56:29。
+﻿生成启动时间为 2017/4/25 20:53:18。
+     1>项目“E:\private\project\DAS\code\das\vs2013\das.vcxproj”在节点 2 上(Build 个目标)。
+     1>CustomBuild:
+         Moc'ing CGraphicsView.h...
+       ClCompile:
+         E:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I.\GeneratedFiles /I. /I.\GeneratedFiles\Debug /I..\..\include /I..\..\include\qt /I..\src /I..\src\app /I..\src\comm /I..\src\comm\controller /I..\src\comm\utility /I..\src\framework /Zi /nologo /W1 /WX- /Od /Oy- /D UNICODE /D WIN32 /D WIN64 /D QT_DLL /D QT_CORE_LIB /D QT_GUI_LIB /D QT_NETWORK_LIB /D QT_OPENGL_LIB /D QT_WIDGETS_LIB /D QT_XML_LIB /D MES_LIB /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\bin\win32\debug\\" /Fd".\bin\win32\debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt ..\src\framework\CGraphicsView.cpp ..\src\framework\das.cpp ..\src\main.cpp GeneratedFiles\Debug\moc_CGraphicsView.cpp GeneratedFiles\Debug\moc_das.cpp
+         CGraphicsView.cpp
+         das.cpp
+         main.cpp
+         moc_CGraphicsView.cpp
+         moc_das.cpp
+         正在生成代码...
+       Link:
+         E:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"..\..\bin\win32\debug\DAS_32d.exe" /NOLOGO /LIBPATH:..\..\lib\win32\debug /LIBPATH:..\..\lib\win32\debug\qt qtmaind.lib Qt5Cored.lib Qt5Guid.lib Qt5Widgetsd.lib Qt5Xmld.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"..\..\bin\win32\debug\DAS_32d.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"..\..\bin\win32\debug\DAS_32d.lib" /MACHINE:X86 /SAFESEH .\bin\win32\debug\CGraphicsScene.obj
+         .\bin\win32\debug\CGraphicsView.obj
+         .\bin\win32\debug\das.obj
+         .\bin\win32\debug\main.obj
+         .\bin\win32\debug\moc_CGraphicsScene.obj
+         .\bin\win32\debug\moc_CGraphicsView.obj
+         .\bin\win32\debug\moc_das.obj
+         .\bin\win32\debug\qrc_das.obj
+         .\bin\win32\debug\qrc_dict.obj
+         das.vcxproj -> E:\private\project\DAS\code\das\vs2013\..\..\bin\win32\debug\DAS_32d.exe
+     1>已完成生成项目“E:\private\project\DAS\code\das\vs2013\das.vcxproj”(Build 个目标)的操作。
 
 生成成功。
 
-已用时间 00:00:00.00
+已用时间 00:00:04.14

@@ -2,10 +2,93 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="zh_CN">
 <context>
-    <name>DAS</name>
+    <name>FORM</name>
     <message>
         <source>DAS</source>
-        <translation>数据分析系统</translation>
+        <translation>数据分析器</translation>
+    </message>
+</context>
+<context>
+    <name>MENU</name>
+    <message>
+        <source>File</source>
+        <translation>文件</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation>编辑</translation>
+    </message>
+    <message>
+        <source>View</source>
+        <translation>视图</translation>
+    </message>
+    <message>
+        <source>Tool</source>
+        <translation>工具</translation>
+    </message>
+    <message>
+        <source>Help</source>
+        <translation>帮助</translation>
+    </message>
+    <message>
+        <source>Open source data path</source>
+        <translation>打开数据源</translation>
+    </message>
+    <message>
+        <source>Exit system</source>
+        <translation>退出系统</translation>
+    </message>
+    <message>
+        <source>Play</source>
+        <translation>播放</translation>
+    </message>
+    <message>
+        <source>Pause</source>
+        <translation>暂停</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation>停止</translation>
+    </message>
+    <message>
+        <source>Find</source>
+        <translation>查找</translation>
+    </message>
+    <message>
+        <source>Full screen</source>
+        <translation>全屏</translation>
+    </message>
+    <message>
+        <source>Lanuage</source>
+        <translation>语言</translation>
+    </message>
+    <message>
+        <source>About</source>
+        <translation>关于</translation>
+    </message>
+    <message>
+        <source>Operator tool bar</source>
+        <translation>操作工具栏</translation>
+    </message>
+    <message>
+        <source>Module tool bar</source>
+        <translation>组件工具栏</translation>
+    </message>
+    <message>
+        <source>Timeline</source>
+        <translation>时间轴</translation>
+    </message>
+    <message>
+        <source>Video</source>
+        <translation>视频</translation>
+    </message>
+    <message>
+        <source>Curve</source>
+        <translation>曲线图</translation>
+    </message>
+    <message>
+        <source>Table</source>
+        <translation>数据表</translation>
     </message>
 </context>
 </TS>
