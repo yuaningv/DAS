@@ -1,12 +1,15 @@
 #include "das.h"
 #include "constant.h"
 #include "image.h"
+#include "type.h"
+#include "CToolBar.h"
 
 #include "QtWidgets/QMenu"
 #include "QtWidgets/QMenuBar"
 #include "QtWidgets/QToolBar"
 #include "QtWidgets/QStatusBar"
 #include "QtCore/QTimer"
+#include "QtWidgets/QLabel"
 
 
 // 定义多国语关键字常量 
@@ -179,27 +182,32 @@ void DAS::setLayout()
     m_pOperatorToolBar->addSeparator();
     m_pOperatorToolBar->addAction(m_pActFullScreen);
 
-    m_pActTimeline = new QAction(trMenuString(cstDictTimelineModule), this);   // 时间轴组件  
-    m_pActTimeline->setIcon(QIcon(IMG_TIMELINE));
-    connect(m_pActTimeline, SIGNAL(triggered()), this, SLOT(OnTimeline()));
+    m_pLbTimeAxis = new QLabel(this);                   // 时间轴组件  
+    m_pLbTimeAxis->setPixmap(QPixmap(IMG_TIMELINE));
+    m_pLbTimeAxis->setToolTip(trMenuString(cstDictTimelineModule));
+    m_pLbTimeAxis->setProperty("ItemType", Item_TimeAxis);
 
-    m_pActVideo = new QAction(trMenuString(cstDictVideoModule), this);   // 视频组件  
-    m_pActVideo->setIcon(QIcon(IMG_VIDEO));
-    connect(m_pActVideo, SIGNAL(triggered()), this, SLOT(OnVideo()));
+    m_pLbVideo = new QLabel(this);                  // 视频组件  
+    m_pLbVideo->setPixmap(QPixmap(IMG_VIDEO));
+    m_pLbVideo->setToolTip(trMenuString(cstDictVideoModule));
+    m_pLbVideo->setProperty("ItemType", Item_Video);
 
-    m_pActCurve = new QAction(trMenuString(cstDictCurveModule), this);   // 曲线图组件  
-    m_pActCurve->setIcon(QIcon(IMG_CURVE));
-    connect(m_pActCurve, SIGNAL(triggered()), this, SLOT(OnCurve()));
+    m_pLbCurve = new QLabel(this);                  // 曲线图组件  
+    m_pLbCurve->setPixmap(QPixmap(IMG_CURVE));
+    m_pLbCurve->setToolTip(trMenuString(cstDictCurveModule));
+    m_pLbCurve->setProperty("ItemType", Item_Chart);
 
-    m_pActTable= new QAction(trMenuString(cstDictTableModule), this);   // 表格组件  
-    m_pActTable->setIcon(QIcon(IMG_TABLE));
-    connect(m_pActTable, SIGNAL(triggered()), this, SLOT(OnTable()));
+    m_pLbTable = new QLabel(this);                  // 表格组件  
+    m_pLbTable->setPixmap(QPixmap(IMG_TABLE));
+    m_pLbTable->setToolTip(trMenuString(cstDictTableModule));
+    m_pLbTable->setProperty("ItemType", Item_Table);
 
-    m_pModuleToolBar = this->addToolBar(trMenuString(cstModuleToolBar));
-    m_pModuleToolBar->addAction(m_pActTimeline);
-    m_pModuleToolBar->addAction(m_pActVideo);
-    m_pModuleToolBar->addAction(m_pActCurve);
-    m_pModuleToolBar->addAction(m_pActTable);
+    m_pModuleToolBar = new CToolBar(this);
+    this->addToolBar(m_pModuleToolBar);
+    m_pModuleToolBar->addWidget(m_pLbTimeAxis);
+    m_pModuleToolBar->addWidget(m_pLbVideo);
+    m_pModuleToolBar->addWidget(m_pLbCurve);
+    m_pModuleToolBar->addWidget(m_pLbTable);
 
     // 创建状态栏 
     this->setStatusBar(new QStatusBar(this));
@@ -281,10 +289,10 @@ void DAS::retranslate()
     m_pMenuHelp->setTitle(trMenuString(cstHelp));
 
     m_pOperatorToolBar->setWindowTitle(trMenuString(cstOperatorToolBar));
-    m_pActTimeline->setText(trMenuString(cstDictTimelineModule));
-    m_pActVideo->setText(trMenuString(cstDictVideoModule));
-    m_pActCurve->setText(trMenuString(cstDictCurveModule));
-    m_pActTable->setText(trMenuString(cstDictTableModule));
+    m_pLbTimeAxis->setToolTip(trMenuString(cstDictTimelineModule));
+    m_pLbVideo->setToolTip(trMenuString(cstDictVideoModule));
+    m_pLbCurve->setToolTip(trMenuString(cstDictCurveModule));
+    m_pLbTable->setToolTip(trMenuString(cstDictTableModule));
     m_pModuleToolBar->setWindowTitle(trMenuString(cstModuleToolBar));
 }
 

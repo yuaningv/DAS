@@ -5,6 +5,7 @@
 CGraphicsScene::CGraphicsScene(QObject *parent)
 : QGraphicsScene(parent)
 {
+
 }
 
 
