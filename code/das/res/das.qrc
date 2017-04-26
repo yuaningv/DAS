@@ -14,5 +14,7 @@
         <file>images/timeline.png</file>
         <file>images/video.png</file>
         <file>images/about.png</file>
+        <file>images/chinese.png</file>
+        <file>images/english.png</file>
     </qresource>
 </RCC>

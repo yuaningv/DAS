@@ -16,5 +16,7 @@
 #define IMG_CURVE           ":/images/curve.png"
 #define IMG_TABLE           ":/images/table.png"
 
+#define IMG_ENGLISH         ":/images/english.png"
+#define IMG_CHINESE         ":/images/chinese.png"
 
 #endif // IMAGE_H

@@ -6,6 +6,7 @@
 #include "QtWidgets/QMenuBar"
 #include "QtWidgets/QToolBar"
 #include "QtWidgets/QStatusBar"
+#include "QtCore/QTimer"
 
 
 // 定义多国语关键字常量 
@@ -49,6 +50,16 @@ DAS::DAS(QWidget *parent, Qt::WindowFlags flags)
 
     m_pGraphicsView = new CGraphicsView(this);
     this->setCentralWidget(m_pGraphicsView);
+
+    m_pTimer = new QTimer(this);
+    connect(m_pTimer, SIGNAL(timeout()), this, SLOT(OnUpdate()));
+    m_pTimer->start(40);
+
+    m_pWidget = new QWidget;
+    m_pWidget->setGeometry(100, 100, 500, 400);
+    m_pWidget->show();
+
+    m_bFlag = false;
 }
 
 
@@ -59,6 +70,27 @@ DAS::~DAS()
         delete m_pGraphicsView;
         m_pGraphicsView = NULL;
     }
+}
+
+
+void DAS::OnUpdate()
+{
+    if (m_bFlag)
+    {
+        QPalette pal;
+        pal.setBrush(QPalette::Window, QBrush(QPixmap(IMG_ENGLISH).scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
+        m_pWidget->setPalette(pal);
+        m_bFlag = false;
+    }
+    else
+    {
+        QPalette pal;
+        pal.setBrush(QPalette::Window, QBrush(QPixmap(IMG_CHINESE).scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
+        m_pWidget->setPalette(pal);
+        m_bFlag = true;
+    }
+
+    m_pWidget->update();
 }
 
 
@@ -107,14 +139,15 @@ void DAS::setLayout()
 
     // 创建工具菜单、创建工具菜单事件 
     m_pActZhCn = new QAction(QStringLiteral("简体中文"), this);   // 简体中文 
-    m_pActZhCn->setIcon(QIcon(IMG_LOGO));
+    m_pActZhCn->setIcon(QIcon(IMG_ENGLISH));
     m_pActZhCn->setCheckable(true);
     m_pActZhCn->setChecked(true);
     m_pActEn = new QAction(QStringLiteral("English"), this);       // 英语 
-    m_pActEn->setIcon(QIcon(IMG_LOGO));
+    m_pActEn->setIcon(QIcon(IMG_CHINESE));
     m_pActEn->setCheckable(true);
 
     m_pMenuTool = new QMenu(trMenuString(cstTool), this);
+    m_pMenuTool->addAction(m_pActPlay);
     m_pMenuLanuage = new QMenu(trMenuString(cstDictLanuage), m_pMenuTool);
     connect(m_pMenuLanuage, SIGNAL(triggered(QAction*)), this, SLOT(OnLanuageChanged(QAction*)));
     m_pMenuLanuage->addAction(m_pActZhCn);
