@@ -13,6 +13,13 @@ public:
     CGraphicsView(QWidget *parent = 0);
     ~CGraphicsView();
 
+
+protected:
+    virtual void dragEnterEvent(QDragEnterEvent * event);
+    virtual void dragLeaveEvent(QDragLeaveEvent * event);
+    virtual void dragMoveEvent(QDragMoveEvent * event);
+    virtual void dropEvent(QDropEvent * event);
+
 private:
     CGraphicsScene* m_pScene;
 

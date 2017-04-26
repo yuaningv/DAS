@@ -5,6 +5,8 @@
 #include "QtCore/QTranslator"
 #include "CGraphicsView.h"
 
+class CToolBar;
+class QLabel;
 
 class DAS : public QMainWindow
 {
@@ -30,10 +32,11 @@ private:
     QAction* m_pActZhCn;
     QAction* m_pActEn;
     QAction* m_pActAbout;
-    QAction* m_pActTimeline;
-    QAction* m_pActVideo;
-    QAction* m_pActCurve;
-    QAction* m_pActTable;
+
+    QLabel* m_pLbTimeAxis;
+    QLabel* m_pLbVideo;
+    QLabel* m_pLbCurve;
+    QLabel* m_pLbTable;
 
     QMenu* m_pMenuFile;
     QMenu* m_pMenuEdit;
@@ -43,7 +46,7 @@ private:
     QMenu* m_pMenuHelp;
 
     QToolBar* m_pOperatorToolBar;
-    QToolBar* m_pModuleToolBar;
+    CToolBar* m_pModuleToolBar;
 
     QTranslator m_translator;
 
