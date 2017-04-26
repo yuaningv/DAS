@@ -8,7 +8,6 @@
 #include "QtWidgets/QMenuBar"
 #include "QtWidgets/QToolBar"
 #include "QtWidgets/QStatusBar"
-#include "QtCore/QTimer"
 #include "QtWidgets/QLabel"
 
 
@@ -53,16 +52,6 @@ DAS::DAS(QWidget *parent, Qt::WindowFlags flags)
 
     m_pGraphicsView = new CGraphicsView(this);
     this->setCentralWidget(m_pGraphicsView);
-
-    m_pTimer = new QTimer(this);
-    connect(m_pTimer, SIGNAL(timeout()), this, SLOT(OnUpdate()));
-    m_pTimer->start(40);
-
-    m_pWidget = new QWidget;
-    m_pWidget->setGeometry(100, 100, 500, 400);
-    m_pWidget->show();
-
-    m_bFlag = false;
 }
 
 
@@ -75,26 +64,6 @@ DAS::~DAS()
     }
 }
 
-
-void DAS::OnUpdate()
-{
-    if (m_bFlag)
-    {
-        QPalette pal;
-        pal.setBrush(QPalette::Window, QBrush(QPixmap(IMG_ENGLISH).scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
-        m_pWidget->setPalette(pal);
-        m_bFlag = false;
-    }
-    else
-    {
-        QPalette pal;
-        pal.setBrush(QPalette::Window, QBrush(QPixmap(IMG_CHINESE).scaled(this->size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
-        m_pWidget->setPalette(pal);
-        m_bFlag = true;
-    }
-
-    m_pWidget->update();
-}
 
 
 void DAS::setLayout()

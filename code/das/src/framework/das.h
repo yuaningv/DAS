@@ -53,10 +53,6 @@ private:
 private:
     CGraphicsView* m_pGraphicsView;
 
-    QTimer* m_pTimer;
-    QWidget* m_pWidget;
-    bool m_bFlag;
-
 private slots:
     void OnOpen();
     void OnPlay();
@@ -65,7 +61,6 @@ private slots:
     void OnLanuageChanged(QAction* pAction);
     void OnAbout();
 
-    void OnUpdate();
 };
 
 #endif // SMS_H
