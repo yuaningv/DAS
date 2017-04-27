@@ -3,6 +3,7 @@
 #include "CTableView.h"
 #include "CTimeAxis.h"
 #include "CVideoWidget.h"
+#include "CCurveGraphicsItem.h"
 
 #include "QtGui/QDropEvent"
 #include "QtGui/QDragEnterEvent"
@@ -92,7 +93,7 @@ void CGraphicsView::dropEvent(QDropEvent * event)
             qDebug() << "Time Axis";
             pTmpWgt = new CTimeAxis();
             m_pScene->addWidget(pTmpWgt);
-            pTmpWgt->move(event->pos());
+            pTmpWgt->move(mapToScene(event->pos()).toPoint());
             break;
 
         case Item_Video:     //  ”∆µ¥∞
@@ -104,14 +105,19 @@ void CGraphicsView::dropEvent(QDropEvent * event)
             break;
 
         case Item_Chart:    // chart
+        {
             qDebug() << "chart";
+            CCurveGraphicsItem* item = new CCurveGraphicsItem();
+            m_pScene->addItem(item);
+            item->moveBy(mapToScene(event->pos()).rx(), mapToScene(event->pos()).ry());
+        }
             break;
 
         case Item_Table:    // table
             qDebug() << "table";
             pTmpTableView = new CTableView();
             m_pScene->addWidget(pTmpTableView);
-            pTmpTableView->move(event->pos());
+            pTmpTableView->move(mapToScene(event->pos()).toPoint());
             break;
 
         default:
