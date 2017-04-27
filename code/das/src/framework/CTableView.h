@@ -33,7 +33,6 @@ public:
     void setHorizontalHeader(QMap<QString, QString>& mapHeader);
     void setTimeRange(const QString& strStart, const QString& strEnd);
 
-
 private:
     void initLayout();
 

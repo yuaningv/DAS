@@ -18,6 +18,7 @@
 #include "QtWidgets/QFrame"
 #include "type.h"
 
+
 class CCustomWidgetBase : public QFrame
 {
     Q_OBJECT
@@ -25,6 +26,8 @@ class CCustomWidgetBase : public QFrame
 public:
     explicit CCustomWidgetBase(QWidget* parent = 0);
     virtual ~CCustomWidgetBase() = 0;
+
+public:
 
 private:
     void mouseRegion(const QPoint &cursorPoint);
@@ -41,5 +44,6 @@ private:
     DragDirection m_dragDirection; // ÍÏ×§·½Ïò
 
 };
+
 
 #endif // CCUSTOM_WIDGET_BASE_H

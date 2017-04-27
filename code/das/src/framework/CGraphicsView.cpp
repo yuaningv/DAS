@@ -2,6 +2,7 @@
 #include "type.h"
 #include "CTableView.h"
 #include "CTimeAxis.h"
+#include "CVideoWidget.h"
 
 #include "QtGui/QDropEvent"
 #include "QtGui/QDragEnterEvent"
@@ -9,6 +10,7 @@
 #include "QtGui/QDragMoveEvent"
 #include "QtCore/QMimeData"
 #include "QtCore/QDebug"
+#include "QtWidgets/QGraphicsProxyWidget"
 
 
 CGraphicsView::CGraphicsView(QWidget *parent)
@@ -23,7 +25,7 @@ CGraphicsView::CGraphicsView(QWidget *parent)
 
     setScene(m_pScene);
     setSceneRect(QRectF(0, 0, this->width(), this->height()));
-    //setBackgroundBrush(QBrush(Qt::gray, Qt::Dense7Pattern));
+    setBackgroundBrush(QBrush(Qt::gray, Qt::SolidPattern));
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setRenderHint(QPainter::Antialiasing, true);
@@ -94,7 +96,11 @@ void CGraphicsView::dropEvent(QDropEvent * event)
             break;
 
         case Item_Video:     //  ”∆µ¥∞
-            qDebug() << "video";
+            {
+                CVideoWidget* pVideoWidget = new CVideoWidget;
+                QGraphicsProxyWidget*pWidget = m_pScene->addWidget(pVideoWidget);
+                pVideoWidget->move(event->pos());
+            }
             break;
 
         case Item_Chart:    // chart
@@ -114,10 +120,42 @@ void CGraphicsView::dropEvent(QDropEvent * event)
     }
     else
     {
-        QWidget::dropEvent(event);
+        QGraphicsView::dropEvent(event);
     }
 }
 
 
+void CGraphicsView::mouseMoveEvent(QMouseEvent *event)
+{
+    m_mousePos = event->pos();
+
+    QGraphicsView::mouseMoveEvent(event);
+}
+
+
+void CGraphicsView::mouseDoubleClickEvent(QMouseEvent *ev)
+{
+    QGraphicsItem* pItem = this->itemAt(ev->pos());
+    QGraphicsProxyWidget* pProxyWidget = (QGraphicsProxyWidget*)pItem;
+    if (pProxyWidget != NULL)
+    {
+        pProxyWidget->widget()->resize(this->width(), this->height());
+    }
+
+    QGraphicsView::mouseDoubleClickEvent(ev);
+}
+
+
+void CGraphicsView::keyReleaseEvent(QKeyEvent *ev)
+{
+    QGraphicsItem* pItem = this->itemAt(m_mousePos);
+    QGraphicsProxyWidget* pProxyWidget = (QGraphicsProxyWidget*)pItem;
+    if (pProxyWidget != NULL)
+    {
+        pProxyWidget->widget()->resize(500, 400);
+    }
+
+    QGraphicsView::keyReleaseEvent(ev);
+}
 
 
