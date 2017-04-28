@@ -306,27 +306,12 @@ void CGraphicsView::mouseMoveEvent(QMouseEvent *event)
 
 void CGraphicsView::mouseDoubleClickEvent(QMouseEvent *ev)
 {
-    QGraphicsItem* pItem = this->itemAt(ev->pos());
-    if (pItem->isWidget())
-    {
-        QGraphicsProxyWidget* pProxyWidget = (QGraphicsProxyWidget*)pItem;
-        pProxyWidget->widget()->resize(this->width(), this->height());
-    }
-
     QGraphicsView::mouseDoubleClickEvent(ev);
 }
 
 
 void CGraphicsView::keyReleaseEvent(QKeyEvent *ev)
 {
-    QGraphicsItem* pItem = this->itemAt(m_mousePos);
-    if (pItem->isWidget())
-    {
-        QGraphicsProxyWidget* pProxyWidget = (QGraphicsProxyWidget*)pItem;
-
-        pProxyWidget->widget()->resize(500, 400);
-    }
-
     QGraphicsView::keyReleaseEvent(ev);
 }
 
