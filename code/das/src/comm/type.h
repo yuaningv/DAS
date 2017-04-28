@@ -26,4 +26,19 @@ enum DragDirection{
 #define PADDING 5 // margin
 
 
+typedef struct ItemAttribute
+{
+    int iID;
+    ITEMTYPE iType;
+    QString strTitle;
+    int iChannel;
+    int iPosX;
+    int iPoxY;
+    int iWidth;
+    int iHeight;
+
+} ItemAttribute_t;
+
+
+
 #endif // TYPE_H

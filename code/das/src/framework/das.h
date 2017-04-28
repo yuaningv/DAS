@@ -4,6 +4,7 @@
 #include "QtWidgets/QMainWindow"
 #include "QtCore/QTranslator"
 #include "CGraphicsView.h"
+#include "CPropertyBar.h"
 
 class CToolBar;
 class QLabel;
@@ -52,6 +53,7 @@ private:
 
 private:
     CGraphicsView* m_pGraphicsView;
+    CPropertyBar* m_pPropertyBar;
 
 private slots:
     void OnOpen();

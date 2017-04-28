@@ -35,7 +35,7 @@ private:
     void initLayout();
 
 protected:
- 
+    virtual ITEMTYPE type();
 
 private:
     QLabel* m_pLbStartTime;

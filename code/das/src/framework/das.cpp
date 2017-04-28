@@ -41,17 +41,24 @@ const char* cstDictTableModule = "Table";
 
 
 DAS::DAS(QWidget *parent, Qt::WindowFlags flags)
-    : QMainWindow(parent, flags)
+    : QMainWindow(parent, flags),
+    m_pGraphicsView(NULL),
+    m_pPropertyBar(NULL)
 {
     setWindowTitle(trFormString(cstDictDas));
-    //setWindowState(Qt::WindowMaximized);
+    setWindowState(Qt::WindowMaximized);
     setWindowIcon(QIcon(IMG_LOGO));
-    resize(800, 600);
+    resize(800, 500);
 
     setLayout();
 
+    m_pPropertyBar = new CPropertyBar(this);
+    addDockWidget(Qt::RightDockWidgetArea, m_pPropertyBar);
+
     m_pGraphicsView = new CGraphicsView(this);
     this->setCentralWidget(m_pGraphicsView);
+
+    connect(m_pGraphicsView, SIGNAL(sigItemAttr(const ItemAttribute_t&)), m_pPropertyBar, SLOT(OnShowItemAttr(const ItemAttribute_t&)));
 }
 
 
@@ -61,6 +68,12 @@ DAS::~DAS()
     {
         delete m_pGraphicsView;
         m_pGraphicsView = NULL;
+    }
+
+    if (m_pPropertyBar != NULL)
+    {
+        delete m_pPropertyBar;
+        m_pPropertyBar = NULL;
     }
 }
 

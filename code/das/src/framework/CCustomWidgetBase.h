@@ -24,10 +24,11 @@ class CCustomWidgetBase : public QFrame
     Q_OBJECT
 
 public:
-    explicit CCustomWidgetBase(QWidget* parent = 0);
+    CCustomWidgetBase(QWidget* parent = 0);
     virtual ~CCustomWidgetBase() = 0;
 
 public:
+    virtual ITEMTYPE type() = 0;
 
 private:
     void mouseRegion(const QPoint &cursorPoint);
@@ -37,12 +38,11 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent *event);
     virtual void mousePressEvent(QMouseEvent *event);
 
-private:
+protected:
     bool m_bIsLeftPressDown;       // 是否左键按下
     QPoint m_startPos;             // 拖动开始点
     QPoint m_endPos;               // 拖动结束点
     DragDirection m_dragDirection; // 拖拽方向
-
 };
 
 

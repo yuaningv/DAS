@@ -25,6 +25,7 @@ CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
     , m_realScale(1.0)
     , m_realXDefault(1.0)
     , m_bEditFlag(false)
+    , m_iType(Item_Chart)
 {
     setAcceptDrops(true);
     setAcceptHoverEvents(true);

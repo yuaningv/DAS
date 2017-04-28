@@ -37,7 +37,7 @@ private:
     void initLayout();
 
 protected:
-
+    virtual ITEMTYPE type();
 
 private:
     CFrozenTableView* m_pTableView;
@@ -46,6 +46,7 @@ private:
     QMap<QString, QString> m_mapHorizontalHeader;  // 水平表头 <字段， 显示名称>
     QString m_strStartTime;
     QString m_strEndTime;
+
 };
 
 #endif // CTABLEVIEW_H

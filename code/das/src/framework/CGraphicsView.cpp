@@ -4,13 +4,13 @@
 #include "CTimeAxis.h"
 #include "CVideoWidget.h"
 #include "CCurveGraphicsItem.h"
+#include "CLogManager.h"
 
 #include "QtGui/QDropEvent"
 #include "QtGui/QDragEnterEvent"
 #include "QtGui/QDragLeaveEvent"
 #include "QtGui/QDragMoveEvent"
 #include "QtCore/QMimeData"
-#include "QtCore/QDebug"
 #include "QtWidgets/QGraphicsProxyWidget"
 
 
@@ -90,34 +90,38 @@ void CGraphicsView::dropEvent(QDropEvent * event)
         switch (itemType)
         {
         case Item_TimeAxis:  //  ±º‰÷·
-            qDebug() << "Time Axis";
-            pTmpWgt = new CTimeAxis();
+            pTmpWgt = new CTimeAxis;
             m_pScene->addWidget(pTmpWgt);
             pTmpWgt->move(mapToScene(event->pos()).toPoint());
+
+            CLogManager::getInstance()->log(eLogDebug, "CGraphicsView", "add time axis");
             break;
 
         case Item_Video:     //  ”∆µ¥∞
             {
                 CVideoWidget* pVideoWidget = new CVideoWidget;
+                pVideoWidget->setView(this);
                 QGraphicsProxyWidget*pWidget = m_pScene->addWidget(pVideoWidget);
-                pVideoWidget->move(event->pos());
+                pVideoWidget->move(mapToScene(event->pos()).toPoint());
             }
             break;
 
         case Item_Chart:    // chart
         {
-            qDebug() << "chart";
             CCurveGraphicsItem* item = new CCurveGraphicsItem();
             m_pScene->addItem(item);
             item->moveBy(mapToScene(event->pos()).rx(), mapToScene(event->pos()).ry());
+
+            CLogManager::getInstance()->log(eLogDebug, "CGraphicsView", "add curve chart");
         }
             break;
 
         case Item_Table:    // table
-            qDebug() << "table";
             pTmpTableView = new CTableView();
             m_pScene->addWidget(pTmpTableView);
             pTmpTableView->move(mapToScene(event->pos()).toPoint());
+
+            CLogManager::getInstance()->log(eLogDebug, "CGraphicsView", "add table");
             break;
 
         default:
@@ -131,9 +135,55 @@ void CGraphicsView::dropEvent(QDropEvent * event)
 }
 
 
+void CGraphicsView::mouseReleaseEvent(QMouseEvent *event)
+{
+    QGraphicsItem* pItem = this->itemAt(event->pos());
+    if (pItem != NULL)
+    {
+        if (pItem->isWidget())
+        {
+            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
+            pWidget->boundingRect();
+            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+            ITEMTYPE iType = pCustomItem->type();
+            if (iType == Item_Video)
+            {
+                CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
+                ItemAttribute_t itemAttr;
+                itemAttr.iID = pVideoWidget->getID();
+                itemAttr.iType = iType;
+                itemAttr.strTitle = pVideoWidget->getTitle();
+                itemAttr.iChannel = 1;
+                itemAttr.iPosX = pVideoWidget->pos().x();//pVideoWidget->pos().x();
+                itemAttr.iPoxY = pVideoWidget->pos().y();
+                itemAttr.iWidth = pVideoWidget->width();
+                itemAttr.iHeight = pVideoWidget->height();
+
+                emit sigItemAttr(itemAttr);
+            }
+            else if (iType == Item_Table)
+            {
+
+                CTableView *pTable = dynamic_cast<CTableView*>(pCustomItem);
+            }
+            else if (iType == Item_TimeAxis)
+            {
+
+                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
+            }
+        }
+        else
+        {
+            CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
+        }
+    }
+
+    QGraphicsView::mouseReleaseEvent(event);
+}
+
+
 void CGraphicsView::mouseMoveEvent(QMouseEvent *event)
 {
-    m_mousePos = event->pos();
 
     QGraphicsView::mouseMoveEvent(event);
 }
@@ -141,12 +191,6 @@ void CGraphicsView::mouseMoveEvent(QMouseEvent *event)
 
 void CGraphicsView::mouseDoubleClickEvent(QMouseEvent *ev)
 {
-    QGraphicsItem* pItem = this->itemAt(ev->pos());
-    QGraphicsProxyWidget* pProxyWidget = (QGraphicsProxyWidget*)pItem;
-    if (pProxyWidget != NULL)
-    {
-        pProxyWidget->widget()->resize(this->width(), this->height());
-    }
 
     QGraphicsView::mouseDoubleClickEvent(ev);
 }
@@ -154,12 +198,6 @@ void CGraphicsView::mouseDoubleClickEvent(QMouseEvent *ev)
 
 void CGraphicsView::keyReleaseEvent(QKeyEvent *ev)
 {
-    QGraphicsItem* pItem = this->itemAt(m_mousePos);
-    QGraphicsProxyWidget* pProxyWidget = (QGraphicsProxyWidget*)pItem;
-    if (pProxyWidget != NULL)
-    {
-        pProxyWidget->widget()->resize(500, 400);
-    }
 
     QGraphicsView::keyReleaseEvent(ev);
 }

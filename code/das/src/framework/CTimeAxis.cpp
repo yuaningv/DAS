@@ -20,6 +20,15 @@ CTimeAxis::~CTimeAxis()
 
 }
 
+
+
+ITEMTYPE CTimeAxis::type()
+{
+    return Item_TimeAxis;
+}
+
+
+
 /*
 * 设置开始结束时间
 * strStart 开始时间 strEnd 结束时间  时间格式 yyyy/MM/dd hh:mm:ss

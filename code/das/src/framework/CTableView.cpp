@@ -24,6 +24,14 @@ CTableView::~CTableView()
 
 }
 
+
+ITEMTYPE CTableView::type()
+{
+    return Item_Table;
+}
+
+
+
 // 设置水平表头数据 ，从xml文件读取后设置
 void CTableView::setHorizontalHeader(QMap<QString, QString>& mapHeader)
 {

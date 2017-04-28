@@ -98,6 +98,8 @@ void CCustomWidgetBase::mouseReleaseEvent(QMouseEvent *event)
             this->setCursor(QCursor(Qt::ArrowCursor));
         }
     }
+
+    QFrame::mouseReleaseEvent(event);
 }
 
 void CCustomWidgetBase::mouseMoveEvent(QMouseEvent *event)

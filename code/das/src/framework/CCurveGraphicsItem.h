@@ -17,6 +17,7 @@
 #include "QtWidgets/QGraphicsItem"
 #include "QtCore/QObject"
 #include "type.h"
+#include "CCustomWidgetBase.h"
 
 
 class CCurveGraphicsItem : public QObject, public QGraphicsItem
@@ -36,6 +37,8 @@ public:
 
     void setEnableEditMode(bool enable = false);
 
+    void setType(ITEMTYPE iType) { m_iType = iType; };
+    ITEMTYPE getType() { return m_iType; };
 
     QRectF boundingRect() const;
     void resetItemSize(const QRectF &rect);
@@ -88,6 +91,7 @@ private:
     qreal m_realXDefault;  // X轴最大值初始值
 
     bool m_bEditFlag;
+    ITEMTYPE m_iType;
 
 signals:
 
