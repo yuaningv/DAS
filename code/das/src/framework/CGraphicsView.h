@@ -13,6 +13,12 @@ public:
     CGraphicsView(QWidget *parent = 0);
     ~CGraphicsView();
 
+    void setEditModoEnabled(bool enable);
+    void saveLayout();
+
+private:
+    void readXml();
+
 protected:
     virtual void dragEnterEvent(QDragEnterEvent * event);
     virtual void dragLeaveEvent(QDragLeaveEvent * event);
@@ -26,7 +32,7 @@ protected:
 private:
     CGraphicsScene* m_pScene;
     QPoint m_mousePos;          // 当前鼠标位置 
-
+    bool m_bEditFlag;
 signals:
 };
 

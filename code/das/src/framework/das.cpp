@@ -9,7 +9,8 @@
 #include "QtWidgets/QToolBar"
 #include "QtWidgets/QStatusBar"
 #include "QtWidgets/QLabel"
-
+#include "QtWidgets/QFileDialog"
+#include "QtWidgets/QCheckBox"
 
 // 定义多国语关键字常量 
 const char* cstDictDas = "DAS";
@@ -152,24 +153,28 @@ void DAS::setLayout()
     m_pOperatorToolBar->addAction(m_pActFullScreen);
 
     m_pLbTimeAxis = new QLabel(this);                   // 时间轴组件  
-    m_pLbTimeAxis->setPixmap(QPixmap(IMG_TIMELINE));
+    m_pLbTimeAxis->setPixmap(QPixmap(IMG_TIMELINE_DISABLE));
     m_pLbTimeAxis->setToolTip(trMenuString(cstDictTimelineModule));
     m_pLbTimeAxis->setProperty("ItemType", Item_TimeAxis);
 
     m_pLbVideo = new QLabel(this);                  // 视频组件  
-    m_pLbVideo->setPixmap(QPixmap(IMG_VIDEO));
+    m_pLbVideo->setPixmap(QPixmap(IMG_VIDEO_DISABLE));
     m_pLbVideo->setToolTip(trMenuString(cstDictVideoModule));
     m_pLbVideo->setProperty("ItemType", Item_Video);
 
     m_pLbCurve = new QLabel(this);                  // 曲线图组件  
-    m_pLbCurve->setPixmap(QPixmap(IMG_CURVE));
+    m_pLbCurve->setPixmap(QPixmap(IMG_CURVE_DISABLE));
     m_pLbCurve->setToolTip(trMenuString(cstDictCurveModule));
     m_pLbCurve->setProperty("ItemType", Item_Chart);
 
     m_pLbTable = new QLabel(this);                  // 表格组件  
-    m_pLbTable->setPixmap(QPixmap(IMG_TABLE));
+    m_pLbTable->setPixmap(QPixmap(IMG_TABLE_DISABLE));
     m_pLbTable->setToolTip(trMenuString(cstDictTableModule));
     m_pLbTable->setProperty("ItemType", Item_Table);
+
+    m_pCBoxEdit = new QCheckBox(this);
+    m_pCBoxEdit->setText(trMenuString(cstEdit));
+    connect(m_pCBoxEdit, SIGNAL(stateChanged(int)), this, SLOT(OnEditCheckBoxStateChanged(int)));
 
     m_pModuleToolBar = new CToolBar(this);
     this->addToolBar(m_pModuleToolBar);
@@ -177,6 +182,8 @@ void DAS::setLayout()
     m_pModuleToolBar->addWidget(m_pLbVideo);
     m_pModuleToolBar->addWidget(m_pLbCurve);
     m_pModuleToolBar->addWidget(m_pLbTable);
+    m_pModuleToolBar->addSeparator();
+    m_pModuleToolBar->addWidget(m_pCBoxEdit);
 
     // 创建状态栏 
     this->setStatusBar(new QStatusBar(this));
@@ -185,7 +192,7 @@ void DAS::setLayout()
 
 void DAS::OnOpen()
 {
-
+    QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"), ".", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 }
 
 
@@ -235,6 +242,42 @@ void DAS::OnAbout()
 
 }
 
+void DAS::OnEditCheckBoxStateChanged(int state)
+{
+    if (Qt::Checked == state)
+    {
+        m_pModuleToolBar->setEditModeEnabled(true);
+        m_pGraphicsView->setEditModoEnabled(true);
+        m_pLbTimeAxis->setPixmap(QPixmap(IMG_TIMELINE));
+        m_pLbVideo->setPixmap(QPixmap(IMG_VIDEO));
+        m_pLbCurve->setPixmap(QPixmap(IMG_CURVE));
+        m_pLbTable->setPixmap(QPixmap(IMG_TABLE));
+
+        m_pActOpen->setEnabled(false);
+        m_pActPlay->setEnabled(false);
+        m_pActFind->setEnabled(false);
+        m_pActFullScreen->setEnabled(false);
+    }
+    else if (Qt::Unchecked == state)
+    {
+        m_pModuleToolBar->setEditModeEnabled(false);
+        m_pGraphicsView->setEditModoEnabled(false);
+        m_pLbTimeAxis->setPixmap(QPixmap(IMG_TIMELINE_DISABLE));
+        m_pLbVideo->setPixmap(QPixmap(IMG_VIDEO_DISABLE));
+        m_pLbCurve->setPixmap(QPixmap(IMG_CURVE_DISABLE));
+        m_pLbTable->setPixmap(QPixmap(IMG_TABLE_DISABLE));
+
+        m_pActOpen->setEnabled(true);
+        m_pActPlay->setEnabled(true);
+        m_pActFind->setEnabled(true);
+        m_pActFullScreen->setEnabled(true);
+        if (!m_pGraphicsView->scene()->items().isEmpty())
+        {
+            m_pGraphicsView->saveLayout();
+        }
+    }
+}
+
 
 void DAS::retranslate()
 {
@@ -263,6 +306,7 @@ void DAS::retranslate()
     m_pLbCurve->setToolTip(trMenuString(cstDictCurveModule));
     m_pLbTable->setToolTip(trMenuString(cstDictTableModule));
     m_pModuleToolBar->setWindowTitle(trMenuString(cstModuleToolBar));
+    m_pCBoxEdit->setText(trMenuString(cstEdit));
 }
 
 

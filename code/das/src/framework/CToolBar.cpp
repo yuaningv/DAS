@@ -12,6 +12,7 @@
 
 CToolBar::CToolBar(QWidget *parent)
     : QToolBar(parent)
+    , m_bEditFlag(false)
 {
     QApplication::setStartDragDistance(5);
     this->setAcceptDrops(true);
@@ -23,8 +24,18 @@ CToolBar::~CToolBar()
 
 }
 
+void CToolBar::setEditModeEnabled(bool enable)
+{ 
+    m_bEditFlag = enable; 
+}
+
+
 void CToolBar::dragEnterEvent(QDragEnterEvent * event)
 {
+    if (!m_bEditFlag)
+    {
+        return QWidget::dragEnterEvent(event);
+    }
     if (event->source() == this)
     {
         event->setDropAction(Qt::MoveAction);
@@ -40,7 +51,7 @@ void CToolBar::dragEnterEvent(QDragEnterEvent * event)
 
 void CToolBar::mouseMoveEvent(QMouseEvent * event)
 {
-    if (!m_pChildAction)
+    if (!m_pChildAction || !m_bEditFlag)
     {
         return;
     }
@@ -75,7 +86,7 @@ void CToolBar::mouseMoveEvent(QMouseEvent * event)
 
 void CToolBar::mousePressEvent(QMouseEvent * event)
 {
-    if (event->button() != Qt::LeftButton)
+    if (event->button() != Qt::LeftButton || !m_bEditFlag)
         return QWidget::mousePressEvent(event);
 
     m_pChildAction = static_cast<QLabel*>(childAt(event->pos()));

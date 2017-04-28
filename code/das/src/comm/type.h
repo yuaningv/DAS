@@ -25,5 +25,31 @@ enum DragDirection{
 
 #define PADDING 5 // margin
 
+// ¿Ø¼þÊôÐÔ
+typedef struct WIDGET_PROPERTY
+{
+    ITEMTYPE m_type;
+    qreal m_realX;
+    qreal m_realY;
+    qreal m_realWidth;
+    qreal m_realHeight;
+    QString m_strStart;
+    QString m_strEnd;
+    QString m_strPlayPos;
+
+    WIDGET_PROPERTY()
+    {
+        m_type = Item_None;
+        m_realX = 0.0;
+        m_realY = 0.0;
+        m_realWidth = 0.0;
+        m_realHeight = 0.0;
+        m_strStart.clear();
+        m_strEnd.clear();
+        m_strPlayPos.clear();
+    }
+
+}WidgetProperty; 
+
 
 #endif // TYPE_H

@@ -18,6 +18,23 @@
 #include "QtCore/QObject"
 #include "type.h"
 
+typedef struct CURVE_LINE
+{
+    QColor m_color;
+    QString m_strName;
+    qreal m_realMin;
+    qreal m_realMax;
+    QVector<QPointF> m_vecPoints;
+
+    CURVE_LINE()
+    {
+        m_color = Qt::black;
+        m_strName = "";
+        m_realMin = 0.0;
+        m_realMax = 1.0;
+        m_vecPoints.clear();
+    }
+}CurveLine;
 
 class CCurveGraphicsItem : public QObject, public QGraphicsItem
 {
@@ -34,7 +51,10 @@ public:
     void setXAxisRange(const qreal& dbMin, const qreal& dbMax) { m_dbXAxisMin = dbMin; m_dbXAxisMax = dbMax; m_realXDefault = m_dbXAxisMax; }
     void setYAxisRange(const qreal& dbMin, const qreal& dbMax) { m_dbYAxisMin = dbMin; m_dbYAxisMax = dbMax; }
 
-    void setEnableEditMode(bool enable = false);
+    void setEnableEditMode(bool enable);
+    void setTitle(const QString& strTitle);
+
+    void setLines(const QList<CurveLine>& lstTmpVec) { m_lstLines = lstTmpVec; }
 
 
     QRectF boundingRect() const;
@@ -57,7 +77,6 @@ protected:
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 
     virtual void keyPressEvent(QKeyEvent * event);
-
 
 private:
     QRectF m_itemRectF;
@@ -87,7 +106,11 @@ private:
 
     qreal m_realXDefault;  // X轴最大值初始值
 
-    bool m_bEditFlag;
+    bool m_bEditFlag;    // 是否是编辑模式
+
+    QString m_strTitle;  // 图形标题
+
+    QList<CurveLine> m_lstLines;
 
 signals:
 

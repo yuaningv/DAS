@@ -17,6 +17,7 @@
 #include "QtCore/QFile"
 #include "QtXml/QDomDocument"
 #include "QtCore/QStringList"
+#include "type.h"
 
 class CFileOperationManager
 {
@@ -25,10 +26,10 @@ public:
     ~CFileOperationManager();
 
     // 读取xml文件
-    bool ReadXmlFile();
+    bool ReadXmlFile(QMap<int, QList<WidgetProperty>>& mapTmpItems);
 
     // 写xml文件
-    bool writeXmlFile();
+    bool writeXmlFile(QMap<int, QList<WidgetProperty>>& mapTmpItems);
 
 
 	//打开xml文件

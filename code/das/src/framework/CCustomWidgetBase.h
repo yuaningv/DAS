@@ -28,6 +28,7 @@ public:
     virtual ~CCustomWidgetBase() = 0;
 
 public:
+    void setEditModeEnabled(bool enable) { m_bEditFlag = enable; }
 
 private:
     void mouseRegion(const QPoint &cursorPoint);
@@ -43,6 +44,7 @@ private:
     QPoint m_endPos;               // 拖动结束点
     DragDirection m_dragDirection; // 拖拽方向
 
+    bool m_bEditFlag;               // 是否是编辑模式
 };
 
 
