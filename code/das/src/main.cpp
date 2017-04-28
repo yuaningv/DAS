@@ -8,8 +8,6 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    CFileOperationManager cfm("apsXml.xml");
-    cfm.ReadXmlFile();
     // 加载多国语文件 
     QTranslator translator;
     if (translator.load(":/dict/das_zh_cn.qm"))

@@ -6,8 +6,11 @@
 #include "QtWidgets/QGraphicsSceneMouseEvent"
 #include "QtWidgets/QGraphicsScene"
 #include "QtGui/QKeyEvent"
+#include "QtWidgets/QGraphicsSceneContextMenuEvent"
+#include "QtCore/QDebug"
+#include "QtWidgets/QMenu"
 
-
+static int index = 1;
 CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
     : QGraphicsItem(parent)
     , m_startPos(0, 0)
@@ -35,6 +38,30 @@ CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
 
     // 初始大小
     m_itemRectF = QRectF(2, 2, 400, 300);
+    m_strTitle = QString(tr("chart %1")).arg(index++);
+    m_lstLines.clear();
+
+    CurveLine c1;
+    c1.m_color = Qt::red;
+    c1.m_strName = "aa";
+    c1.m_realMin = 0.0;
+    c1.m_realMax = 1.0;
+    c1.m_vecPoints = { QPointF(0, 0), QPointF(0.2, 0.1), QPointF(0.2, 0.1), QPointF(0.4, 0.5) };
+    m_lstLines.append(c1);
+
+    c1.m_color = Qt::green;
+    c1.m_strName = "bb";
+    c1.m_realMin = 0.0;
+    c1.m_realMax = 5.0;
+    c1.m_vecPoints = { QPointF(0, 1), QPointF(0.1, 3), QPointF(0.1, 3), QPointF(0.3, 1.5) };
+    m_lstLines.append(c1);
+
+    c1.m_color = Qt::blue;
+    c1.m_strName = "cc";
+    c1.m_realMin = 1.0;
+    c1.m_realMax = 10.0;
+    c1.m_vecPoints = { QPointF(0, 3), QPointF(0.2, 5), QPointF(0.2, 5), QPointF(0.6, 8) };
+    m_lstLines.append(c1);
 }
 
 
@@ -112,6 +139,10 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
 
     }
     painter->drawRect(m_itemRectF);
+    painter->fillRect(m_itemRectF, Qt::white);
+
+    // title
+    painter->drawText(m_itemRectF.topLeft() + QPointF(15, 15), m_strTitle);
 
     // x坐标轴
     painter->drawLine(m_itemRectF.bottomLeft() + QPointF(m_iOffset, -m_iOffset), m_itemRectF.bottomRight() + QPointF(-m_iOffset, -m_iOffset));
@@ -124,30 +155,45 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
     for (int i = 0; i < m_iXTicksCount; ++i)
     {
         painter->drawLine(m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1), m_itemRectF.bottomLeft().y() - m_iOffset, m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1), m_itemRectF.bottomLeft().y() - m_iOffset - 5);
-        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1) - 5, m_itemRectF.bottomLeft().y() - m_iOffset + 10, QString::number(m_realX*(i + 1)));
+        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1) - 5, m_itemRectF.bottomLeft().y() - m_iOffset + 10, QString::number(m_realX*(i + 1) + m_dbXAxisMin));
     }
     painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 5, m_itemRectF.bottomLeft().y() - m_iOffset + 10, QString::number(m_dbXAxisMin));
 
-
     // y 坐标轴
     painter->drawLine(m_itemRectF.bottomLeft() + QPointF(m_iOffset, -m_iOffset), m_itemRectF.topLeft() + QPointF(m_iOffset, m_iOffset));
-    // 每个刻度值
-    m_realY = (m_dbYAxisMax - m_dbYAxisMin) / m_iYTicksCount;
-    // 每个刻度长度
-    m_realYLength = ((m_itemRectF.bottomLeft().y() - m_iOffset) - (m_itemRectF.topLeft().y() + m_iOffset)) / m_iYTicksCount;
-    for (int i = 0; i < m_iYTicksCount; ++i)
+    int iTmpLineCount = m_lstLines.count();
+    // 每个图例位置长度
+    int iLength = ((m_itemRectF.bottomRight().x()) - m_iOffset*2 - (m_itemRectF.bottomLeft().x() + m_iOffset*2)) / iTmpLineCount;
+
+    for (int n = 0; n < iTmpLineCount; ++n)
     {
-        painter->drawLine(m_itemRectF.bottomLeft().x() + m_iOffset, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1), m_itemRectF.bottomLeft().x() + m_iOffset + 5, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1));
-        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 20, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1) + 5, QString::number(m_realY*(i + 1)));
+        setYAxisRange(m_lstLines.at(n).m_realMin, m_lstLines.at(n).m_realMax);
+        painter->setPen(QPen(m_lstLines.at(n).m_color, 1, Qt::SolidLine));
+
+        // 每个刻度值
+        m_realY = (m_dbYAxisMax - m_dbYAxisMin) / m_iYTicksCount;
+        // 每个刻度长度
+        m_realYLength = ((m_itemRectF.bottomLeft().y() - m_iOffset) - (m_itemRectF.topLeft().y() + m_iOffset)) / m_iYTicksCount;
+        for (int i = 0; i < m_iYTicksCount; ++i)
+        {
+            painter->drawLine(m_itemRectF.bottomLeft().x() + m_iOffset, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1), m_itemRectF.bottomLeft().x() + m_iOffset + 5, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1));
+            painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 20, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1)-n*10 + 10, QString::number(m_realY*(i + 1) + m_dbYAxisMin));
+        }
+        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 20, m_itemRectF.bottomLeft().y() - m_iOffset-n*10 + 10, QString::number(m_dbYAxisMin));
+
+        // 图例
+        painter->fillRect(m_itemRectF.bottomLeft().x() + m_iOffset*2 + iLength*n, m_itemRectF.bottomLeft().y() - 20, 5, 5, m_lstLines.at(n).m_color);
+        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset*2 + iLength*n + 15, m_itemRectF.bottomLeft().y() - 15, m_lstLines.at(n).m_strName);
+
+        // 绘制曲线图
+        QVector<QPointF> vecTmpPoint;
+        for (QPointF p : m_lstLines[n].m_vecPoints)
+        {
+            // 转换成坐标轴坐标
+            vecTmpPoint.append(mapToAxis(p));
+        }
+        painter->drawLines(vecTmpPoint);
     }
-
-
-    // 绘制曲线图
-    painter->setPen(QPen(Qt::red, 1, Qt::SolidLine));
-    QPointF p1(0, 0); //mapToAxis(p1);
-    QPointF p2(0.2, 0.2); //mapToAxis(p2);
-    painter->drawLine(mapToAxis(p1), mapToAxis(p2));
-    painter->drawLine(mapToAxis(QPointF(0.2, 0.2)), mapToAxis(QPointF(0.3, 0.1)));
 }
 
 
@@ -162,6 +208,7 @@ void CCurveGraphicsItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 
     if (!m_bEditFlag)
     {
+        setCursor(Qt::ArrowCursor);
         return QGraphicsItem::hoverEnterEvent(event);
     }
 
@@ -240,6 +287,7 @@ void CCurveGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 
     if (!m_bEditFlag)
     {
+        setCursor(Qt::ArrowCursor);
         return QGraphicsItem::hoverEnterEvent(event);
     }
 
@@ -313,7 +361,7 @@ void CCurveGraphicsItem::hoverLeaveEnvet(QGraphicsSceneHoverEvent *event)
     {
         setCursor(Qt::ArrowCursor);
     }
-    QGraphicsItem::hoverEnterEvent(event);
+    QGraphicsItem::hoverLeaveEvent(event);
 }
 
 

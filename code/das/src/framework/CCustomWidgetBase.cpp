@@ -8,6 +8,7 @@ CCustomWidgetBase::CCustomWidgetBase(QWidget* parent /*= 0*/)
     , m_startPos(0, 0)
     , m_endPos(0, 0)
     , m_dragDirection(NONE)
+    , m_bEditFlag(false)
 {
     this->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint);
     this->setMouseTracking(true);
@@ -89,7 +90,7 @@ void CCustomWidgetBase::mouseRegion(const QPoint &cursorPoint)
 
 void CCustomWidgetBase::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton) 
+    if (event->button() == Qt::LeftButton && m_bEditFlag)
     {
         m_bIsLeftPressDown = false;
         if (m_dragDirection != NONE) 
@@ -104,6 +105,11 @@ void CCustomWidgetBase::mouseReleaseEvent(QMouseEvent *event)
 
 void CCustomWidgetBase::mouseMoveEvent(QMouseEvent *event)
 {
+    if (!m_bEditFlag)
+    {
+        this->setCursor(QCursor(Qt::ArrowCursor));
+        return QFrame::mouseMoveEvent(event);
+    }
     QPoint mousePoint = mapToParent(event->pos());
     QRect rect = this->rect();
     QPoint pointTmpTopLeft = mapToParent(rect.topLeft());
@@ -221,6 +227,10 @@ void CCustomWidgetBase::mouseMoveEvent(QMouseEvent *event)
 
 void CCustomWidgetBase::mousePressEvent(QMouseEvent *event)
 {
+    if (!m_bEditFlag)
+    {
+        return QFrame::mousePressEvent(event);
+    }
     switch (event->button())
     {
     case Qt::LeftButton:

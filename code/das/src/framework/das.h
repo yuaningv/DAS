@@ -8,6 +8,7 @@
 
 class CToolBar;
 class QLabel;
+class QCheckBox;
 
 class DAS : public QMainWindow
 {
@@ -38,6 +39,7 @@ private:
     QLabel* m_pLbVideo;
     QLabel* m_pLbCurve;
     QLabel* m_pLbTable;
+    QCheckBox* m_pCBoxEdit;
 
     QMenu* m_pMenuFile;
     QMenu* m_pMenuEdit;
@@ -62,6 +64,8 @@ private slots:
     void OnFullScreen();
     void OnLanuageChanged(QAction* pAction);
     void OnAbout();
+
+    void OnEditCheckBoxStateChanged(int state);
 
 };
 

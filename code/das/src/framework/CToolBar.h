@@ -27,6 +27,8 @@ public:
     explicit CToolBar(QWidget *parent = 0);
     ~CToolBar();
 
+    void setEditModeEnabled(bool enable);
+
 protected:
     void dragEnterEvent(QDragEnterEvent * event);
     void mouseMoveEvent(QMouseEvent * event);
@@ -36,6 +38,7 @@ protected:
 private:
     QPoint m_startPos;
     QLabel* m_pChildAction;
+    bool m_bEditFlag;
 };
 
 #endif // CTOOLBAR_H
