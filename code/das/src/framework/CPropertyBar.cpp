@@ -25,7 +25,7 @@ CPropertyBar::CPropertyBar(QWidget *parent)
     m_pView->setStyleSheet("QTreeView::item{height:25px}");
 
     m_pModel->setHorizontalHeaderLabels(QStringList() << trFormString(cstAttribute) << trFormString(cstAttributeValue));
-    connect(m_pModel, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(OnItemDataChanged(QStandardItem*)));
+   // connect(m_pModel, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(OnItemDataChanged(QStandardItem*)));
     setWidget(m_pView);
 }
 

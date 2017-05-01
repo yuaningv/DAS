@@ -94,7 +94,7 @@ void DAS::setLayout()
     m_pActExit = new QAction(trMenuString(cstDictExit), this);
     m_pActExit->setIcon(QIcon(IMG_EXIT));
     m_pActExit->setShortcut(QKeySequence("Alt+F4"));
-    connect(m_pActExit, SIGNAL(triggered()), this, SLOT(exit()));
+    connect(m_pActExit, SIGNAL(triggered()), this, SLOT(close()));
 
     m_pMenuFile = new QMenu(trMenuString(cstFile), this);
     m_pMenuFile->addAction(m_pActOpen);

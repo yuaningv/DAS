@@ -12,18 +12,6 @@ CFileOperationManager::CFileOperationManager(const QString& filePath)
     m_file = new QFile(m_strFilePath);
 }
 
-bool CFileOperationManager::OpenFile()
-{	
-	if (!m_file->open(QIODevice::ReadOnly)) 
-		return false;
-	if (!m_doc->setContent(m_file))
-	{
-		m_file->close();
-		return false;
-	}
-	m_file->close();
-	return true;
-}
 
 CFileOperationManager::~CFileOperationManager()
 {
@@ -271,21 +259,5 @@ bool CFileOperationManager::writeXmlFile(QMap<int, QList<WidgetProperty>>& mapTm
     m_file->close();
 
     return true;
-}
-
-
-bool CFileOperationManager::GetFromXLSFileFlag()
-{
-	QDomElement root = m_doc->documentElement();
-	QDomElement child = root.elementsByTagName("READFILE").item(0).firstChildElement("FromXLSFileFlag");
-	if (child.attribute("value") == "TRUE")
-	{
-		return true;
-	}
-	else if (child.attribute("value") == "FALSE")
-	{
-		return false;
-	}
-	return false;
 }
 

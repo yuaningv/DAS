@@ -32,12 +32,6 @@ public:
     bool writeXmlFile(QMap<int, QList<WidgetProperty>>& mapTmpItems);
 
 
-	//打开xml文件
-	bool OpenFile();
-
-	//获取读取文件来源标记：TRUE-XLS，FALSE-二进制文件
-	bool GetFromXLSFileFlag();
-
 private:
 	QDomDocument *m_doc;
 	QFile *m_file;

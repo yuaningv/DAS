@@ -30,6 +30,9 @@ public:
 
     void setTimeRange(const QString& strStart, const QString& strEnd);
     void setSliderPosition(const QString& strValue);
+	QString getStartTime() const;
+	QString getEndTime() const;
+	QString getSliderPosition() const;
 
 private:
     void initLayout();

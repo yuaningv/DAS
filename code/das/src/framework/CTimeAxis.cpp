@@ -58,6 +58,29 @@ void CTimeAxis::setSliderPosition(const QString& strValue)
     m_pSlider->setValue(iProgressValue);
 }
 
+
+QString CTimeAxis::getStartTime() const 
+{ 
+	return m_pLbStartTime->text().trimmed();
+}
+
+
+QString CTimeAxis::getEndTime() const 
+{ 
+	return m_pLbEndTime->text().trimmed();
+}
+
+
+QString CTimeAxis::getSliderPosition() const 
+{ 
+	int iSliderValue = m_pSlider->value();
+	uint iOffset = m_pSlider->maximum() - m_pSlider->minimum();
+	uint iTmpValue = iSliderValue * (iOffset / (uint)(m_pSlider->maximum())) + (uint)(m_pSlider->minimum());
+	QString strValue = QDateTime::fromTime_t(iTmpValue).toString("yyyy/MM/dd hh:mm:ss");
+	return strValue;
+}
+
+
 // 初始化布局
 void CTimeAxis::initLayout()
 {

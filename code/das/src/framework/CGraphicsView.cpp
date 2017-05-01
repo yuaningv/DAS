@@ -69,15 +69,49 @@ void CGraphicsView::saveLayout()
 {
     QMap<int, QList<WidgetProperty>> mapTmpItems;
     mapTmpItems.clear();
-    QList<QGraphicsItem*> lstTmpItems = this->scene()->items();
+	QList<QGraphicsItem*> lstTmpItems = this->scene()->items(Qt::AscendingOrder);
 
     for (QGraphicsItem* item : lstTmpItems)
     {
         WidgetProperty tmpWgtPro;
         if (item->isWidget())
         {
-           // QGraphicsProxyWidget* pTmpWgt = static_cast<QGraphicsProxyWidget*>(item);
-            //static_cast<CCustomWidgetBase*>(pTmpWgt->widget())->setEditModeEnabled(enable);
+			QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)item;
+			CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+			ITEMTYPE iType = pCustomItem->type();
+			if (iType == Item_Video)
+			{
+				tmpWgtPro.m_type = Item_Video;
+				tmpWgtPro.m_realX = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().x();
+				tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
+				tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
+				tmpWgtPro.m_realHeight = item->boundingRect().bottomRight().y() - item->boundingRect().topLeft().y();
+
+				//mapTmpItems[Item_Video].append(tmpWgtPro);
+			}
+			else if (iType == Item_TimeAxis)
+			{
+				tmpWgtPro.m_type = Item_TimeAxis;
+				tmpWgtPro.m_realX = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().x();
+				tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
+				tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
+				tmpWgtPro.m_realHeight = item->boundingRect().bottomRight().y() - item->boundingRect().topLeft().y();
+				tmpWgtPro.m_strStart = static_cast<CTimeAxis*>(pCustomItem)->getStartTime();
+				tmpWgtPro.m_strEnd = static_cast<CTimeAxis*>(pCustomItem)->getEndTime();
+				tmpWgtPro.m_strPlayPos = static_cast<CTimeAxis*>(pCustomItem)->getSliderPosition();
+
+				//mapTmpItems[Item_TimeAxis].append(tmpWgtPro);
+			}
+			else if (iType == Item_Table)
+			{
+				tmpWgtPro.m_type = Item_Table;
+				tmpWgtPro.m_realX = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().x();
+				tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
+				tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
+				tmpWgtPro.m_realHeight = item->boundingRect().bottomRight().y() - item->boundingRect().topLeft().y();
+
+				//mapTmpItems[Item_Table].append(tmpWgtPro);
+			}
         }
         else
         {
@@ -87,12 +121,20 @@ void CGraphicsView::saveLayout()
             tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
             tmpWgtPro.m_realHeight = item->boundingRect().bottomRight().y() - item->boundingRect().topLeft().y();
 
-            mapTmpItems[Item_Chart].append(tmpWgtPro);
+            //mapTmpItems[Item_Chart].append(tmpWgtPro);
         }
+		mapTmpItems[tmpWgtPro.m_type].append(tmpWgtPro);
     }
 
     CFileOperationManager cfm("test.xml");
-    cfm.writeXmlFile(mapTmpItems);
+	if (cfm.writeXmlFile(mapTmpItems))
+	{
+		CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::saveLayout", "save laout success!");
+	}
+	else
+	{
+		CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::saveLayout", "save laout failed!");
+	}
 }
 
 // ∂¡»°XML
@@ -102,7 +144,8 @@ void CGraphicsView::readXml()
     QMap<int, QList<WidgetProperty>> mapTmpItems;
     if (!cfm.ReadXmlFile(mapTmpItems))
     {
-        return;
+		CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::readXml", "read xml failed!");
+		return;
     }
 
     for (auto& itr = mapTmpItems.begin(); itr != mapTmpItems.end(); ++itr)
@@ -116,7 +159,7 @@ void CGraphicsView::readXml()
                 pTimeAxis->setTimeRange(obj.m_strStart, obj.m_strEnd);
                 pTimeAxis->setSliderPosition(obj.m_strPlayPos);
                 m_pScene->addWidget(pTimeAxis);
-                pTimeAxis->move(obj.m_realX, obj.m_realY);
+                pTimeAxis->move(-obj.m_realX, -obj.m_realY);
             }
         }
         else if (Item_Video == itr.key())
@@ -126,7 +169,7 @@ void CGraphicsView::readXml()
                 CVideoWidget* pVideo = new CVideoWidget;
                 pVideo->resize(obj.m_realWidth, obj.m_realHeight);
                 m_pScene->addWidget(pVideo);
-                pVideo->move(obj.m_realX, obj.m_realY);
+                pVideo->move(-obj.m_realX, -obj.m_realY);
             }
         }
         else if (Item_Chart == itr.key())
@@ -147,10 +190,11 @@ void CGraphicsView::readXml()
                 CTableView* pTable = new CTableView;
                 pTable->resize(obj.m_realWidth, obj.m_realHeight);
                 m_pScene->addWidget(pTable);
-                pTable->move(obj.m_realX, obj.m_realY);
+                pTable->move(-obj.m_realX, -obj.m_realY);
             }
         }
     }
+	CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::readXml", "read xml success!");
 }
 
 
