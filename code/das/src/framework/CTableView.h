@@ -20,7 +20,11 @@
 
 
 class CFrozenTableView;
+
+QT_BEGIN_NAMESPACE
 class QStandardItemModel;
+class QPushButton;
+QT_END_NAMESPACE
 
 class CTableView : public CCustomWidgetBase
 {
@@ -36,8 +40,14 @@ public:
 private:
     void initLayout();
 
+    void setTableViewData();
+
 protected:
     virtual ITEMTYPE type();
+
+private slots:
+    void OnExport();
+
 
 private:
     CFrozenTableView* m_pTableView;
@@ -47,6 +57,7 @@ private:
     QString m_strStartTime;
     QString m_strEndTime;
 
+    QPushButton* m_pExcelBtn;
 };
 
 #endif // CTABLEVIEW_H

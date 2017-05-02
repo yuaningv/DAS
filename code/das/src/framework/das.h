@@ -9,6 +9,7 @@
 class CToolBar;
 class QLabel;
 class QCheckBox;
+class CSelectedArea;
 
 class DAS : public QMainWindow
 {
@@ -34,6 +35,9 @@ private:
     QAction* m_pActZhCn;
     QAction* m_pActEn;
     QAction* m_pActAbout;
+    QAction* m_pActScreenshot;
+    QAction* m_pActPlayFast;
+    QAction* m_pActPlaySlow;
 
     QLabel* m_pLbTimeAxis;
     QLabel* m_pLbVideo;
@@ -53,6 +57,8 @@ private:
 
     QTranslator m_translator;
 
+    CSelectedArea* m_pSelectedArea;  // ½ØÆÁÇøÓò
+
 private:
     CGraphicsView* m_pGraphicsView;
     CPropertyBar* m_pPropertyBar;
@@ -64,6 +70,11 @@ private slots:
     void OnFullScreen();
     void OnLanuageChanged(QAction* pAction);
     void OnAbout();
+
+    void OnScreenshot();
+    void OnPlayFast();
+    void OnPlaySlow();
+    void OnScreenShotAreaSelected(const QRect& rect);
 
     void OnEditCheckBoxStateChanged(int state);
 

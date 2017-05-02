@@ -20,5 +20,8 @@
 		<file>images/video_disable.png</file>
 		<file>images/curve_disable.png</file>
 		<file>images/table_disable.png</file>
+		<file>images/screen_shot.png</file>
+		<file>images/play_fast.png</file>
+		<file>images/play_slow.png</file>
     </qresource>
 </RCC>

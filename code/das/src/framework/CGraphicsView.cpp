@@ -126,7 +126,7 @@ void CGraphicsView::saveLayout()
 		mapTmpItems[tmpWgtPro.m_type].append(tmpWgtPro);
     }
 
-    CFileOperationManager cfm("test.xml");
+    CFileOperationManager cfm("das.xml");
 	if (cfm.writeXmlFile(mapTmpItems))
 	{
 		CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::saveLayout", "save laout success!");
@@ -140,7 +140,7 @@ void CGraphicsView::saveLayout()
 // ∂¡»°XML
 void CGraphicsView::readXml()
 {
-    CFileOperationManager cfm("test.xml");
+    CFileOperationManager cfm("das.xml");
     QMap<int, QList<WidgetProperty>> mapTmpItems;
     if (!cfm.ReadXmlFile(mapTmpItems))
     {

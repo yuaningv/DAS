@@ -3,6 +3,7 @@
 #include "image.h"
 #include "type.h"
 #include "CToolBar.h"
+#include "CSelectedArea.h"
 
 #include "QtWidgets/QMenu"
 #include "QtWidgets/QMenuBar"
@@ -11,6 +12,9 @@
 #include "QtWidgets/QLabel"
 #include "QtWidgets/QFileDialog"
 #include "QtWidgets/QCheckBox"
+#include "QtWidgets/QDesktopWidget"
+#include "QtGui/QScreen"
+
 
 // 定义多国语关键字常量 
 const char* cstDictDas = "DAS";
@@ -39,6 +43,12 @@ const char* cstDictTimelineModule = "Timeline";
 const char* cstDictVideoModule = "Video";
 const char* cstDictCurveModule = "Curve";
 const char* cstDictTableModule = "Table";
+
+const char* cstScreenshot = "Screenshot";
+const char* cstPlayFast = "Fast play";
+const char* cstPlaySlow = "Slow play";
+const char* cstSaveScreenshot = "Save screenshot";
+const char* cstSelectDir = "Select direction";
 
 
 DAS::DAS(QWidget *parent, Qt::WindowFlags flags)
@@ -125,11 +135,11 @@ void DAS::setLayout()
 
     // 创建工具菜单、创建工具菜单事件 
     m_pActZhCn = new QAction(QStringLiteral("简体中文"), this);   // 简体中文 
-    m_pActZhCn->setIcon(QIcon(IMG_ENGLISH));
+    m_pActZhCn->setIcon(QIcon(IMG_CHINESE));
     m_pActZhCn->setCheckable(true);
     m_pActZhCn->setChecked(true);
     m_pActEn = new QAction(QStringLiteral("English"), this);       // 英语 
-    m_pActEn->setIcon(QIcon(IMG_CHINESE));
+    m_pActEn->setIcon(QIcon(IMG_ENGLISH));
     m_pActEn->setCheckable(true);
 
     m_pMenuTool = new QMenu(trMenuString(cstTool), this);
@@ -164,6 +174,23 @@ void DAS::setLayout()
     m_pOperatorToolBar->addAction(m_pActPlay);
     m_pOperatorToolBar->addSeparator();
     m_pOperatorToolBar->addAction(m_pActFullScreen);
+
+    m_pActScreenshot = new QAction(trMenuString(cstScreenshot), this);
+    m_pActScreenshot->setIcon(QIcon(IMG_SCREENSHOT));
+    connect(m_pActScreenshot, SIGNAL(triggered()), this, SLOT(OnScreenshot()));
+
+    m_pActPlayFast = new QAction(trMenuString(cstPlayFast), this);
+    m_pActPlayFast->setIcon(QIcon(IMG_PLAYFAST));
+    connect(m_pActPlayFast, SIGNAL(triggered()), this, SLOT(OnPlayFast()));
+
+    m_pActPlaySlow = new QAction(trMenuString(cstPlaySlow), this);
+    m_pActPlaySlow->setIcon(QIcon(IMG_PLAYSLOW));
+    connect(m_pActPlaySlow, SIGNAL(triggered()), this, SLOT(OnPlaySlow()));
+
+    m_pOperatorToolBar->addAction(m_pActScreenshot);
+    m_pOperatorToolBar->addSeparator();
+    m_pOperatorToolBar->addAction(m_pActPlaySlow);
+    m_pOperatorToolBar->addAction(m_pActPlayFast);
 
     m_pLbTimeAxis = new QLabel(this);                   // 时间轴组件  
     m_pLbTimeAxis->setPixmap(QPixmap(IMG_TIMELINE_DISABLE));
@@ -200,12 +227,15 @@ void DAS::setLayout()
 
     // 创建状态栏 
     this->setStatusBar(new QStatusBar(this));
+
+    m_pSelectedArea = new CSelectedArea();
+    connect(m_pSelectedArea, SIGNAL(sigSelectedArea(const QRect&)), this, SLOT(OnScreenShotAreaSelected(const QRect&)));
 }
 
 
 void DAS::OnOpen()
 {
-    QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"), ".", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString dir = QFileDialog::getExistingDirectory(this, trFormString(cstSelectDir), ".", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 }
 
 
@@ -255,6 +285,47 @@ void DAS::OnAbout()
 
 }
 
+// 截屏
+void DAS::OnScreenshot()
+{
+    m_pSelectedArea->show();
+}
+
+void DAS::OnScreenShotAreaSelected(const QRect& rect)
+{
+    QPixmap pixmap = QPixmap();
+    pixmap = QGuiApplication::primaryScreen()->grabWindow(QApplication::desktop()->winId());
+    pixmap = pixmap.copy(rect);
+
+    // 保存截图
+    QString strFileName = QFileDialog::getSaveFileName(this, trFormString(cstSaveScreenshot), "./", "Images(*.png *.jpg)");
+    if (strFileName.isEmpty())
+    {
+        return;
+    }
+    if (QFileInfo(strFileName).suffix().isEmpty())
+    {
+        strFileName += ".png";
+    }
+    if (!pixmap.save(strFileName))
+    {
+        return;
+    }
+}
+
+// 加快播放速度
+void DAS::OnPlayFast()
+{
+
+}
+
+// 减慢播放速度
+void DAS::OnPlaySlow()
+{
+
+}
+
+
 void DAS::OnEditCheckBoxStateChanged(int state)
 {
     if (Qt::Checked == state)
@@ -270,6 +341,9 @@ void DAS::OnEditCheckBoxStateChanged(int state)
         m_pActPlay->setEnabled(false);
         m_pActFind->setEnabled(false);
         m_pActFullScreen->setEnabled(false);
+        m_pActScreenshot->setEnabled(false);
+        m_pActPlayFast->setEnabled(false);
+        m_pActPlaySlow->setEnabled(false);
     }
     else if (Qt::Unchecked == state)
     {
@@ -284,6 +358,9 @@ void DAS::OnEditCheckBoxStateChanged(int state)
         m_pActPlay->setEnabled(true);
         m_pActFind->setEnabled(true);
         m_pActFullScreen->setEnabled(true);
+        m_pActScreenshot->setEnabled(true);
+        m_pActPlayFast->setEnabled(true);
+        m_pActPlaySlow->setEnabled(true);
         if (!m_pGraphicsView->scene()->items().isEmpty())
         {
             m_pGraphicsView->saveLayout();
@@ -320,6 +397,10 @@ void DAS::retranslate()
     m_pLbTable->setToolTip(trMenuString(cstDictTableModule));
     m_pModuleToolBar->setWindowTitle(trMenuString(cstModuleToolBar));
     m_pCBoxEdit->setText(trMenuString(cstEdit));
+
+    m_pActScreenshot->setText(trMenuString(cstScreenshot));
+    m_pActPlayFast->setText(trMenuString(cstPlayFast));
+    m_pActPlaySlow->setText(trMenuString(cstPlaySlow));
 }
 
 

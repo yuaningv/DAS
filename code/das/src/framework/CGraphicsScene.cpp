@@ -1,6 +1,10 @@
 #include "CGraphicsScene.h"
+#include "constant.h"
+
 #include "QtWidgets/QGraphicsSceneMouseEvent"
 #include "QtWidgets/QMenu"
+
+const char* cstRemove = "Remove";
 
 CGraphicsScene::CGraphicsScene(QObject *parent)
 : QGraphicsScene(parent)
@@ -49,7 +53,7 @@ void CGraphicsScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     {
         // ÓÒ¼üÒÆ³ýitem
         QMenu menu;
-        QAction *removeAction = menu.addAction(tr("Remove"));
+        QAction *removeAction = menu.addAction(trFormString(cstRemove));
         connect(removeAction, &QAction::triggered, [=](){this->removeItem(item);});
         QAction *selectedAction = menu.exec(event->screenPos());
     }

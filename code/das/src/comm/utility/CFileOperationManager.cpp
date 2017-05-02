@@ -1,5 +1,12 @@
 #include "CFileOperationManager.h"
 #include "QtCore/QDebug"
+#include "QtXlsx/QtXlsx.h"
+
+
+CFileOperationManager::CFileOperationManager()
+{
+
+}
 
 CFileOperationManager::CFileOperationManager(const QString& filePath)
 {
@@ -261,3 +268,59 @@ bool CFileOperationManager::writeXmlFile(QMap<int, QList<WidgetProperty>>& mapTm
     return true;
 }
 
+
+/*
+* 导出excel文件
+* strFileName 文件名(含路径)
+* slstHeader 表头
+* lstExcelData 数据源
+*
+*/
+bool CFileOperationManager::writeExcelFile(const QString& strFileName, const QStringList& slstHeader, QList< QList<QVariant> >& lstExcelData)
+{
+    if (strFileName.isEmpty())
+    {
+        return false;
+    }
+
+    if (0 == lstExcelData.count())
+    {
+        return false;
+    }
+
+    QXlsx::Document oTmpXlsx(strFileName);
+    QXlsx::Format format;
+    format.setHorizontalAlignment(QXlsx::Format::AlignHCenter);
+    format.setVerticalAlignment(QXlsx::Format::AlignVCenter);
+    format.setBorderStyle(QXlsx::Format::BorderThin);
+
+    // 表头
+    for (int i = 0; i < slstHeader.size(); ++i)
+    {
+        if (!oTmpXlsx.write(1, i + 1, slstHeader.at(i), format))   // 第一行表头
+        {
+            return false;
+        }
+    }
+
+    // 写入实际数据
+    for (int iRow = 0; iRow < lstExcelData.size(); ++iRow)
+    {
+        if (lstExcelData.at(iRow).size() < slstHeader.size())
+        {
+            return false;
+        }
+        for (int iCol = 0; iCol < slstHeader.size(); ++iCol)
+        {
+            // 第一行是表头 从第二行 第一列开始写
+            if (!oTmpXlsx.write(iRow + 2, iCol + 1, lstExcelData.at(iRow).at(iCol).toString().replace("T", " "), format))
+            {
+                return false;
+            }
+        }
+    }
+    oTmpXlsx.save();
+
+
+    return true;
+}

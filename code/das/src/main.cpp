@@ -2,7 +2,6 @@
 #include "das.h"
 
 #include "CLogManager.h"
-#include "CFileOperationManager.h"
 
 int main(int argc, char *argv[])
 {

@@ -22,6 +22,7 @@
 class CFileOperationManager
 {
 public:
+    CFileOperationManager();
     CFileOperationManager(const QString& filePath);
     ~CFileOperationManager();
 
@@ -30,6 +31,9 @@ public:
 
     // 写xml文件
     bool writeXmlFile(QMap<int, QList<WidgetProperty>>& mapTmpItems);
+
+    // 导出excel文件
+    bool writeExcelFile(const QString& strFileName, const QStringList& slstHeader, QList< QList<QVariant> >& lstExcelData);
 
 
 private:

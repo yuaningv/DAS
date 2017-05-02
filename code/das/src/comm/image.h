@@ -23,4 +23,8 @@
 #define IMG_ENGLISH         ":/images/english.png"
 #define IMG_CHINESE         ":/images/chinese.png"
 
+#define IMG_SCREENSHOT      ":/images/screen_shot.png"
+#define IMG_PLAYFAST        ":/images/play_fast.png"
+#define IMG_PLAYSLOW        ":/images/play_slow.png"
+
 #endif // IMAGE_H

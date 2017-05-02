@@ -7,6 +7,42 @@
         <source>DAS</source>
         <translation>Data Analysis System</translation>
     </message>
+	<message>
+        <source>Save screenshot</source>
+        <translation>Save screenshot</translation>
+    </message>
+	<message>
+        <source>Select direction</source>
+        <translation>Select direction</translation>
+    </message>
+	<message>
+        <source>Space/Enter key enter screenshots</source>
+        <translation>Space/Enter key enter screenshots</translation>
+    </message>
+	<message>
+        <source>ESCAPE/Alt+F4 key cancel screenshots</source>
+        <translation>ESCAPE/Alt+F4 key cancel screenshots</translation>
+    </message>
+	<message>
+        <source>Remove</source>
+        <translation>Remove</translation>
+    </message>
+	<message>
+        <source>Export Success!</source>
+        <translation>Export Success!</translation>
+    </message>
+	<message>
+        <source>Export Failed!</source>
+        <translation>Export Failed!</translation>
+    </message>
+	<message>
+        <source>Tips</source>
+        <translation>Tips</translation>
+    </message>
+	<message>
+        <source>Export excel</source>
+        <translation>Export excel</translation>
+    </message>
 </context>
 <context>
     <name>MENU</name>
@@ -89,6 +125,18 @@
     <message>
         <source>Table</source>
         <translation>Table</translation>
+    </message>
+	<message>
+        <source>Screenshot</source>
+        <translation>Screenshot</translation>
+    </message>
+	<message>
+        <source>Fast play</source>
+        <translation>Fast play</translation>
+    </message>
+	<message>
+        <source>Slow play</source>
+        <translation>Slow play</translation>
     </message>
 </context>
 </TS>
