@@ -116,6 +116,14 @@ void DAS::setLayout()
     m_pActPlay->setShortcut(QKeySequence("Ctrl+F5"));
     connect(m_pActPlay, SIGNAL(triggered()), this, SLOT(OnPlay()));
 
+    m_pActPlayFast = new QAction(trMenuString(cstPlayFast), this);   // 加快播放
+    m_pActPlayFast->setIcon(QIcon(IMG_PLAYFAST));
+    connect(m_pActPlayFast, SIGNAL(triggered()), this, SLOT(OnPlayFast()));
+
+    m_pActPlaySlow = new QAction(trMenuString(cstPlaySlow), this);   // 减慢播放
+    m_pActPlaySlow->setIcon(QIcon(IMG_PLAYSLOW));
+    connect(m_pActPlaySlow, SIGNAL(triggered()), this, SLOT(OnPlaySlow()));
+
     m_pActFind = new QAction(trMenuString(cstDictFind), this);    // 查找 
     m_pActFind->setIcon(QIcon(IMG_FIND));
     m_pActFind->setShortcut(QKeySequence("Ctrl+F"));
@@ -130,8 +138,13 @@ void DAS::setLayout()
     m_pActFullScreen->setShortcut(QKeySequence("Alt+Enter"));
     connect(m_pActFullScreen, SIGNAL(triggered()), this, SLOT(OnFullScreen()));
 
+    m_pActScreenshot = new QAction(trMenuString(cstScreenshot), this);  // 截屏
+    m_pActScreenshot->setIcon(QIcon(IMG_SCREENSHOT));
+    connect(m_pActScreenshot, SIGNAL(triggered()), this, SLOT(OnScreenshot()));
+
     m_pMenuView = new QMenu(trMenuString(cstView), this);
     m_pMenuView->addAction(m_pActFullScreen);
+    m_pMenuView->addAction(m_pActScreenshot);
 
     // 创建工具菜单、创建工具菜单事件 
     m_pActZhCn = new QAction(QStringLiteral("简体中文"), this);   // 简体中文 
@@ -144,10 +157,13 @@ void DAS::setLayout()
 
     m_pMenuTool = new QMenu(trMenuString(cstTool), this);
     m_pMenuTool->addAction(m_pActPlay);
+    m_pMenuTool->addAction(m_pActPlayFast);
+    m_pMenuTool->addAction(m_pActPlaySlow);
     m_pMenuLanuage = new QMenu(trMenuString(cstDictLanuage), m_pMenuTool);
     connect(m_pMenuLanuage, SIGNAL(triggered(QAction*)), this, SLOT(OnLanuageChanged(QAction*)));
     m_pMenuLanuage->addAction(m_pActZhCn);
     m_pMenuLanuage->addAction(m_pActEn);
+    m_pMenuTool->addSeparator();
     m_pMenuTool->addAction(m_pMenuLanuage->menuAction());
 
     // 创建关于菜单、创建关于事件 
@@ -172,25 +188,12 @@ void DAS::setLayout()
     m_pOperatorToolBar->addAction(m_pActFind);
     m_pOperatorToolBar->addSeparator();
     m_pOperatorToolBar->addAction(m_pActPlay);
-    m_pOperatorToolBar->addSeparator();
-    m_pOperatorToolBar->addAction(m_pActFullScreen);
-
-    m_pActScreenshot = new QAction(trMenuString(cstScreenshot), this);
-    m_pActScreenshot->setIcon(QIcon(IMG_SCREENSHOT));
-    connect(m_pActScreenshot, SIGNAL(triggered()), this, SLOT(OnScreenshot()));
-
-    m_pActPlayFast = new QAction(trMenuString(cstPlayFast), this);
-    m_pActPlayFast->setIcon(QIcon(IMG_PLAYFAST));
-    connect(m_pActPlayFast, SIGNAL(triggered()), this, SLOT(OnPlayFast()));
-
-    m_pActPlaySlow = new QAction(trMenuString(cstPlaySlow), this);
-    m_pActPlaySlow->setIcon(QIcon(IMG_PLAYSLOW));
-    connect(m_pActPlaySlow, SIGNAL(triggered()), this, SLOT(OnPlaySlow()));
-
-    m_pOperatorToolBar->addAction(m_pActScreenshot);
-    m_pOperatorToolBar->addSeparator();
     m_pOperatorToolBar->addAction(m_pActPlaySlow);
     m_pOperatorToolBar->addAction(m_pActPlayFast);
+    m_pOperatorToolBar->addSeparator();
+    m_pOperatorToolBar->addAction(m_pActFullScreen);
+    m_pOperatorToolBar->addAction(m_pActScreenshot);
+
 
     m_pLbTimeAxis = new QLabel(this);                   // 时间轴组件  
     m_pLbTimeAxis->setPixmap(QPixmap(IMG_TIMELINE_DISABLE));
@@ -235,7 +238,7 @@ void DAS::setLayout()
 
 void DAS::OnOpen()
 {
-    QString dir = QFileDialog::getExistingDirectory(this, trFormString(cstSelectDir), ".", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString dir = QFileDialog::getExistingDirectory(this, trFormString(cstSelectDir), "./", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 }
 
 
@@ -298,7 +301,7 @@ void DAS::OnScreenShotAreaSelected(const QRect& rect)
     pixmap = pixmap.copy(rect);
 
     // 保存截图
-    QString strFileName = QFileDialog::getSaveFileName(this, trFormString(cstSaveScreenshot), "./", "Images(*.png *.jpg)");
+    QString strFileName = QFileDialog::getSaveFileName(this, trFormString(cstSaveScreenshot), "./", "*.png *.jpg");
     if (strFileName.isEmpty())
     {
         return;
