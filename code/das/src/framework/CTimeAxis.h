@@ -45,6 +45,18 @@ private:
     QLabel* m_pLbEndTime;
     QSlider* m_pSlider;
 
+    // 10¸ö¿Ì¶È±êÇ©
+    QLabel* m_pLbScale1;   
+    QLabel* m_pLbScale2;
+    QLabel* m_pLbScale3;
+    QLabel* m_pLbScale4;
+    QLabel* m_pLbScale5;
+    QLabel* m_pLbScale6;
+    QLabel* m_pLbScale7;
+    QLabel* m_pLbScale8;
+    QLabel* m_pLbScale9;
+    QLabel* m_pLbScale10;
+
 };
 
 #endif // CTIME_AXIS_H

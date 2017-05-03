@@ -84,13 +84,65 @@ QString CTimeAxis::getSliderPosition() const
 // 初始化布局
 void CTimeAxis::initLayout()
 {
-    m_pLbStartTime = new QLabel(this);
+    //m_pLbStartTime = new QLabel(this);
     m_pLbEndTime = new QLabel(this);
     m_pSlider = new QSlider(Qt::Horizontal, this);
+    m_pSlider->setTickPosition(QSlider::TicksBothSides);
+    m_pSlider->setTickInterval(10);
+    m_pSlider->setRange(1, 100);
+    m_pSlider->setToolTip(QString::number(m_pSlider->value()));
+    //m_pLbStartTime->setText(QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss"));
+    m_pLbEndTime->setText(QDateTime::currentDateTime().addSecs(3600).toString("yyyy/MM/dd\nhh:mm:ss"));
+
+    m_pLbScale1 = new QLabel(this);
+    m_pLbScale1->setText(QDateTime::currentDateTime().toString("yyyy/MM/dd\nhh:mm:ss"));
+    m_pLbScale2 = new QLabel(this);
+    m_pLbScale2->setText(QDateTime::currentDateTime().toString("yyyy/MM/dd\nhh:mm:ss"));
+    m_pLbScale3 = new QLabel(this);
+    m_pLbScale3->setText(QDateTime::currentDateTime().toString("yyyy/MM/dd\nhh:mm:ss"));
+    m_pLbScale4 = new QLabel(this);
+    m_pLbScale4->setText(QDateTime::currentDateTime().toString("yyyy/MM/dd\nhh:mm:ss"));
+    m_pLbScale5 = new QLabel(this);
+    m_pLbScale5->setText(QDateTime::currentDateTime().toString("yyyy/MM/dd\nhh:mm:ss"));
+
+    m_pLbScale6 = new QLabel(this);
+    m_pLbScale6->setText(QDateTime::currentDateTime().toString("yyyy/MM/dd\nhh:mm:ss"));
+    m_pLbScale7 = new QLabel(this);
+    m_pLbScale7->setText(QDateTime::currentDateTime().toString("yyyy/MM/dd\nhh:mm:ss"));
+    m_pLbScale8 = new QLabel(this);
+    m_pLbScale8->setText(QDateTime::currentDateTime().toString("yyyy/MM/dd\nhh:mm:ss"));
+    m_pLbScale9 = new QLabel(this);
+    m_pLbScale9->setText(QDateTime::currentDateTime().toString("yyyy/MM/dd\nhh:mm:ss"));
+    m_pLbScale10 = new QLabel(this);
+    m_pLbScale10->setText(QDateTime::currentDateTime().toString("yyyy/MM/dd\nhh:mm:ss"));
+
+    QHBoxLayout* pLayoutLabel = new QHBoxLayout(this);
+    pLayoutLabel->setSpacing(0);
+    pLayoutLabel->setContentsMargins(0, 0, 0, 0);
+    pLayoutLabel->addWidget(m_pLbScale1);
+    pLayoutLabel->addWidget(m_pLbScale2);
+    pLayoutLabel->addWidget(m_pLbScale3);
+    pLayoutLabel->addWidget(m_pLbScale4);
+    pLayoutLabel->addWidget(m_pLbScale5);
+    pLayoutLabel->addWidget(m_pLbScale6);
+    pLayoutLabel->addWidget(m_pLbScale7);
+    pLayoutLabel->addWidget(m_pLbScale8);
+    pLayoutLabel->addWidget(m_pLbScale9);
+    pLayoutLabel->addWidget(m_pLbScale10);
+    QWidget* pWidget = new QWidget;
+    pWidget->setLayout(pLayoutLabel);
+
+    QVBoxLayout* pLayoutV = new QVBoxLayout(this);
+    pLayoutV->addWidget(m_pSlider);
+    pLayoutV->addWidget(pWidget);
+
+    QWidget* pWidget2 = new QWidget;
+    pWidget2->setLayout(pLayoutV);
+
 
     QHBoxLayout* pTmpLayout = new QHBoxLayout(this);
-    pTmpLayout->addWidget(m_pLbStartTime);
-    pTmpLayout->addWidget(m_pSlider);
+    //pTmpLayout->addWidget(m_pLbStartTime);
+    pTmpLayout->addWidget(pWidget2);
     pTmpLayout->addWidget(m_pLbEndTime);
 
     this->setLayout(pTmpLayout);

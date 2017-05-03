@@ -196,7 +196,7 @@ void DAS::setLayout()
 
 
     m_pLbTimeAxis = new QLabel(this);                   // 时间轴组件  
-    m_pLbTimeAxis->setPixmap(QPixmap(IMG_TIMELINE_DISABLE));
+    m_pLbTimeAxis->setPixmap(QPixmap(IMG_TIMELINE));
     m_pLbTimeAxis->setToolTip(trMenuString(cstDictTimelineModule));
     m_pLbTimeAxis->setProperty("ItemType", Item_TimeAxis);
 

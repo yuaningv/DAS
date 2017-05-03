@@ -116,6 +116,8 @@ private:
 
     QList<CurveLine> m_lstLines;
 
+    QLine m_line;
+
 signals:
 
 };
