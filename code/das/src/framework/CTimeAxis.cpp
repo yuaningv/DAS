@@ -35,7 +35,7 @@ ITEMTYPE CTimeAxis::type()
 */
 void CTimeAxis::setTimeRange(const QString& strStart, const QString& strEnd)
 {
-    //m_pLbStartTime->setText(strStart);
+    m_pLbScale1->setText(strStart);
     m_pLbEndTime->setText(strEnd);
 
     uint iTmpMin = QDateTime::fromString(strStart, "yyyy/MM/dd hh:mm:ss").toTime_t();
@@ -48,18 +48,18 @@ void CTimeAxis::setTimeRange(const QString& strStart, const QString& strEnd)
 // ÉèÖÃ»¬¿éÎ»ÖÃ
 void CTimeAxis::setSliderPosition(const QString& strValue)
 {
-    /*uint iTmpValue = QDateTime::fromString(strValue, "yyyy/MM/dd hh:mm:ss").toTime_t();
+    uint iTmpValue = QDateTime::fromString(strValue, "yyyy/MM/dd hh:mm:ss").toTime_t();
     uint iOffset = m_pSlider->maximum() - m_pSlider->minimum();
     if (iOffset == 0)
     {
-    return;
+        return;
     }
     uint iMaxTime = QDateTime::fromString(m_pLbEndTime->text().replace("\n", " ").trimmed(), "yyyy/MM/dd hh:mm:ss").toTime_t();
     uint iMinTime = QDateTime::fromString(m_pLbScale1->text().replace("\n", " ").trimmed(), "yyyy/MM/dd hh:mm:ss").toTime_t();
     int iTmpTime = iMaxTime - iMinTime;
     //int iProgressValue = (iTmpValue - (uint)(m_pSlider->minimum())) / (iOffset / (uint)(m_pSlider->maximum()));
     int iProgressValue = iOffset*iTmpValue / (iTmpTime + iMinTime);
-    m_pSlider->setValue(iProgressValue);*/
+    m_pSlider->setValue(iProgressValue);
 }
 
 
@@ -67,8 +67,6 @@ QString CTimeAxis::getStartTime() const
 { 
 	//return m_pLbStartTime->text().trimmed();
     return m_pLbScale1->text().replace("\n", " ").trimmed();
-	//return m_pLbStartTime->text().trimmed();
-    return "";
 }
 
 
