@@ -57,8 +57,7 @@ void CTimeAxis::setSliderPosition(const QString& strValue)
     uint iMaxTime = QDateTime::fromString(m_pLbEndTime->text().replace("\n", " ").trimmed(), "yyyy/MM/dd hh:mm:ss").toTime_t();
     uint iMinTime = QDateTime::fromString(m_pLbScale1->text().replace("\n", " ").trimmed(), "yyyy/MM/dd hh:mm:ss").toTime_t();
     int iTmpTime = iMaxTime - iMinTime;
-    //int iProgressValue = (iTmpValue - (uint)(m_pSlider->minimum())) / (iOffset / (uint)(m_pSlider->maximum()));
-    int iProgressValue = iOffset*iTmpValue / (iTmpTime + iMinTime);
+    int iProgressValue = (1.0*iOffset*(iTmpValue - iMinTime) / iTmpTime) + 0.5 + m_pSlider->minimum();   // ËÄÉáÎåÈë
     m_pSlider->setValue(iProgressValue);
 }
 
