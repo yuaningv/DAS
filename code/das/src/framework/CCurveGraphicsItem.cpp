@@ -46,7 +46,7 @@ CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
     c1.m_strName = "aa";
     c1.m_realMin = 0.0;
     c1.m_realMax = 1.0;
-    c1.m_vecPoints = { QPointF(0, 0), QPointF(0.2, 0.1), QPointF(0.2, 0.1), QPointF(0.4, 0.5) };
+    c1.m_vecPoints = { QPointF(0, 0), QPointF(0.2, 0.1), QPointF(0.2, 0.1), QPointF(0.3, 0.5) };
     m_lstLines.append(c1);
 
     c1.m_color = Qt::green;
@@ -60,7 +60,7 @@ CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
     c1.m_strName = "cc";
     c1.m_realMin = 1.0;
     c1.m_realMax = 10.0;
-    c1.m_vecPoints = { QPointF(0, 3), QPointF(0.2, 5), QPointF(0.2, 5), QPointF(0.6, 8) };
+    c1.m_vecPoints = { QPointF(0, 3), QPointF(0.3, 5), QPointF(0.3, 5), QPointF(0.6, 8) };
     m_lstLines.append(c1);
     m_line = QLine(0, 0, 0, 0);
    // m_line = QLine(m_itemRectF.topLeft().x() + m_iOffset, m_itemRectF.topLeft().y() + m_iOffset, m_itemRectF.bottomLeft().x() + m_iOffset, m_itemRectF.bottomLeft().y() - m_iOffset);
@@ -198,14 +198,15 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
         for (QPointF p : m_lstLines[n].m_vecPoints)
         {
             // 转换成坐标轴坐标
+            QPointF tmpP = p;
             vecTmpPoint.append(mapToAxis(p));
-            /* qDebug() << "p.x = " << p.x();
-             qDebug() << "line.x = " << mapToAxis(QPointF(m_line.p1())).x();
+            qDebug() << "p.x = " << p.x();
+            qDebug() << "line.x = " << m_line.p1().x();
 
-             if (p.x() == mapToAxis(QPointF(m_line.p1())).x())
-             {
-             painter->drawText(p, QString::number(p.y()));
-             }*/
+            if (p.x() >= m_line.p1().x() - 0.5 && p.x() <= m_line.p1().x() + 0.5)
+            {
+                painter->drawText(p + QPointF(5, 0), QString::number(tmpP.y()));
+            }
         }
         painter->drawLines(vecTmpPoint);
     }
@@ -307,8 +308,6 @@ void CCurveGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
             && event->pos().y() >= m_itemRectF.topLeft().y() + m_iOffset && event->pos().y() <= m_itemRectF.bottomLeft().y() - m_iOffset)
         {
             m_line.setLine(event->pos().x(), m_itemRectF.topLeft().y() + m_iOffset, event->pos().x(), m_itemRectF.bottomLeft().y() - m_iOffset);
-           
-
         }
         else
         {
