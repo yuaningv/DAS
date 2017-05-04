@@ -63,8 +63,8 @@ DAS::DAS(QWidget *parent, Qt::WindowFlags flags)
 
     setLayout();
 
-    m_pPropertyBar = new CPropertyBar(this);
-    addDockWidget(Qt::RightDockWidgetArea, m_pPropertyBar);
+    //m_pPropertyBar = new CPropertyBar(this);
+    //addDockWidget(Qt::RightDockWidgetArea, m_pPropertyBar);
 
     m_pGraphicsView = new CGraphicsView(this);
     this->setCentralWidget(m_pGraphicsView);
@@ -140,11 +140,12 @@ void DAS::setLayout()
 
     m_pActScreenshot = new QAction(trMenuString(cstScreenshot), this);  // 截屏
     m_pActScreenshot->setIcon(QIcon(IMG_SCREENSHOT));
+    m_pActScreenshot->setShortcut(QKeySequence("Ctrl+Alt+X"));
     connect(m_pActScreenshot, SIGNAL(triggered()), this, SLOT(OnScreenshot()));
 
     m_pMenuView = new QMenu(trMenuString(cstView), this);
-    m_pMenuView->addAction(m_pActFullScreen);
     m_pMenuView->addAction(m_pActScreenshot);
+    m_pMenuView->addAction(m_pActFullScreen);
 
     // 创建工具菜单、创建工具菜单事件 
     m_pActZhCn = new QAction(QStringLiteral("简体中文"), this);   // 简体中文 
@@ -191,29 +192,33 @@ void DAS::setLayout()
     m_pOperatorToolBar->addAction(m_pActPlaySlow);
     m_pOperatorToolBar->addAction(m_pActPlayFast);
     m_pOperatorToolBar->addSeparator();
-    m_pOperatorToolBar->addAction(m_pActFullScreen);
     m_pOperatorToolBar->addAction(m_pActScreenshot);
+    m_pOperatorToolBar->addAction(m_pActFullScreen);
 
 
     m_pLbTimeAxis = new QLabel(this);                   // 时间轴组件  
     m_pLbTimeAxis->setPixmap(QPixmap(IMG_TIMELINE));
     m_pLbTimeAxis->setToolTip(trMenuString(cstDictTimelineModule));
     m_pLbTimeAxis->setProperty("ItemType", Item_TimeAxis);
+    m_pLbTimeAxis->setEnabled(false);
 
     m_pLbVideo = new QLabel(this);                  // 视频组件  
-    m_pLbVideo->setPixmap(QPixmap(IMG_VIDEO_DISABLE));
+    m_pLbVideo->setPixmap(QPixmap(IMG_VIDEO));
     m_pLbVideo->setToolTip(trMenuString(cstDictVideoModule));
     m_pLbVideo->setProperty("ItemType", Item_Video);
+    m_pLbVideo->setEnabled(false);
 
     m_pLbCurve = new QLabel(this);                  // 曲线图组件  
-    m_pLbCurve->setPixmap(QPixmap(IMG_CURVE_DISABLE));
+    m_pLbCurve->setPixmap(QPixmap(IMG_CURVE));
     m_pLbCurve->setToolTip(trMenuString(cstDictCurveModule));
     m_pLbCurve->setProperty("ItemType", Item_Chart);
+    m_pLbCurve->setEnabled(false);
 
     m_pLbTable = new QLabel(this);                  // 表格组件  
-    m_pLbTable->setPixmap(QPixmap(IMG_TABLE_DISABLE));
+    m_pLbTable->setPixmap(QPixmap(IMG_TABLE));
     m_pLbTable->setToolTip(trMenuString(cstDictTableModule));
     m_pLbTable->setProperty("ItemType", Item_Table);
+    m_pLbTable->setEnabled(false);
 
     m_pCBoxEdit = new QCheckBox(this);
     m_pCBoxEdit->setText(trMenuString(cstEdit));
@@ -335,10 +340,11 @@ void DAS::OnEditCheckBoxStateChanged(int state)
     {
         m_pModuleToolBar->setEditModeEnabled(true);
         m_pGraphicsView->setEditModoEnabled(true);
-        m_pLbTimeAxis->setPixmap(QPixmap(IMG_TIMELINE));
-        m_pLbVideo->setPixmap(QPixmap(IMG_VIDEO));
-        m_pLbCurve->setPixmap(QPixmap(IMG_CURVE));
-        m_pLbTable->setPixmap(QPixmap(IMG_TABLE));
+
+        m_pLbTimeAxis->setEnabled(true);
+        m_pLbVideo->setEnabled(true);
+        m_pLbCurve->setEnabled(true);
+        m_pLbTable->setEnabled(true);
 
         m_pActOpen->setEnabled(false);
         m_pActPlay->setEnabled(false);
@@ -352,10 +358,11 @@ void DAS::OnEditCheckBoxStateChanged(int state)
     {
         m_pModuleToolBar->setEditModeEnabled(false);
         m_pGraphicsView->setEditModoEnabled(false);
-        m_pLbTimeAxis->setPixmap(QPixmap(IMG_TIMELINE_DISABLE));
-        m_pLbVideo->setPixmap(QPixmap(IMG_VIDEO_DISABLE));
-        m_pLbCurve->setPixmap(QPixmap(IMG_CURVE_DISABLE));
-        m_pLbTable->setPixmap(QPixmap(IMG_TABLE_DISABLE));
+
+        m_pLbTimeAxis->setEnabled(false);
+        m_pLbVideo->setEnabled(false);
+        m_pLbCurve->setEnabled(false);
+        m_pLbTable->setEnabled(false);
 
         m_pActOpen->setEnabled(true);
         m_pActPlay->setEnabled(true);
