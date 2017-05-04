@@ -3,7 +3,7 @@
 #include "QtCore/QDebug"
 #include "QtCore/QCoreApplication"
 
-
+CLogManager::CGarbo CLogManager::Garbo;
 CLogManager* CLogManager::m_pInstance = NULL;
 CLogManager::CLogManager(QObject* parent)
 :QObject(parent),

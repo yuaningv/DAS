@@ -66,6 +66,21 @@ private:
 public:
     static CLogManager* getInstance();
 
+private:
+    class CGarbo
+    {
+    public:
+        CGarbo(){}
+        ~CGarbo()
+        {
+            if (CLogManager::m_pInstance)
+            {
+                delete CLogManager::m_pInstance;
+            }
+        }
+    };
+    static CGarbo Garbo;
+
 protected:
     virtual void logRun(CLogThread* pLogThread);
 
