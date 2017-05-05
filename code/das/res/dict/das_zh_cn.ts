@@ -43,6 +43,18 @@
         <source>Export excel</source>
         <translation>导出excel</translation>
     </message>
+	<message>
+        <source>Select Curve</source>
+        <translation>选择曲线</translation>
+    </message>
+	<message>
+        <source>Ok</source>
+        <translation>确定</translation>
+    </message>
+	<message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
 </context>
 <context>
     <name>MENU</name>

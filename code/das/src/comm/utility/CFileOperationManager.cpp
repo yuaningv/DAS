@@ -26,7 +26,7 @@ CFileOperationManager::~CFileOperationManager()
 }
 
 // XML文件读取
-bool CFileOperationManager::ReadXmlFile(QMap<int, QList<WidgetProperty>>& mapTmpItems)
+bool CFileOperationManager::ReadXmlFile(QMap<int, QList<WidgetProperty_t>>& mapTmpItems)
 {
     if (!m_file->open(QIODevice::ReadOnly))
     {
@@ -47,7 +47,7 @@ bool CFileOperationManager::ReadXmlFile(QMap<int, QList<WidgetProperty>>& mapTmp
         QDomElement e = n.toElement(); // try to convert the node to an element.
         if (!e.isNull()) 
         {
-            WidgetProperty tmpWgtPro;
+            WidgetProperty_t tmpWgtPro;
             qDebug() << e.tagName(); // the node really is an element.
             QDomNode tmpNode = e.firstChild();
             while (!tmpNode.isNull())
@@ -97,7 +97,7 @@ bool CFileOperationManager::ReadXmlFile(QMap<int, QList<WidgetProperty>>& mapTmp
 }
 
 // 写XML文件
-bool CFileOperationManager::writeXmlFile(QMap<int, QList<WidgetProperty>>& mapTmpItems)
+bool CFileOperationManager::writeXmlFile(QMap<int, QList<WidgetProperty_t>>& mapTmpItems)
 {
     if (!m_file->exists())
     {
