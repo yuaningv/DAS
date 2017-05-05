@@ -156,7 +156,7 @@
     </message>
 	<message>
         <source>OK</source>
-        <translation>确定</translation>
+        <translation>OK</translation>
     </message>
 	<message>
         <source>Cancel</source>
