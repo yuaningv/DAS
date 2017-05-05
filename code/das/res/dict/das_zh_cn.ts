@@ -41,7 +41,7 @@
     </message>
 	<message>
         <source>Export excel</source>
-        <translation>导出excel</translation>
+        <translation>导出</translation>
     </message>
 </context>
 <context>
@@ -103,6 +103,10 @@
         <translation>关于</translation>
     </message>
     <message>
+        <source>Standard tool bar</source>
+        <translation>标准工具栏</translation>
+    </message>
+    <message>
         <source>Operator tool bar</source>
         <translation>操作工具栏</translation>
     </message>
@@ -137,6 +141,22 @@
 	<message>
         <source>Slow play</source>
         <translation>减慢播放</translation>
+    </message>
+	<message>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+	<message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+	<message>
+        <source>Begin time</source>
+        <translation>开始时间</translation>
+    </message>
+	<message>
+        <source>End time</source>
+        <translation>结束时间</translation>
     </message>
 </context>
 </TS>

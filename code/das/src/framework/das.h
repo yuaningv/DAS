@@ -25,6 +25,7 @@ private:
 
 protected:
     virtual void changeEvent(QEvent *ev);
+    virtual void keyReleaseEvent(QKeyEvent *ev);
 
 private:
     QAction* m_pActOpen;
@@ -52,13 +53,14 @@ private:
     QMenu* m_pMenuLanuage;
     QMenu* m_pMenuHelp;
 
+    QToolBar* m_pStandardToolBar;
     QToolBar* m_pOperatorToolBar;
     CToolBar* m_pModuleToolBar;
 
     QTranslator m_translator;
+    CSelectedArea* m_pSelectedArea;  // 截屏区域 
 
-    CSelectedArea* m_pSelectedArea;  // 截屏区域
-
+    bool m_bPlay;       // 控制播放与暂停的flag 
 private:
     CGraphicsView* m_pGraphicsView;
     CPropertyBar* m_pPropertyBar;

@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>images/logo.png</file>
         <file>images/curve.png</file>
         <file>images/exit.png</file>
         <file>images/find.png</file>
@@ -23,5 +22,6 @@
         <file>images/screen_shot.png</file>
         <file>images/play_fast.png</file>
         <file>images/play_slow.png</file>
+        <file>images/logo.png</file>
     </qresource>
 </RCC>

@@ -103,6 +103,10 @@
         <translation>About</translation>
     </message>
     <message>
+        <source>Standard tool bar</source>
+        <translation>Standard tool bar</translation>
+    </message>
+    <message>
         <source>Operator tool bar</source>
         <translation>Operator Tool Bar</translation>
     </message>
@@ -137,6 +141,22 @@
 	<message>
         <source>Slow play</source>
         <translation>Slow play</translation>
+    </message>
+	<message>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+	<message>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
+	<message>
+        <source>Begin time</source>
+        <translation>Begin time</translation>
+    </message>
+	<message>
+        <source>End time</source>
+        <translation>End time</translation>
     </message>
 </context>
 </TS>

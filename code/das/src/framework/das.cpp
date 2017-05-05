@@ -4,6 +4,8 @@
 #include "type.h"
 #include "CToolBar.h"
 #include "CSelectedArea.h"
+#include "CDialogAbout.h"
+#include "CDialogFind.h"
 
 #include "QtWidgets/QMenu"
 #include "QtWidgets/QMenuBar"
@@ -14,6 +16,7 @@
 #include "QtWidgets/QCheckBox"
 #include "QtWidgets/QDesktopWidget"
 #include "QtGui/QScreen"
+#include "QtGui/QKeyEvent"
 
 
 // 定义多国语关键字常量 
@@ -28,6 +31,7 @@ const char* cstHelp = "Help";
 const char* cstDictOpenPath = "Open source data path";
 const char* cstDictExit = "Exit system";
 const char* cstDictPlay = "Play";
+const char* cstDictPause = "Pause";
 const char* cstDictFind = "Find";
 const char* cstDictFullScreen = "Full screen";
 
@@ -36,8 +40,10 @@ const char* cstDictLanuage = "Lanuage";
 //const char* cstDictEn = "English";
 const char* cstDictAbout = "About";
 
+const char* cstStandardTooBar = "Standard tool bar";
 const char* cstOperatorToolBar = "Operator tool bar";
 const char* cstModuleToolBar = "Module tool bar";
+
 
 const char* cstDictTimelineModule = "Timeline";
 const char* cstDictVideoModule = "Video";
@@ -54,7 +60,8 @@ const char* cstSelectDir = "Select direction";
 DAS::DAS(QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags),
     m_pGraphicsView(NULL),
-    m_pPropertyBar(NULL)
+    m_pPropertyBar(NULL),
+    m_bPlay(true)
 {
     setWindowTitle(trFormString(cstDictDas));
     setWindowState(Qt::WindowMaximized);
@@ -97,13 +104,14 @@ void DAS::setLayout()
     m_pActOpen = new QAction(trMenuString(cstDictOpenPath), this);
     m_pActOpen->setIcon(QIcon(IMG_OPEN));
     m_pActOpen->setShortcut(QKeySequence("Ctrl+O"));
-    //m_pActOpen->setStatusTip("");
+    m_pActOpen->setStatusTip(trMenuString(cstDictOpenPath));
     connect(m_pActOpen, SIGNAL(triggered()), this, SLOT(OnOpen()));
 
     // 退出系统 
     m_pActExit = new QAction(trMenuString(cstDictExit), this);
     m_pActExit->setIcon(QIcon(IMG_EXIT));
     m_pActExit->setShortcut(QKeySequence("Alt+F4"));
+    m_pActExit->setStatusTip(trMenuString(cstDictExit));
     connect(m_pActExit, SIGNAL(triggered()), this, SLOT(close()));
 
     m_pMenuFile = new QMenu(trMenuString(cstFile), this);
@@ -111,22 +119,26 @@ void DAS::setLayout()
     m_pMenuFile->addAction(m_pActExit);
 
     // 创建编辑菜单、创建编辑菜单事件 
-    m_pActPlay = new QAction(trMenuString(cstDictPlay), this);    // 播放、暂停、停止，三相开关 
+    m_pActPlay = new QAction(trMenuString(cstDictPlay), this);    // 播放、暂停 
     m_pActPlay->setIcon(QIcon(IMG_PLAY));
     m_pActPlay->setShortcut(QKeySequence("Ctrl+F5"));
+    m_pActPlay->setStatusTip(trMenuString(cstDictPlay));
     connect(m_pActPlay, SIGNAL(triggered()), this, SLOT(OnPlay()));
 
     m_pActPlayFast = new QAction(trMenuString(cstPlayFast), this);   // 加快播放
     m_pActPlayFast->setIcon(QIcon(IMG_PLAYFAST));
+    m_pActPlayFast->setStatusTip(trMenuString(cstPlayFast));
     connect(m_pActPlayFast, SIGNAL(triggered()), this, SLOT(OnPlayFast()));
 
     m_pActPlaySlow = new QAction(trMenuString(cstPlaySlow), this);   // 减慢播放
     m_pActPlaySlow->setIcon(QIcon(IMG_PLAYSLOW));
+    m_pActPlaySlow->setStatusTip(trMenuString(cstPlaySlow));
     connect(m_pActPlaySlow, SIGNAL(triggered()), this, SLOT(OnPlaySlow()));
 
     m_pActFind = new QAction(trMenuString(cstDictFind), this);    // 查找 
     m_pActFind->setIcon(QIcon(IMG_FIND));
     m_pActFind->setShortcut(QKeySequence("Ctrl+F"));
+    m_pActFind->setStatusTip(trMenuString(cstDictFind));
     connect(m_pActFind, SIGNAL(triggered()), this, SLOT(OnFind()));
 
     m_pMenuEdit = new QMenu(trMenuString(cstEdit), this);
@@ -136,11 +148,13 @@ void DAS::setLayout()
     m_pActFullScreen = new QAction(trMenuString(cstDictFullScreen), this);   // 全屏 
     m_pActFullScreen->setIcon(QIcon(IMG_FULLSCREEN));
     m_pActFullScreen->setShortcut(QKeySequence("Alt+Enter"));
+    m_pActFullScreen->setStatusTip(trMenuString(cstDictFullScreen));
     connect(m_pActFullScreen, SIGNAL(triggered()), this, SLOT(OnFullScreen()));
 
     m_pActScreenshot = new QAction(trMenuString(cstScreenshot), this);  // 截屏
     m_pActScreenshot->setIcon(QIcon(IMG_SCREENSHOT));
     m_pActScreenshot->setShortcut(QKeySequence("Ctrl+Alt+X"));
+    m_pActScreenshot->setStatusTip(trMenuString(cstScreenshot));
     connect(m_pActScreenshot, SIGNAL(triggered()), this, SLOT(OnScreenshot()));
 
     m_pMenuView = new QMenu(trMenuString(cstView), this);
@@ -170,10 +184,12 @@ void DAS::setLayout()
     // 创建关于菜单、创建关于事件 
     m_pActAbout = new QAction(trMenuString(cstDictAbout), this);   // 关于 
     m_pActAbout->setIcon(QIcon(IMG_ABOUT));
+    m_pActAbout->setStatusTip(trMenuString(cstDictAbout));
     connect(m_pActAbout, SIGNAL(triggered()), this, SLOT(OnAbout()));
 
     m_pMenuHelp = new QMenu(trMenuString(cstHelp), this);
     m_pMenuHelp->addAction(m_pActAbout);
+    m_pMenuHelp->setStatusTip(trMenuString(cstHelp));
 
     QMenuBar* pMenuBar = new QMenuBar(this);
     pMenuBar->addMenu(m_pMenuFile);
@@ -183,48 +199,53 @@ void DAS::setLayout()
     pMenuBar->addMenu(m_pMenuHelp);
     this->setMenuBar(pMenuBar);
 
-    // 创建工具栏(操作工具栏、组件工具栏）  
+    // 创建工具栏(标准工具栏、操作工具栏、组件工具栏）  
+    m_pStandardToolBar = this->addToolBar(trMenuString(cstStandardTooBar));
+    m_pStandardToolBar->addAction(m_pActOpen);
+    m_pStandardToolBar->addAction(m_pActFind);
+    m_pStandardToolBar->addSeparator();
+    m_pStandardToolBar->addAction(m_pActScreenshot);
+    m_pStandardToolBar->addAction(m_pActFullScreen);
+
     m_pOperatorToolBar = this->addToolBar(trMenuString(cstOperatorToolBar));
-    m_pOperatorToolBar->addAction(m_pActOpen);
-    m_pOperatorToolBar->addAction(m_pActFind);
-    m_pOperatorToolBar->addSeparator();
     m_pOperatorToolBar->addAction(m_pActPlay);
     m_pOperatorToolBar->addAction(m_pActPlaySlow);
     m_pOperatorToolBar->addAction(m_pActPlayFast);
-    m_pOperatorToolBar->addSeparator();
-    m_pOperatorToolBar->addAction(m_pActScreenshot);
-    m_pOperatorToolBar->addAction(m_pActFullScreen);
-
 
     m_pLbTimeAxis = new QLabel(this);                   // 时间轴组件  
     m_pLbTimeAxis->setPixmap(QPixmap(IMG_TIMELINE));
     m_pLbTimeAxis->setToolTip(trMenuString(cstDictTimelineModule));
     m_pLbTimeAxis->setProperty("ItemType", Item_TimeAxis);
     m_pLbTimeAxis->setEnabled(false);
+    m_pLbTimeAxis->setStatusTip(trMenuString(cstDictTimelineModule));
 
     m_pLbVideo = new QLabel(this);                  // 视频组件  
     m_pLbVideo->setPixmap(QPixmap(IMG_VIDEO));
     m_pLbVideo->setToolTip(trMenuString(cstDictVideoModule));
     m_pLbVideo->setProperty("ItemType", Item_Video);
     m_pLbVideo->setEnabled(false);
+    m_pLbVideo->setStatusTip(trMenuString(cstDictVideoModule));
 
     m_pLbCurve = new QLabel(this);                  // 曲线图组件  
     m_pLbCurve->setPixmap(QPixmap(IMG_CURVE));
     m_pLbCurve->setToolTip(trMenuString(cstDictCurveModule));
     m_pLbCurve->setProperty("ItemType", Item_Chart);
     m_pLbCurve->setEnabled(false);
+    m_pLbCurve->setStatusTip(trMenuString(cstDictCurveModule));
 
     m_pLbTable = new QLabel(this);                  // 表格组件  
     m_pLbTable->setPixmap(QPixmap(IMG_TABLE));
     m_pLbTable->setToolTip(trMenuString(cstDictTableModule));
     m_pLbTable->setProperty("ItemType", Item_Table);
     m_pLbTable->setEnabled(false);
+    m_pLbTable->setStatusTip(trMenuString(cstDictTableModule));
 
     m_pCBoxEdit = new QCheckBox(this);
     m_pCBoxEdit->setText(trMenuString(cstEdit));
     connect(m_pCBoxEdit, SIGNAL(stateChanged(int)), this, SLOT(OnEditCheckBoxStateChanged(int)));
 
     m_pModuleToolBar = new CToolBar(this);
+    m_pModuleToolBar->setWindowTitle(trMenuString(cstModuleToolBar));
     this->addToolBar(m_pModuleToolBar);
     m_pModuleToolBar->addWidget(m_pLbTimeAxis);
     m_pModuleToolBar->addWidget(m_pLbVideo);
@@ -249,19 +270,46 @@ void DAS::OnOpen()
 
 void DAS::OnPlay()
 {
-
+    if (m_bPlay)
+    {
+        m_pActPlay->setIcon(QIcon(IMG_PAUSE));
+        m_pActPlay->setToolTip(trMenuString(cstDictPause));
+        m_pActPlay->setStatusTip(trMenuString(cstDictPause));
+        m_bPlay = false;
+    }
+    else
+    {
+        m_pActPlay->setIcon(QIcon(IMG_PLAY));
+        m_pActPlay->setToolTip(trMenuString(cstDictPlay));
+        m_pActPlay->setStatusTip(trMenuString(cstDictPlay));
+        m_bPlay = true;
+    }
 }
 
 
 void DAS::OnFind()
 {
-
+    CDialogFind dialogFind(this);
+    if (dialogFind.exec() == QDialog::Accepted)
+    {
+        QDateTime dtBegin = dialogFind.getDtBegin();
+        QDateTime dtEnd = dialogFind.getDtEnd();
+    }
+    else
+    {
+        return;
+    }
 }
 
 
 void DAS::OnFullScreen()
 {
-
+    this->showFullScreen();
+    this->menuBar()->hide();
+    this->statusBar()->hide();
+    m_pStandardToolBar->hide();
+    m_pOperatorToolBar->hide();
+    m_pModuleToolBar->hide();
 }
 
 
@@ -290,7 +338,8 @@ void DAS::OnLanuageChanged(QAction* pAction)
 
 void DAS::OnAbout()
 {
-
+    CDialogAbout dialog(this);
+    dialog.exec();
 }
 
 // 截屏
@@ -326,6 +375,7 @@ void DAS::OnPlayFast()
 {
 
 }
+
 
 // 减慢播放速度
 void DAS::OnPlaySlow()
@@ -381,25 +431,54 @@ void DAS::OnEditCheckBoxStateChanged(int state)
 
 void DAS::retranslate()
 {
-    m_pActOpen->setText(trMenuString(cstDictOpenPath));
-    m_pActExit->setText(trMenuString(cstDictExit));
+    // 文件菜单翻译 
     m_pMenuFile->setTitle(trMenuString(cstFile));
-    m_pActPlay->setText(trMenuString(cstDictPlay));    // 播放、暂停、停止，三相开关 
+    m_pActOpen->setText(trMenuString(cstDictOpenPath));
+    m_pActOpen->setStatusTip(trMenuString(cstDictOpenPath));
+    m_pActExit->setText(trMenuString(cstDictExit));
+    m_pActExit->setStatusTip(trMenuString(cstDictExit));
 
-    m_pActFind->setText(trMenuString(cstDictFind));
-
+    // 编辑菜单翻译 
     m_pMenuEdit->setTitle(trMenuString(cstEdit));
-    m_pActFullScreen->setText(trMenuString(cstDictFullScreen));
-    m_pMenuView->setTitle(trMenuString(cstView));
-    //m_pActZhCn->setText(trMenuString(cstDictZhCn));
-    //m_pActEn->setText(trMenuString(cstDictEn));
+    m_pActFind->setText(trMenuString(cstDictFind));
+    m_pActFind->setStatusTip(trMenuString(cstDictFind));
 
+    // 视图菜单翻译 
+    m_pMenuView->setTitle(trMenuString(cstView));
+    m_pActScreenshot->setText(trMenuString(cstScreenshot));
+    m_pActScreenshot->setStatusTip(trMenuString(cstScreenshot));
+    m_pActFullScreen->setText(trMenuString(cstDictFullScreen));
+    m_pActFullScreen->setStatusTip(trMenuString(cstDictFullScreen));
+
+    // 工具菜单翻译 
     m_pMenuTool->setTitle(trMenuString(cstTool));
     m_pMenuLanuage->setTitle(trMenuString(cstDictLanuage));
 
-    m_pActAbout->setText(trMenuString(cstDictAbout));
-    m_pMenuHelp->setTitle(trMenuString(cstHelp));
+    if (m_bPlay)
+    {
+        m_pActPlay->setText(trMenuString(cstDictPause));
+        m_pActPlay->setToolTip(trMenuString(cstDictPause));
+        m_pActPlay->setStatusTip(trMenuString(cstDictPause));
+    }
+    else
+    {
+        m_pActPlay->setText(trMenuString(cstDictPlay));
+        m_pActPlay->setToolTip(trMenuString(cstDictPlay));
+        m_pActPlay->setStatusTip(trMenuString(cstDictPlay));
+    }
+    m_pActPlayFast->setText(trMenuString(cstPlayFast));
+    m_pActPlayFast->setStatusTip(trMenuString(cstPlayFast));
+    m_pActPlaySlow->setText(trMenuString(cstPlaySlow));
+    m_pActPlaySlow->setStatusTip(trMenuString(cstPlaySlow));
+    //m_pActZhCn->setText(trMenuString(cstDictZhCn));
+    //m_pActEn->setText(trMenuString(cstDictEn));
 
+    // 帮助菜单翻译 
+    m_pMenuHelp->setTitle(trMenuString(cstHelp));
+    m_pActAbout->setText(trMenuString(cstDictAbout));
+    m_pActAbout->setStatusTip(trMenuString(cstDictAbout));
+
+    m_pStandardToolBar->setWindowTitle(trMenuString(cstStandardTooBar));
     m_pOperatorToolBar->setWindowTitle(trMenuString(cstOperatorToolBar));
     m_pLbTimeAxis->setToolTip(trMenuString(cstDictTimelineModule));
     m_pLbVideo->setToolTip(trMenuString(cstDictVideoModule));
@@ -407,10 +486,6 @@ void DAS::retranslate()
     m_pLbTable->setToolTip(trMenuString(cstDictTableModule));
     m_pModuleToolBar->setWindowTitle(trMenuString(cstModuleToolBar));
     m_pCBoxEdit->setText(trMenuString(cstEdit));
-
-    m_pActScreenshot->setText(trMenuString(cstScreenshot));
-    m_pActPlayFast->setText(trMenuString(cstPlayFast));
-    m_pActPlaySlow->setText(trMenuString(cstPlaySlow));
 }
 
 
@@ -428,4 +503,19 @@ void DAS::changeEvent(QEvent *ev)
 
     QMainWindow::changeEvent(ev);
 }
+
+
+void DAS::keyReleaseEvent(QKeyEvent *ev)
+{
+    if (ev->key() == Qt::Key_Escape)
+    {
+        this->showMaximized();
+        this->menuBar()->show();
+        this->statusBar()->show();
+        m_pStandardToolBar->show();
+        m_pOperatorToolBar->show();
+        m_pModuleToolBar->show();
+    }
+}
+
 
