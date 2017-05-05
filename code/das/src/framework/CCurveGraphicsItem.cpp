@@ -41,7 +41,7 @@ CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
     m_strTitle = QString(tr("chart %1")).arg(index++);
     m_lstLines.clear();
 
-    CurveLine c1;
+    CurveLine_t c1;
     c1.m_color = Qt::red;
     c1.m_strName = "aa";
     c1.m_realMin = 0.0;
@@ -49,21 +49,21 @@ CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
     c1.m_vecPoints = { QPointF(0, 0), QPointF(0.2, 0.1), QPointF(0.2, 0.1), QPointF(0.3, 0.5) };
     m_lstLines.append(c1);
 
-    c1.m_color = Qt::green;
+    c1.m_color = Qt::blue;
     c1.m_strName = "bb";
     c1.m_realMin = 0.0;
     c1.m_realMax = 5.0;
     c1.m_vecPoints = { QPointF(0, 1), QPointF(0.1, 3), QPointF(0.1, 3), QPointF(0.3, 1.5) };
     m_lstLines.append(c1);
 
-    c1.m_color = Qt::blue;
+    c1.m_color = Qt::green;
     c1.m_strName = "cc";
     c1.m_realMin = 1.0;
     c1.m_realMax = 10.0;
     c1.m_vecPoints = { QPointF(0, 3), QPointF(0.3, 5), QPointF(0.3, 5), QPointF(0.6, 8) };
     m_lstLines.append(c1);
+
     m_line = QLine(0, 0, 0, 0);
-   // m_line = QLine(m_itemRectF.topLeft().x() + m_iOffset, m_itemRectF.topLeft().y() + m_iOffset, m_itemRectF.bottomLeft().x() + m_iOffset, m_itemRectF.bottomLeft().y() - m_iOffset);
 }
 
 

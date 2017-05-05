@@ -19,23 +19,6 @@
 #include "type.h"
 #include "CCustomWidgetBase.h"
 
-typedef struct CURVE_LINE
-{
-    QColor m_color;
-    QString m_strName;
-    qreal m_realMin;
-    qreal m_realMax;
-    QVector<QPointF> m_vecPoints;
-
-    CURVE_LINE()
-    {
-        m_color = Qt::black;
-        m_strName = "";
-        m_realMin = 0.0;
-        m_realMax = 1.0;
-        m_vecPoints.clear();
-    }
-}CurveLine;
 
 class CCurveGraphicsItem : public QObject, public QGraphicsItem
 {
@@ -56,7 +39,9 @@ public:
     void setTitle(const QString& strTitle);
 
     void setType(ITEMTYPE iType) { m_iType = iType; };
-    void setLines(const QList<CurveLine>& lstTmpVec) { m_lstLines = lstTmpVec; }
+    void setLines(const QList<CurveLine_t>& lstTmpVec) { m_lstLines = lstTmpVec; update(); }
+    QList<CurveLine_t> getLines() const { return m_lstLines; }
+
     ITEMTYPE getType() { return m_iType; };
 
 
@@ -114,7 +99,7 @@ private:
 
     QString m_strTitle;  // Õº–Œ±ÍÃ‚
 
-    QList<CurveLine> m_lstLines;
+    QList<CurveLine_t> m_lstLines;
 
     QLine m_line;
 

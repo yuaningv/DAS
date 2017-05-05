@@ -43,6 +43,18 @@
         <source>Export excel</source>
         <translation>Export excel</translation>
     </message>
+	<message>
+        <source>Select Curve</source>
+        <translation>Select Curve</translation>
+    </message>
+	<message>
+        <source>Ok</source>
+        <translation>Ok</translation>
+    </message>
+	<message>
+        <source>Cancel</source>
+        <translation>Cancel</translation>
+    </message>
 </context>
 <context>
     <name>MENU</name>

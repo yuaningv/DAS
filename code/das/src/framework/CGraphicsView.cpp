@@ -67,13 +67,13 @@ void CGraphicsView::setEditModoEnabled(bool enable)
 // ±£´æ²¼¾Ö
 void CGraphicsView::saveLayout()
 {
-    QMap<int, QList<WidgetProperty>> mapTmpItems;
+    QMap<int, QList<WidgetProperty_t>> mapTmpItems;
     mapTmpItems.clear();
 	QList<QGraphicsItem*> lstTmpItems = this->scene()->items(Qt::AscendingOrder);
 
     for (QGraphicsItem* item : lstTmpItems)
     {
-        WidgetProperty tmpWgtPro;
+        WidgetProperty_t tmpWgtPro;
         if (item->isWidget())
         {
 			QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)item;
@@ -141,7 +141,7 @@ void CGraphicsView::saveLayout()
 void CGraphicsView::readXml()
 {
     CFileOperationManager cfm("das.xml");
-    QMap<int, QList<WidgetProperty>> mapTmpItems;
+    QMap<int, QList<WidgetProperty_t>> mapTmpItems;
     if (!cfm.ReadXmlFile(mapTmpItems))
     {
 		CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::readXml", "read xml failed!");

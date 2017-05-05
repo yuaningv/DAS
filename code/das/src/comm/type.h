@@ -1,6 +1,10 @@
 #ifndef TYPE_H
 #define TYPE_H
 
+#include "QtGui/QColor"
+#include "QtCore/QVector"
+#include "QtCore/QMetaType"
+
 enum ITEMTYPE
 {
     Item_None = 0,
@@ -24,9 +28,10 @@ enum DragDirection{
 };
 
 #define PADDING 5 // margin
+#define CurveRole Qt::UserRole + 100
 
 // ¿Ø¼þÊôÐÔ
-typedef struct WIDGET_PROPERTY
+typedef struct WidgetProperty
 {
     ITEMTYPE m_type;
     qreal m_realX;
@@ -37,7 +42,7 @@ typedef struct WIDGET_PROPERTY
     QString m_strEnd;
     QString m_strPlayPos;
 
-    WIDGET_PROPERTY()
+    WidgetProperty()
     {
         m_type = Item_None;
         m_realX = 0.0;
@@ -49,7 +54,7 @@ typedef struct WIDGET_PROPERTY
         m_strPlayPos.clear();
     }
 
-}WidgetProperty; 
+}WidgetProperty_t; 
 
 
 typedef struct ItemAttribute
@@ -66,5 +71,39 @@ typedef struct ItemAttribute
 } ItemAttribute_t;
 
 
+typedef struct CurveLine
+{
+    QColor m_color;
+    QString m_strName;
+    qreal m_realMin;
+    qreal m_realMax;
+    QVector<QPointF> m_vecPoints;
+
+    CurveLine()
+    {
+        m_color = QColor();
+        m_strName = "";
+        m_realMin = 0.0;
+        m_realMax = 1.0;
+        m_vecPoints.clear();
+    }
+
+    bool operator==(const CurveLine& tmpObj)
+    {
+        if (tmpObj.m_strName == this->m_strName
+            && tmpObj.m_color == this->m_color
+            && tmpObj.m_realMin == this->m_realMin
+            && tmpObj.m_realMax == this->m_realMax)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+}CurveLine_t;
+
+Q_DECLARE_METATYPE(CurveLine_t);
 
 #endif // TYPE_H
