@@ -96,6 +96,70 @@ bool CFileOperationManager::ReadXmlFile(QMap<int, QList<WidgetProperty_t>>& mapT
     return true;
 }
 
+
+bool CFileOperationManager::ReadXmlFile(QList<CurveLine_t>& lstTmpItems)
+{
+    if (!m_file->open(QIODevice::ReadOnly))
+    {
+        return false;
+    }
+    if (!m_doc->setContent(m_file))
+    {
+        m_file->close();
+        return false;
+    }
+    m_file->close();
+
+    QDomElement docElem = m_doc->documentElement();
+
+    QDomNode n = docElem.firstChild();
+    while (!n.isNull())
+    {
+        QDomElement e = n.toElement(); // try to convert the node to an element.
+        if (!e.isNull())
+        {
+            CurveLine_t tmpCurveline;
+            qDebug() << e.tagName(); // the node really is an element.
+            QDomNode tmpNode = e.firstChild();
+            while (!tmpNode.isNull())
+            {
+                QDomElement tmpElement = tmpNode.toElement();
+                if ("name" == tmpElement.tagName())
+                {
+                    tmpCurveline.m_strName = tmpElement.text();
+                }
+                else if ("displayname" == tmpElement.tagName())
+                {
+                    tmpCurveline.m_strDisplayName = QString::fromUtf8(tmpElement.text().toUtf8());
+                }
+                else if ("range" == tmpElement.tagName())
+                {
+                    QDomNode tmpNode2 = tmpElement.firstChild();
+                    while (!tmpNode2.isNull())
+                    {
+                        QDomElement tmpElement2 = tmpNode2.toElement();
+                        if ("minvalue" == tmpElement2.tagName())
+                        {
+                            tmpCurveline.m_realMin = tmpElement2.text().toDouble();
+                        }
+                        else if ("maxvalue" == tmpElement2.tagName())
+                        {
+                            tmpCurveline.m_realMax = tmpElement2.text().toDouble();
+                        }
+                        tmpNode2 = tmpNode2.nextSibling();
+                    }
+                }
+                tmpNode = tmpNode.nextSibling();
+            }
+            lstTmpItems.append(tmpCurveline);
+        }
+        n = n.nextSibling();
+    }
+
+    return true;
+}
+
+
 // Ð´XMLÎÄ¼þ
 bool CFileOperationManager::writeXmlFile(QMap<int, QList<WidgetProperty_t>>& mapTmpItems)
 {
@@ -283,10 +347,10 @@ bool CFileOperationManager::writeExcelFile(const QString& strFileName, const QSt
         return false;
     }
 
-    if (0 == lstExcelData.count())
+    /*if (0 == lstExcelData.count())
     {
-        return false;
-    }
+    return false;
+    }*/
 
     QXlsx::Document oTmpXlsx(strFileName);
     QXlsx::Format format;

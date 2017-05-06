@@ -34,11 +34,12 @@ public:
 
     void setCheckedLines(const QList<CurveLine_t>& lstTmpData);
 
-    QList<CurveLine_t> getCheckedLines()const { return m_lstCheckedLine; }
+    QList<CurveLine_t> getCheckedLines()const;
 
 private:
     void initLayout();
     void createListWidgetData();
+    void setLinesColor();
 
 private slots:
     void OnItemChanged(QListWidgetItem* item);
@@ -49,6 +50,7 @@ private:
     QPushButton* m_pBtnCancel;
 
     QList<CurveLine_t> m_lstCheckedLine;   // 选中的线
+    QList<QColor> m_lstColor;
 };
 
 #endif // CCONFIG_CURVE_DLG_H

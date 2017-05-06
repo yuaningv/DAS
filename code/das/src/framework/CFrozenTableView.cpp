@@ -48,7 +48,7 @@ void CFrozenTableView::init()
     m_pFrozenTableView->setSortingEnabled(true);
     m_pFrozenTableView->resizeColumnsToContents();
     //m_pFrozenTableView->setAlternatingRowColors(true);
-    m_pFrozenTableView->verticalHeader()->setDefaultSectionSize(25);
+    //m_pFrozenTableView->verticalHeader()->setDefaultSectionSize(25);
 
     viewport()->stackUnder(m_pFrozenTableView);
 

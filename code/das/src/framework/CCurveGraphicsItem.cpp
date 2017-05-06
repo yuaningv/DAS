@@ -43,24 +43,24 @@ CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
 
     CurveLine_t c1;
     c1.m_color = Qt::red;
-    c1.m_strName = "aa";
+    c1.m_strDisplayName = "aa";
     c1.m_realMin = 0.0;
     c1.m_realMax = 1.0;
     c1.m_vecPoints = { QPointF(0, 0), QPointF(0.2, 0.1), QPointF(0.2, 0.1), QPointF(0.3, 0.5) };
     m_lstLines.append(c1);
 
     c1.m_color = Qt::blue;
-    c1.m_strName = "bb";
+    c1.m_strDisplayName = "bb";
     c1.m_realMin = 0.0;
     c1.m_realMax = 5.0;
     c1.m_vecPoints = { QPointF(0, 1), QPointF(0.1, 3), QPointF(0.1, 3), QPointF(0.3, 1.5) };
     m_lstLines.append(c1);
 
     c1.m_color = Qt::green;
-    c1.m_strName = "cc";
+    c1.m_strDisplayName = "cc";
     c1.m_realMin = 1.0;
     c1.m_realMax = 10.0;
-    c1.m_vecPoints = { QPointF(0, 3), QPointF(0.3, 5), QPointF(0.3, 5), QPointF(0.6, 8) };
+    c1.m_vecPoints = { QPointF(0, 3), QPointF(0.3, 2), QPointF(0.3, 2), QPointF(0.6, 8) };
     m_lstLines.append(c1);
 
     m_line = QLine(0, 0, 0, 0);
@@ -191,9 +191,11 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
 
         // Í¼Àý
         painter->fillRect(m_itemRectF.bottomLeft().x() + m_iOffset*2 + iLength*n, m_itemRectF.bottomLeft().y() - 20, 5, 5, m_lstLines.at(n).m_color);
-        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset*2 + iLength*n + 15, m_itemRectF.bottomLeft().y() - 15, m_lstLines.at(n).m_strName);
+        painter->setPen(QPen(Qt::black, 1, Qt::SolidLine));
+        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset*2 + iLength*n + 15, m_itemRectF.bottomLeft().y() - 15, m_lstLines.at(n).m_strDisplayName);
 
         // »æÖÆÇúÏßÍ¼
+        painter->setPen(QPen(m_lstLines.at(n).m_color, 1, Qt::SolidLine));
         QVector<QPointF> vecTmpPoint;
         for (QPointF p : m_lstLines[n].m_vecPoints)
         {
