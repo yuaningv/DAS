@@ -17,10 +17,13 @@
 #include "QtCore/QFile"
 #include "QtXml/QDomDocument"
 #include "QtCore/QStringList"
+#include "QtCore/QObject"
 #include "type.h"
 
-class CFileOperationManager
+class CFileOperationManager : public QObject
 {
+    Q_OBJECT
+
 public:
     CFileOperationManager();
     CFileOperationManager(const QString& filePath);
@@ -28,6 +31,8 @@ public:
 
     // 读取xml文件
     bool ReadXmlFile(QMap<int, QList<WidgetProperty_t>>& mapTmpItems);
+
+    bool ReadXmlFile(QList<CurveLine_t>& lstTmpItems);
 
     // 写xml文件
     bool writeXmlFile(QMap<int, QList<WidgetProperty_t>>& mapTmpItems);

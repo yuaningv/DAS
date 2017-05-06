@@ -11,6 +11,7 @@
 #include "QtWidgets/QPushButton"
 #include "QtWidgets/QFileDialog"
 #include "QtWidgets/QMessageBox"
+#include "QtCore/QThread"
 
 const char* cstExportSuccess = "Export Success!";
 const char* cstExportFailed = "Export Failed!";
@@ -23,9 +24,21 @@ CTableView::CTableView(QWidget* parent /*= 0*/)
     , m_pModel(nullptr)
     , m_strStartTime("")
     , m_strEndTime("")
+    , m_pThread(nullptr)
 {
-    m_mapHorizontalHeader.clear();
+    m_lstHorizontalHeader.clear();
+
+    m_pThread = new QThread(this);
+
     initLayout();
+    createHorizontalHeaders();
+
+    //test 
+    insertRowData(m_lstHorizontalHeader);
+    QList<CurveLine_t> lstData = m_lstHorizontalHeader;
+    lstData.pop_back();
+    lstData.first().m_realMax = 111;
+    insertRowData(lstData);
 }
 
 CTableView::~CTableView()
@@ -39,13 +52,42 @@ ITEMTYPE CTableView::type()
     return Item_Table;
 }
 
-
-
-// 设置水平表头数据 ，从xml文件读取后设置
-void CTableView::setHorizontalHeader(QMap<QString, QString>& mapHeader)
+void CTableView::setHorizontalHeader(QList<CurveLine_t>& lstHeader)
 {
-    m_mapHorizontalHeader = mapHeader;
+    m_lstHorizontalHeader = lstHeader;
+
+    createHorizontalHeaders();
 }
+
+
+void CTableView::insertRowData(QList<CurveLine_t>& lstRowData)
+{
+    int iRow = m_pModel->rowCount();
+    m_pModel->insertRow(iRow);
+
+    // 复制上一次的数据
+    if (iRow > 0)
+    {
+        for (int iCol = 0; iCol < m_pModel->columnCount(); ++iCol)
+        {
+            m_pModel->setData(m_pModel->index(iRow, iCol), m_pModel->data(m_pModel->index(iRow - 1, iCol)));
+        }
+    }
+
+    // 设置当前数据
+    for (int iCol = 0; iCol < m_pModel->columnCount(); ++iCol)
+    {
+        for (auto& TmpData : lstRowData)
+        {
+            if (TmpData.m_strName == m_pModel->horizontalHeaderItem(iCol)->data(CurveRole).toString())
+            {
+                m_pModel->setData(m_pModel->index(iRow, iCol), TmpData.m_realMax);
+                break;
+            }
+        }
+    }
+}
+
 
 /*
 * 设置开始结束时间
@@ -61,11 +103,11 @@ void CTableView::setTimeRange(const QString& strStart, const QString& strEnd)
 // 初始化布局
 void CTableView::initLayout()
 {
-    m_pModel = new QStandardItemModel(this);
-    m_pModel->setColumnCount(m_mapHorizontalHeader.size());
+    m_pModel = new CTableModel(this);
     m_pTableView = new CFrozenTableView(m_pModel, 1);  // 首列冻结
     m_pTableView->resizeColumnsToContents();
     m_pTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    m_pTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_pTableView->setAlternatingRowColors(true);
 
     QVBoxLayout* pTmpLayout = new QVBoxLayout(this);
@@ -86,6 +128,24 @@ void CTableView::setTableViewData()
 
 }
 
+void CTableView::createHorizontalHeaders()
+{
+    // 读取xml
+    CFileOperationManager cfm("candatadefine.xml");
+    if (!cfm.ReadXmlFile(m_lstHorizontalHeader))
+    {
+        return;
+    }
+
+    m_pModel->setColumnCount(m_lstHorizontalHeader.size());
+    for (int i = 0; i < m_lstHorizontalHeader.count(); ++i)
+    {
+        QStandardItem* pItem = new QStandardItem(m_lstHorizontalHeader.at(i).m_strDisplayName);
+        pItem->setData(m_lstHorizontalHeader.at(i).m_strName, CurveRole);
+        m_pModel->setHorizontalHeaderItem(i, pItem);
+    }
+}
+
 // 导出excel
 void CTableView::OnExport()
 {
@@ -101,19 +161,27 @@ void CTableView::OnExport()
     }
 
     // 表头
-   // m_mapHorizontalHeader["aa"] = "aa";
-    //m_mapHorizontalHeader["bb"] = "bb";
-
     QStringList slstHeader;
-    for (auto& itr = m_mapHorizontalHeader.begin(); itr != m_mapHorizontalHeader.end(); ++itr)
+    for (int i = 0; i < m_lstHorizontalHeader.count(); ++i)
     {
-        slstHeader << itr.value();
+        slstHeader << m_lstHorizontalHeader.at(i).m_strDisplayName;
     }
 
     // 数据源
     QList<QList<QVariant> > lstData;
-    //lstData.append(QList<QVariant>() << "aa" << "bb");
+    for (int iRow = 0; iRow < m_pModel->rowCount(); ++iRow)
+    {
+        QList<QVariant> lstTmpCol;
+        for (int iCol = 0; iCol < m_pModel->columnCount(); ++iCol)
+        {
+            lstTmpCol << m_pModel->data(m_pModel->index(iRow, iCol));
+        }
+        lstData << lstTmpCol;
+    }
+
     CFileOperationManager oTmpFileMananger;
+    oTmpFileMananger.moveToThread(m_pThread);
+    m_pThread->start();
     if (!oTmpFileMananger.writeExcelFile(strFileName, slstHeader, lstData))
     {
         QMessageBox msgBox;

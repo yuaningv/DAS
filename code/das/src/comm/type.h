@@ -75,6 +75,7 @@ typedef struct CurveLine
 {
     QColor m_color;
     QString m_strName;
+    QString m_strDisplayName;
     qreal m_realMin;
     qreal m_realMax;
     QVector<QPointF> m_vecPoints;
@@ -82,7 +83,8 @@ typedef struct CurveLine
     CurveLine()
     {
         m_color = QColor();
-        m_strName = "";
+        m_strName.clear();
+        m_strDisplayName.clear();
         m_realMin = 0.0;
         m_realMax = 1.0;
         m_vecPoints.clear();
@@ -91,7 +93,7 @@ typedef struct CurveLine
     bool operator==(const CurveLine& tmpObj)
     {
         if (tmpObj.m_strName == this->m_strName
-            && tmpObj.m_color == this->m_color
+            && tmpObj.m_strDisplayName == this->m_strDisplayName
             && tmpObj.m_realMin == this->m_realMin
             && tmpObj.m_realMax == this->m_realMax)
         {

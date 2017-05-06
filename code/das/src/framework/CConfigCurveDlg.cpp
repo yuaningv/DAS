@@ -1,5 +1,6 @@
 #include "CConfigCurveDlg.h"
 #include "constant.h"
+#include "CFileOperationManager.h"
 
 #include "QtWidgets/QListWidget"
 #include "QtWidgets/QListWidgetItem"
@@ -20,6 +21,10 @@ CConfigCurveDlg::CConfigCurveDlg(QWidget *parent /*= 0*/)
 {
     setWindowTitle(trFormString(cstSelectCurve));
     setMaximumWidth(400);
+    setMinimumHeight(600);
+
+    m_lstColor.clear();
+    m_lstColor << Qt::red << Qt::blue << Qt::green << Qt::cyan << Qt::black;
 
     initLayout();
 }
@@ -37,6 +42,12 @@ void CConfigCurveDlg::setCheckedLines(const QList<CurveLine_t>& lstTmpData)
 }
 
 
+QList<CurveLine_t> CConfigCurveDlg::getCheckedLines()const 
+{
+    return m_lstCheckedLine; 
+}
+
+
 void CConfigCurveDlg::initLayout()
 {
     m_pListWidget = new QListWidget(this);
@@ -44,7 +55,7 @@ void CConfigCurveDlg::initLayout()
     m_pBtnOk = new QPushButton(trFormString(cstOk), this);
     m_pBtnCancel = new QPushButton(trFormString(cstCancel), this);
 
-    connect(m_pBtnOk, &QPushButton::clicked, this, &QDialog::accept);
+    connect(m_pBtnOk, &QPushButton::clicked, [=](){ setLinesColor(); this->accept(); });
     connect(m_pBtnCancel, &QPushButton::clicked, this, &QDialog::reject);
     connect(m_pListWidget, &QListWidget::itemChanged, this, &CConfigCurveDlg::OnItemChanged);
 
@@ -62,18 +73,21 @@ void CConfigCurveDlg::initLayout()
 
 void CConfigCurveDlg::createListWidgetData()
 {
-    // 读取配置文件中所有项
     QList<CurveLine_t> lstLine;
+    CFileOperationManager cfm("candatadefine.xml");
+    cfm.ReadXmlFile(lstLine);
+
+    // 读取配置文件中所有项
     CurveLine_t tmpLine;
-    tmpLine.m_strName = "aa";
+    tmpLine.m_strDisplayName = "aa";
     tmpLine.m_color = Qt::red;
     lstLine << tmpLine;
-    tmpLine.m_strName = "bb";
+    tmpLine.m_strDisplayName = "bb";
     tmpLine.m_color = Qt::blue;
     tmpLine.m_realMin = 0.0;
     tmpLine.m_realMax = 5.0;
     lstLine << tmpLine;
-    tmpLine.m_strName = "cc";
+    tmpLine.m_strDisplayName = "cc";
     tmpLine.m_color = Qt::green;
     tmpLine.m_realMin = 1.0;
     tmpLine.m_realMax = 10.0;
@@ -81,9 +95,10 @@ void CConfigCurveDlg::createListWidgetData()
 
     for (auto& TmpData : lstLine)
     {
-        QListWidgetItem* pItem = new QListWidgetItem(TmpData.m_strName);
+        QListWidgetItem* pItem = new QListWidgetItem(TmpData.m_strDisplayName);
         pItem->setData(CurveRole, QVariant::fromValue(TmpData));
-        pItem->setBackground(QBrush(TmpData.m_color));
+        //pItem->setTextColor(TmpData.m_color);
+        //pItem->setBackground(QBrush(TmpData.m_color));
         if (m_lstCheckedLine.contains(TmpData))
         {
             pItem->setCheckState(Qt::Checked);
@@ -91,8 +106,24 @@ void CConfigCurveDlg::createListWidgetData()
         else
         {
             pItem->setCheckState(Qt::Unchecked);
+            if (m_lstCheckedLine.size() >= 5)
+            {
+                pItem->setFlags(Qt::ItemIsUserCheckable);
+            }
         }
         m_pListWidget->addItem(pItem);
+    }
+}
+
+
+void CConfigCurveDlg::setLinesColor()
+{
+    for (int i = 0; i < m_lstCheckedLine.size(); ++i)
+    {
+        if (i < m_lstColor.size())
+        {
+            m_lstCheckedLine[i].m_color = m_lstColor.at(i);
+        }
     }
 }
 
