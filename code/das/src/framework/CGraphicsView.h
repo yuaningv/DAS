@@ -17,6 +17,9 @@ public:
     void setEditModoEnabled(bool enable);
     void saveLayout();
 
+    void play();
+    void pause();
+
 private:
     void readXml();
 
@@ -34,8 +37,16 @@ protected:
 private:
     CGraphicsScene* m_pScene;
     bool m_bEditFlag;
+
+    QTimer* m_pTimer;
+    int m_iInterval;
+
 signals:
     void sigItemAttr(const ItemAttribute_t& itemAttr);
+    void sigEnd();
+
+private slots:
+    void OnUpdateWork();
 };
 
 

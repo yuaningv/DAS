@@ -77,6 +77,7 @@ DAS::DAS(QWidget *parent, Qt::WindowFlags flags)
     this->setCentralWidget(m_pGraphicsView);
 
     connect(m_pGraphicsView, SIGNAL(sigItemAttr(const ItemAttribute_t&)), m_pPropertyBar, SLOT(OnShowItemAttr(const ItemAttribute_t&)));
+    connect(m_pGraphicsView, SIGNAL(sigEnd()), this, SLOT(OnReset()));
 }
 
 
@@ -276,6 +277,9 @@ void DAS::OnPlay()
         m_pActPlay->setToolTip(trMenuString(cstDictPause));
         m_pActPlay->setStatusTip(trMenuString(cstDictPause));
         m_bPlay = false;
+
+        // ²¥·Å 
+        m_pGraphicsView->play();
     }
     else
     {
@@ -283,7 +287,18 @@ void DAS::OnPlay()
         m_pActPlay->setToolTip(trMenuString(cstDictPlay));
         m_pActPlay->setStatusTip(trMenuString(cstDictPlay));
         m_bPlay = true;
+
+        // ÔÝÍ£ 
+        m_pGraphicsView->pause();
     }
+}
+
+
+void DAS::OnReset()
+{
+    m_pActPlay->setIcon(QIcon(IMG_PLAY));
+    m_pActPlay->setToolTip(trMenuString(cstDictPlay));
+    m_pActPlay->setStatusTip(trMenuString(cstDictPlay));
 }
 
 

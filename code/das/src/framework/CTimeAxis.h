@@ -16,9 +16,11 @@
 
 
 #include "CCustomWidgetBase.h"
+#include "QtCore/QDateTime"
 
 class QLabel;
 class QSlider;
+
 
 class CTimeAxis : public CCustomWidgetBase
 {
@@ -28,11 +30,14 @@ public:
     explicit CTimeAxis(QWidget* parent = 0);
     ~CTimeAxis();
 
+public:
     void setTimeRange(const QString& strStart, const QString& strEnd);
-    void setSliderPosition(const QString& strValue);
-	QString getStartTime() const;
-	QString getEndTime() const;
-	QString getSliderPosition() const;
+
+    void setValue(const QString& strValue);
+    QString getValue() const;
+
+    QString getStartTime() const;
+    QString getEndTime() const;
 
 private:
     void initLayout();
@@ -41,12 +46,12 @@ protected:
     virtual ITEMTYPE type();
 
 private:
-    QLabel* m_pLbStartTime;
-    QLabel* m_pLbEndTime;
     QSlider* m_pSlider;
 
+    QLabel* m_pLbEndTime;
+
     // 10个刻度标签
-    QLabel* m_pLbScale1;   
+    QLabel* m_pLbScale1;
     QLabel* m_pLbScale2;
     QLabel* m_pLbScale3;
     QLabel* m_pLbScale4;
@@ -57,6 +62,17 @@ private:
     QLabel* m_pLbScale9;
     QLabel* m_pLbScale10;
 
+    QDateTime m_dtStartTime;
+    QDateTime m_dtEndTime;
+    QDateTime m_dtCurrentTime;      // 当前时间 
+
+    bool m_bProgressSlider;
+
+signals:
+
+private slots:
+    void OnProgressChanged(int iValue);
 };
 
-#endif // CTIME_AXIS_H
+#endif // CTIME_AXIS_H 
+

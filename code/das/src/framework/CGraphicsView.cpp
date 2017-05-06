@@ -13,11 +13,13 @@
 #include "QtCore/QMimeData"
 #include "QtWidgets/QGraphicsProxyWidget"
 #include "CFileOperationManager.h"
+#include "QtCore/QTimer"
 
 
 CGraphicsView::CGraphicsView(QWidget *parent)
-    : QGraphicsView(parent)
-    , m_bEditFlag(false)
+    : QGraphicsView(parent),
+    m_bEditFlag(false),
+    m_iInterval(1000)
 {
     setAttribute(Qt::WA_DeleteOnClose);
     setCursor(Qt::ArrowCursor);
@@ -34,6 +36,10 @@ CGraphicsView::CGraphicsView(QWidget *parent)
     setRenderHint(QPainter::Antialiasing, true);
 
     readXml();
+
+    m_pTimer = new QTimer(this);
+    m_pTimer->setInterval(m_iInterval);
+    connect(m_pTimer, SIGNAL(timeout()), this, SLOT(OnUpdateWork()));
 }
 
 
@@ -64,54 +70,113 @@ void CGraphicsView::setEditModoEnabled(bool enable)
     m_bEditFlag = enable; 
 }
 
-// 保存布局
+
+void CGraphicsView::play()
+{
+    m_pTimer->start();
+}
+
+
+void CGraphicsView::pause()
+{
+    m_pTimer->stop();
+}
+
+
+void CGraphicsView::OnUpdateWork()
+{
+    QList<QGraphicsItem*> lstItem = this->items();
+    for (int i = 0; i < lstItem.size(); i++)
+    {
+        QGraphicsItem* pItem = lstItem.at(i);
+        if (pItem->isWidget())      // timeaxis、video、table 
+        {
+            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
+            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+            ITEMTYPE iType = pCustomItem->type();
+            if (iType == Item_TimeAxis)         // time axis 
+            {
+                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
+
+                if (pTimeAxis->getValue() >= pTimeAxis->getEndTime())
+                {
+                    m_pTimer->stop();
+                    pTimeAxis->setValue(pTimeAxis->getStartTime());
+                    emit sigEnd();
+                    return;
+                }
+
+                QDateTime dt = QDateTime::fromString(pTimeAxis->getValue(), "yyyy/MM/dd hh:mm:ss:zzz");
+                QString dtCurrent = dt.toString("yyyy/MM/dd hh:mm:ss:zzz");
+                QString strValue = dt.addMSecs(m_iInterval).toString("yyyy/MM/dd hh:mm:ss:zzz");
+                pTimeAxis->setValue(strValue);
+            }
+            else if (iType == Item_Video)         // video 
+            {
+                CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
+
+            }
+            else if (iType == Item_Table)
+            {
+                CTableView *pTable = dynamic_cast<CTableView*>(pCustomItem);
+
+            }
+        }
+        else        // 曲线图 
+        {
+            CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
+        }
+    }
+}
+
+
 void CGraphicsView::saveLayout()
 {
     QMap<int, QList<WidgetProperty_t>> mapTmpItems;
     mapTmpItems.clear();
-	QList<QGraphicsItem*> lstTmpItems = this->scene()->items(Qt::AscendingOrder);
+    QList<QGraphicsItem*> lstTmpItems = this->scene()->items(Qt::AscendingOrder);
 
     for (QGraphicsItem* item : lstTmpItems)
     {
         WidgetProperty_t tmpWgtPro;
         if (item->isWidget())
         {
-			QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)item;
-			CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
-			ITEMTYPE iType = pCustomItem->type();
-			if (iType == Item_Video)
-			{
-				tmpWgtPro.m_type = Item_Video;
-				tmpWgtPro.m_realX = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().x();
-				tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
-				tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
-				tmpWgtPro.m_realHeight = item->boundingRect().bottomRight().y() - item->boundingRect().topLeft().y();
+            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)item;
+            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+            ITEMTYPE iType = pCustomItem->type();
+            if (iType == Item_Video)
+            {
+                tmpWgtPro.m_type = Item_Video;
+                tmpWgtPro.m_realX = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().x();
+                tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
+                tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
+                tmpWgtPro.m_realHeight = item->boundingRect().bottomRight().y() - item->boundingRect().topLeft().y();
 
-				//mapTmpItems[Item_Video].append(tmpWgtPro);
-			}
-			else if (iType == Item_TimeAxis)
-			{
-				tmpWgtPro.m_type = Item_TimeAxis;
-				tmpWgtPro.m_realX = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().x();
-				tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
-				tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
-				tmpWgtPro.m_realHeight = item->boundingRect().bottomRight().y() - item->boundingRect().topLeft().y();
-				tmpWgtPro.m_strStart = static_cast<CTimeAxis*>(pCustomItem)->getStartTime();
-				tmpWgtPro.m_strEnd = static_cast<CTimeAxis*>(pCustomItem)->getEndTime();
-				tmpWgtPro.m_strPlayPos = static_cast<CTimeAxis*>(pCustomItem)->getSliderPosition();
+                //mapTmpItems[Item_Video].append(tmpWgtPro);
+            }
+            else if (iType == Item_TimeAxis)
+            {
+                tmpWgtPro.m_type = Item_TimeAxis;
+                tmpWgtPro.m_realX = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().x();
+                tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
+                tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
+                tmpWgtPro.m_realHeight = item->boundingRect().bottomRight().y() - item->boundingRect().topLeft().y();
+                tmpWgtPro.m_strStart = static_cast<CTimeAxis*>(pCustomItem)->getStartTime();
+                tmpWgtPro.m_strEnd = static_cast<CTimeAxis*>(pCustomItem)->getEndTime();
+                tmpWgtPro.m_strPlayPos = static_cast<CTimeAxis*>(pCustomItem)->getValue();
 
-				//mapTmpItems[Item_TimeAxis].append(tmpWgtPro);
-			}
-			else if (iType == Item_Table)
-			{
-				tmpWgtPro.m_type = Item_Table;
-				tmpWgtPro.m_realX = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().x();
-				tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
-				tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
-				tmpWgtPro.m_realHeight = item->boundingRect().bottomRight().y() - item->boundingRect().topLeft().y();
+                //mapTmpItems[Item_TimeAxis].append(tmpWgtPro);
+            }
+            else if (iType == Item_Table)
+            {
+                tmpWgtPro.m_type = Item_Table;
+                tmpWgtPro.m_realX = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().x();
+                tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
+                tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
+                tmpWgtPro.m_realHeight = item->boundingRect().bottomRight().y() - item->boundingRect().topLeft().y();
 
-				//mapTmpItems[Item_Table].append(tmpWgtPro);
-			}
+                //mapTmpItems[Item_Table].append(tmpWgtPro);
+            }
         }
         else
         {
@@ -123,19 +188,20 @@ void CGraphicsView::saveLayout()
 
             //mapTmpItems[Item_Chart].append(tmpWgtPro);
         }
-		mapTmpItems[tmpWgtPro.m_type].append(tmpWgtPro);
+        mapTmpItems[tmpWgtPro.m_type].append(tmpWgtPro);
     }
 
     CFileOperationManager cfm("das.xml");
-	if (cfm.writeXmlFile(mapTmpItems))
-	{
-		CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::saveLayout", "save laout success!");
-	}
-	else
-	{
-		CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::saveLayout", "save laout failed!");
-	}
+    if (cfm.writeXmlFile(mapTmpItems))
+    {
+        CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::saveLayout", "save laout success!");
+    }
+    else
+    {
+        CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::saveLayout", "save laout failed!");
+    }
 }
+
 
 // 读取XML
 void CGraphicsView::readXml()
@@ -144,8 +210,8 @@ void CGraphicsView::readXml()
     QMap<int, QList<WidgetProperty_t>> mapTmpItems;
     if (!cfm.ReadXmlFile(mapTmpItems))
     {
-		CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::readXml", "read xml failed!");
-		return;
+        CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::readXml", "read xml failed!");
+        return;
     }
 
     for (auto& itr = mapTmpItems.begin(); itr != mapTmpItems.end(); ++itr)
@@ -157,7 +223,7 @@ void CGraphicsView::readXml()
                 CTimeAxis* pTimeAxis = new CTimeAxis;
                 pTimeAxis->resize(obj.m_realWidth, obj.m_realHeight);
                 pTimeAxis->setTimeRange(obj.m_strStart, obj.m_strEnd);
-                pTimeAxis->setSliderPosition(obj.m_strPlayPos);
+                pTimeAxis->setValue(obj.m_strPlayPos);
                 m_pScene->addWidget(pTimeAxis);
                 pTimeAxis->move(-obj.m_realX, -obj.m_realY);
             }
@@ -194,7 +260,8 @@ void CGraphicsView::readXml()
             }
         }
     }
-	CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::readXml", "read xml success!");
+
+    CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::readXml", "read xml success!");
 }
 
 
@@ -240,17 +307,17 @@ void CGraphicsView::dropEvent(QDropEvent * event)
         QDataStream out(&mimeData, QIODevice::ReadOnly);
         int itemType;
         out >> itemType;
-        CTimeAxis* pTmpWgt;
-        CTableView* pTmpTableView;
         switch (itemType)
         {
         case Item_TimeAxis:  // 时间轴
-            pTmpWgt = new CTimeAxis;
-            pTmpWgt->setEditModeEnabled(m_bEditFlag);
-            m_pScene->addWidget(pTmpWgt);
-            pTmpWgt->move(mapToScene(event->pos()).toPoint());
+            {
+                CTimeAxis* pTimeAxis = new CTimeAxis;
+                pTimeAxis->setEditModeEnabled(m_bEditFlag);
+                m_pScene->addWidget(pTimeAxis);
+                pTimeAxis->move(mapToScene(event->pos()).toPoint());
 
-            CLogManager::getInstance()->log(eLogDebug, "CGraphicsView", "add time axis");
+                CLogManager::getInstance()->log(eLogDebug, "CGraphicsView", "add time axis");
+            }
             break;
 
         case Item_Video:     // 视频窗
@@ -258,29 +325,31 @@ void CGraphicsView::dropEvent(QDropEvent * event)
                 CVideoWidget* pVideoWidget = new CVideoWidget;
                 pVideoWidget->setView(this);
                 pVideoWidget->setEditModeEnabled(m_bEditFlag);
-                QGraphicsProxyWidget*pWidget = m_pScene->addWidget(pVideoWidget);
+                m_pScene->addWidget(pVideoWidget);
                 pVideoWidget->move(mapToScene(event->pos()).toPoint());
             }
             break;
 
         case Item_Chart:    // chart
-        {
-            CCurveGraphicsItem* item = new CCurveGraphicsItem();
-            item->setEnableEditMode(m_bEditFlag);
-            m_pScene->addItem(item);
-            item->moveBy(mapToScene(event->pos()).rx(), mapToScene(event->pos()).ry());
+            {
+                CCurveGraphicsItem* pCurveItem = new CCurveGraphicsItem();
+                pCurveItem->setEnableEditMode(m_bEditFlag);
+                m_pScene->addItem(pCurveItem);
+                pCurveItem->moveBy(mapToScene(event->pos()).rx(), mapToScene(event->pos()).ry());
 
-            CLogManager::getInstance()->log(eLogDebug, "CGraphicsView", "add curve chart");
-        }
+                CLogManager::getInstance()->log(eLogDebug, "CGraphicsView", "add curve chart");
+            }
             break;
 
         case Item_Table:    // table
-            pTmpTableView = new CTableView();
-            pTmpTableView->setEditModeEnabled(m_bEditFlag);
-            m_pScene->addWidget(pTmpTableView);
-            pTmpTableView->move(mapToScene(event->pos()).toPoint());
+            {
+                CTableView* pTableView = new CTableView();
+                pTableView->setEditModeEnabled(m_bEditFlag);
+                m_pScene->addWidget(pTableView);
+                pTableView->move(mapToScene(event->pos()).toPoint());
 
-            CLogManager::getInstance()->log(eLogDebug, "CGraphicsView", "add table");
+                CLogManager::getInstance()->log(eLogDebug, "CGraphicsView", "add table");
+            }
             break;
 
         default:
@@ -299,7 +368,7 @@ void CGraphicsView::mouseReleaseEvent(QMouseEvent *event)
     QGraphicsItem* pItem = this->itemAt(event->pos());
     if (pItem != NULL)
     {
-        if (pItem->isWidget())
+        if (pItem->isWidget())      // 进度条、视频、表格 
         {
             QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
             pWidget->boundingRect();
@@ -331,7 +400,7 @@ void CGraphicsView::mouseReleaseEvent(QMouseEvent *event)
                 CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
             }
         }
-        else
+        else        // 曲线图 
         {
             CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
         }

@@ -68,6 +68,7 @@ private:
 private slots:
     void OnOpen();
     void OnPlay();
+    void OnReset();
     void OnFind();
     void OnFullScreen();
     void OnLanuageChanged(QAction* pAction);
