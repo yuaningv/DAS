@@ -24,12 +24,12 @@ CTimeAxis::~CTimeAxis()
 
 
 // 初始化布局
-void CTimeAxis::initLayout()
+void CTimeAxis::initLayout() 
 {
     m_pSlider = new QSlider(Qt::Horizontal, this);
     m_pSlider->setTickPosition(QSlider::TicksBothSides);
-    m_pSlider->setTickInterval(10);
-    m_pSlider->setRange(0, 100);
+    m_pSlider->setTickInterval(10000000);
+    m_pSlider->setRange(0, 100000000);
     m_pSlider->setToolTip(QString::number(m_pSlider->value()));
 
     // 默认开始时间和结束时间 

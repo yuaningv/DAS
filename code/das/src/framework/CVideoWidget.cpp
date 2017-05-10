@@ -5,7 +5,9 @@
 
 
 CVideoWidget::CVideoWidget(QWidget* parent /*= 0*/)
-    : CCustomWidgetBase(parent)
+    : CCustomWidgetBase(parent),
+    m_bFullscreenFlag(false),
+    m_bFlag(true)
 {
     static int iVideoSquenceNumber = 1;
     m_iID = iVideoSquenceNumber++;
@@ -35,6 +37,25 @@ void CVideoWidget::setTitle(const QString& strTitle)
 {
     m_labelTitle->setText(strTitle);
     m_strTitle = strTitle;
+}
+
+
+void CVideoWidget::updateFrame()
+{
+    if (m_bFlag)
+    {
+        QPalette pal;
+        pal.setBrush(QPalette::Background, Qt::red);
+        this->setPalette(pal);
+        m_bFlag = false;
+    }
+    else
+    {
+        QPalette pal;
+        pal.setBrush(QPalette::Background, Qt::green);
+        this->setPalette(pal);
+        m_bFlag = true;
+    }
 }
 
 
@@ -70,18 +91,22 @@ void CVideoWidget::mouseDoubleClickEvent(QMouseEvent *ev)
         int iHeight = m_pView->height();
         this->resize(iWidth, iHeight);
         this->move(m_pView->mapToScene(QPoint(0, 0)).toPoint());
+
+        m_bFullscreenFlag = true;
     }
 }
 
 
 void CVideoWidget::keyReleaseEvent(QKeyEvent *ev)
 {
-    return;
-
     if (ev->key() == Qt::Key_Escape)
     {
-        this->resize(m_iLastWidth, m_iLastHeight);
-        this->move(m_pView->mapToScene(QPoint(m_iLastX, m_iLastY)).toPoint());
+        if (m_bFullscreenFlag)
+        {
+            m_bFullscreenFlag = false;
+            this->resize(m_iLastWidth, m_iLastHeight);
+            this->move(m_pView->mapToScene(QPoint(m_iLastX, m_iLastY)).toPoint());
+        }
     }
 }
 

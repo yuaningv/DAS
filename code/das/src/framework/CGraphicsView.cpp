@@ -31,8 +31,8 @@ CGraphicsView::CGraphicsView(QWidget *parent)
     setScene(m_pScene);
     setSceneRect(QRectF(0, 0, this->width(), this->height()));
     setBackgroundBrush(QBrush(Qt::gray, Qt::SolidPattern));
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setRenderHint(QPainter::Antialiasing, true);
 
     readXml();
@@ -114,12 +114,37 @@ void CGraphicsView::OnUpdateWork()
             else if (iType == Item_Video)         // video 
             {
                 CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
-
+                pVideoWidget->updateFrame();
             }
             else if (iType == Item_Table)
             {
-                // 接收回调数据
+                // 接收回调数据 
+                CurveLine_t curverLine;
                 QList<CurveLine_t> lstTmpData;
+                curverLine.m_strName = "time";
+                curverLine.m_strValue = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
+                lstTmpData.append(curverLine);
+                curverLine.m_strName = "multi_rate";
+                curverLine.m_strValue = QString::number(-80 + qrand() % 88);
+                lstTmpData.append(curverLine);
+                curverLine.m_strName = "main_arm_length";
+                curverLine.m_strValue = QString::number(13.3 + qrand() % 86);
+                lstTmpData.append(curverLine);
+                curverLine.m_strName = "main_arm_angle";
+                curverLine.m_strValue = QString::number(qrand() % 90);
+                lstTmpData.append(curverLine);
+                curverLine.m_strName = "normal_weight";
+                curverLine.m_strValue = QString::number(qrand() % 550);
+                lstTmpData.append(curverLine);
+                curverLine.m_strName = "actual_weight";
+                curverLine.m_strValue = QString::number(qrand() % 2000);
+                lstTmpData.append(curverLine);
+                curverLine.m_strName = "moment_force_percent";
+                curverLine.m_strValue = QString::number(qrand() % 120);
+                lstTmpData.append(curverLine);
+                curverLine.m_strName = "distance_range";
+                curverLine.m_strValue = QString::number(13.3 + qrand() % 69);
+                lstTmpData.append(curverLine);
 
                 CTableView *pTable = dynamic_cast<CTableView*>(pCustomItem);
                 pTable->insertRowData(lstTmpData);
@@ -130,20 +155,22 @@ void CGraphicsView::OnUpdateWork()
             CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
 
             QList<CurveLine_t> lstTmpLines = pCurveItem->getLines();
+
             // 接收数据点
             for (auto& TmpLine : lstTmpLines)
             {
-                if (TmpLine.m_strName == "")  // 判断回调数据是哪条线
+                if (TmpLine.m_strName == "")  // 判断回调数据是哪条线 
                 {
                     if (lstTmpLines.size() > 1)
                     {
                         TmpLine.m_vecPoints.append(TmpLine.m_vecPoints.last());
                     }
-                    TmpLine.m_vecPoints.append(QPointF());  // 当前点记录起来
+
+                    TmpLine.m_vecPoints.append(QPointF());  // 当前点记录起来 
                 }
             }
 
-            // 更新曲线图
+            // 更新曲线图 
             pCurveItem->setLines(lstTmpLines);
         }
     }
@@ -253,6 +280,7 @@ void CGraphicsView::readXml()
             for (auto& obj : itr.value())
             {
                 CVideoWidget* pVideo = new CVideoWidget;
+                pVideo->setView(this);
                 pVideo->resize(obj.m_realWidth, obj.m_realHeight);
                 m_pScene->addWidget(pVideo);
                 pVideo->move(-obj.m_realX, -obj.m_realY);

@@ -79,6 +79,7 @@ typedef struct CurveLine
     qreal m_realMin;
     qreal m_realMax;
     QVector<QPointF> m_vecPoints;
+    QString m_strValue;
 
     CurveLine()
     {
@@ -88,6 +89,7 @@ typedef struct CurveLine
         m_realMin = 0.0;
         m_realMax = 1.0;
         m_vecPoints.clear();
+        m_strValue.clear();
     }
 
     bool operator==(const CurveLine& tmpObj)

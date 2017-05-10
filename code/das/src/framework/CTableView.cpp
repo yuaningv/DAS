@@ -12,6 +12,7 @@
 #include "QtWidgets/QFileDialog"
 #include "QtWidgets/QMessageBox"
 #include "QtCore/QThread"
+#include "QtWidgets/QScrollBar"
 
 const char* cstExportSuccess = "Export Success!";
 const char* cstExportFailed = "Export Failed!";
@@ -34,11 +35,11 @@ CTableView::CTableView(QWidget* parent /*= 0*/)
     createHorizontalHeaders();
 
     //test 
-    insertRowData(m_lstHorizontalHeader);
+    /*insertRowData(m_lstHorizontalHeader);
     QList<CurveLine_t> lstData = m_lstHorizontalHeader;
     lstData.pop_front();
     lstData.first().m_realMax = 111;
-    insertRowData(lstData);
+    insertRowData(lstData);*/
 }
 
 CTableView::~CTableView()
@@ -64,6 +65,7 @@ void CTableView::insertRowData(QList<CurveLine_t>& lstRowData)
 {
     int iRow = m_pModel->rowCount();
     m_pModel->insertRow(iRow);
+    m_pTableView->verticalScrollBar()->setValue(m_pTableView->verticalScrollBar()->maximum());
 
     // 复制上一次的数据
     if (iRow > 0)
@@ -81,7 +83,7 @@ void CTableView::insertRowData(QList<CurveLine_t>& lstRowData)
         {
             if (TmpData.m_strName == m_pModel->horizontalHeaderItem(iCol)->data(CurveRole).toString())
             {
-                m_pModel->setData(m_pModel->index(iRow, iCol), TmpData.m_realMax);
+                m_pModel->setData(m_pModel->index(iRow, iCol), TmpData.m_strValue);
                 break;
             }
         }

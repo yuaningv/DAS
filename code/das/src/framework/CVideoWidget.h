@@ -40,6 +40,8 @@ public:
     ItemAttribute_t getItemAttr();
 
     void setView(CGraphicsView* pView) { m_pView = pView; };
+
+    void updateFrame();
     
 private:
     QLabel* m_labelTitle;
@@ -55,6 +57,8 @@ private:
     int m_iID;
     QString m_strTitle;
     ItemAttribute_t m_tItemAttr;
+    bool m_bFullscreenFlag;
+    bool m_bFlag;   // test video 
 
 private:
     int m_iLastX;
