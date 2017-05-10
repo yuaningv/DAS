@@ -36,7 +36,7 @@ CTableView::CTableView(QWidget* parent /*= 0*/)
     //test 
     insertRowData(m_lstHorizontalHeader);
     QList<CurveLine_t> lstData = m_lstHorizontalHeader;
-    lstData.pop_back();
+    lstData.pop_front();
     lstData.first().m_realMax = 111;
     insertRowData(lstData);
 }

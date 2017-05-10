@@ -118,13 +118,33 @@ void CGraphicsView::OnUpdateWork()
             }
             else if (iType == Item_Table)
             {
-                CTableView *pTable = dynamic_cast<CTableView*>(pCustomItem);
+                // 接收回调数据
+                QList<CurveLine_t> lstTmpData;
 
+                CTableView *pTable = dynamic_cast<CTableView*>(pCustomItem);
+                pTable->insertRowData(lstTmpData);
             }
         }
         else        // 曲线图 
         {
             CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
+
+            QList<CurveLine_t> lstTmpLines = pCurveItem->getLines();
+            // 接收数据点
+            for (auto& TmpLine : lstTmpLines)
+            {
+                if (TmpLine.m_strName == "")  // 判断回调数据是哪条线
+                {
+                    if (lstTmpLines.size() > 1)
+                    {
+                        TmpLine.m_vecPoints.append(TmpLine.m_vecPoints.last());
+                    }
+                    TmpLine.m_vecPoints.append(QPointF());  // 当前点记录起来
+                }
+            }
+
+            // 更新曲线图
+            pCurveItem->setLines(lstTmpLines);
         }
     }
 }
