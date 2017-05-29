@@ -32,7 +32,7 @@ private:
     CVideoFileSession m_videoSession;
 
 signals:
-    void sigCanUpdate(const QImage& image, const QDateTime& currentDateTime);
+    void sigVideoUpdate(const QImage& image, const QDateTime& currentDateTime);
 
     private slots:
 };

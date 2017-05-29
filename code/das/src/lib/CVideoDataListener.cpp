@@ -48,6 +48,7 @@ int CVideoDataListener::skipTo(const QDateTime& dtPos)
 int CVideoDataListener::play()
 {
     m_videoSession.Play();
+    m_videoSession.SkipTo("20170411131010");
 
     return 1;
 }
@@ -60,6 +61,7 @@ int CVideoDataListener::pause()
     return 1;
 }
 
+#include "windows.h"
 
 // 对于视频的接接收者，还需要关心这个图像数据的高宽，pCustomData 
 // 指向了一个struct{ unsigned int width; unsigned int height; } 类型的数据 
@@ -76,12 +78,12 @@ void CVideoDataListener::OnMedia(unsigned char* buffer, unsigned long length, un
         imageInfo_t* imageInfo = (imageInfo_t*)pCustomData;
 
         // yuv -> rgb ????  
-        QImage image(imageInfo->iWidth, imageInfo->iHeight, QImage::Format_RGB32);
+        QImage image(buffer, imageInfo->iWidth, imageInfo->iHeight, QImage::Format_RGB32);
 
         // current time 
         QDateTime currentDateTime = QDateTime::fromMSecsSinceEpoch(secs * 1000 + msecs);
 
-        emit sigCanUpdate(image, currentDateTime);
+        emit sigVideoUpdate(image, currentDateTime);
     }
     else if (payload == 3)  // can data 
     {

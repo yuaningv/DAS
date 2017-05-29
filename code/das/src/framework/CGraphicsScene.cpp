@@ -73,6 +73,7 @@ void CGraphicsScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                 }
             });
         }
+
         QAction *selectedAction = menu.exec(event->screenPos());
     }
 

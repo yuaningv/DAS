@@ -28,6 +28,7 @@ CDialogFind::CDialogFind(const QDateTime& dtBegin, const QDateTime& dtEnd, QWidg
 
     m_pEditBegin = new QDateTimeEdit(this);
     m_pEditBegin->setDateTime(m_dtBegin);
+    m_pEditBegin->setDisplayFormat("yyyy/MM/dd hh:mm:ss");
 
     QLabel* pTimeEndLabel = new QLabel(this);
     pTimeEndLabel->setText(trFormString(cstDictEndTime));
@@ -35,6 +36,7 @@ CDialogFind::CDialogFind(const QDateTime& dtBegin, const QDateTime& dtEnd, QWidg
 
     m_pEditEnd = new QDateTimeEdit(this);
     m_pEditEnd->setDateTime(m_dtEnd);
+    m_pEditEnd->setDisplayFormat("yyyy/MM/dd hh:mm:ss");
 
     QPushButton* pOkBtn = new QPushButton(trFormString(cstDictOK));
     pOkBtn->setDefault(true);

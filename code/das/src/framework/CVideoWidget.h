@@ -18,6 +18,7 @@
 #include "CGraphicsView.h"
 
 #include "type.h"
+#include "CVideoDataListener.h"
 
 class QLabel;
 
@@ -42,9 +43,17 @@ public:
     void setView(CGraphicsView* pView) { m_pView = pView; };
 
     void updateFrame();
-    
-private:
-    QLabel* m_labelTitle;
+
+public:
+    HWND getWinId() { return (HWND)this->winId(); };
+
+    int init(const QString& strStorage, int iChannel = -1);
+    void setChannel(int iChannel);       // 通过channel来判断该组件是否已经关联数据，iChannel < 0无关联数据，iChannel >= 0关联数据 
+    int getChannel() { return m_iChannel; };
+    int setScape(const QDateTime& dtBegin, const QDateTime& dtEnd);
+    int skipTo(const QDateTime& dtPos);
+    int play();
+    int pause();
 
 protected:
     virtual void mouseReleaseEvent(QMouseEvent *ev);
@@ -52,13 +61,22 @@ protected:
     virtual void keyReleaseEvent(QKeyEvent *ev);
 
     virtual ITEMTYPE type();
+    virtual void paintEvent(QPaintEvent *ev);
 
 private:
     int m_iID;
+    QLabel* m_labelTitle;
     QString m_strTitle;
+
     ItemAttribute_t m_tItemAttr;
     bool m_bFullscreenFlag;
-    bool m_bFlag;   // test video 
+    bool m_bFlag;           // test video 
+
+    // 关联video数据 
+    CVideoDataListener* m_pVideoData;
+    int m_iChannel;
+    QString m_strStorage;
+    QImage m_image;
 
 private:
     int m_iLastX;
@@ -66,6 +84,9 @@ private:
     int m_iLastWidth;
     int m_iLastHeight;
     CGraphicsView* m_pView;             // 获取View窗口大小 
+
+private slots:
+    void OnUpdateFrame(const QImage& image, const QDateTime& currentDateTime);
 };
 
 

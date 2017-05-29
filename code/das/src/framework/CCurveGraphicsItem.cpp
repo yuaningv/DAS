@@ -202,8 +202,8 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
             // 转换成坐标轴坐标
             QPointF tmpP = p;
             vecTmpPoint.append(mapToAxis(p));
-            qDebug() << "p.x = " << p.x();
-            qDebug() << "line.x = " << m_line.p1().x();
+            //qDebug() << "p.x = " << p.x();
+            //qDebug() << "line.x = " << m_line.p1().x();
 
             if (p.x() >= m_line.p1().x() - 0.5 && p.x() <= m_line.p1().x() + 0.5)
             {

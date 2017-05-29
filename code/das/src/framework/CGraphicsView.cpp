@@ -36,10 +36,10 @@ CGraphicsView::CGraphicsView(QWidget *parent)
     setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setRenderHint(QPainter::Antialiasing, true);
 
-    readXml();
+    m_dtBegin = QDateTime::fromString("2017/04/11 01:01:01", "yyyy/MM/dd hh:mm:ss");
+    m_dtEnd = QDateTime::fromString("2017/05/01 01:01:01", "yyyy/MM/dd hh:mm:ss");
 
-    m_dtBegin = QDateTime::currentDateTime();
-    m_dtEnd = m_dtBegin;
+    readXml();
 
     m_pTimer = new QTimer(this);
     m_pTimer->setInterval(m_iInterval);
@@ -75,31 +75,170 @@ void CGraphicsView::setEditModoEnabled(bool enable)
 }
 
 
+void CGraphicsView::setStoragePath(const QString& strPath)
+{
+    m_strStoragePath = strPath;
+
+    QList<QGraphicsItem*> lstItem = this->items();
+    for (int i = 0; i < lstItem.size(); i++)
+    {
+        QGraphicsItem* pItem = lstItem.at(i);
+        if (pItem->isWidget())      // timeaxis¡¢video¡¢table 
+        {
+            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
+            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+            ITEMTYPE iType = pCustomItem->type();
+            if (iType == Item_TimeAxis)         // time axis 
+            {
+                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
+            }
+            else if (iType == Item_Video)         // video 
+            {
+                CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
+                pVideoWidget->init(m_strStoragePath, pVideoWidget->getChannel());
+            }
+            else if (iType == Item_Table)           // table 
+            {
+            }
+        }
+        else        // ÇúÏßÍ¼ 
+        {
+            CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
+        }
+    }
+}
+
+
 void CGraphicsView::setTimeScape(const QDateTime& dtBegin, const QDateTime& dtEnd)
 {
     m_dtBegin = dtBegin;
     m_dtEnd = dtEnd;
-}
 
-
-void CGraphicsView::setStoragePath(const QString& strPath)
-{
-
+    QList<QGraphicsItem*> lstItem = this->items();
+    for (int i = 0; i < lstItem.size(); i++)
+    {
+        QGraphicsItem* pItem = lstItem.at(i);
+        if (pItem->isWidget())      // timeaxis¡¢video¡¢table 
+        {
+            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
+            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+            ITEMTYPE iType = pCustomItem->type();
+            if (iType == Item_TimeAxis)         // time axis 
+            {
+                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
+            }
+            else if (iType == Item_Video)         // video 
+            {
+                CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
+                pVideoWidget->setScape(m_dtBegin, m_dtEnd);
+            }
+            else if (iType == Item_Table)           // table 
+            {
+            }
+        }
+        else        // ÇúÏßÍ¼ 
+        {
+            CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
+        }
+    }
 }
 
 
 void CGraphicsView::skipTo(const QDateTime& currentDateTime)
 {
+    m_dtSkip = currentDateTime;
+
+    QList<QGraphicsItem*> lstItem = this->items();
+    for (int i = 0; i < lstItem.size(); i++)
+    {
+        QGraphicsItem* pItem = lstItem.at(i);
+        if (pItem->isWidget())      // timeaxis¡¢video¡¢table 
+        {
+            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
+            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+            ITEMTYPE iType = pCustomItem->type();
+            if (iType == Item_TimeAxis)         // time axis 
+            {
+                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
+            }
+            else if (iType == Item_Video)         // video 
+            {
+                CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
+                pVideoWidget->skipTo(m_dtSkip);
+            }
+            else if (iType == Item_Table)           // table 
+            {
+            }
+        }
+        else        // ÇúÏßÍ¼ 
+        {
+            CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
+        }
+    }
 }
 
 
 void CGraphicsView::play()
 {
+    QList<QGraphicsItem*> lstItem = this->items();
+    for (int i = 0; i < lstItem.size(); i++)
+    {
+        QGraphicsItem* pItem = lstItem.at(i);
+        if (pItem->isWidget())      // timeaxis¡¢video¡¢table 
+        {
+            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
+            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+            ITEMTYPE iType = pCustomItem->type();
+            if (iType == Item_TimeAxis)         // time axis 
+            {
+                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
+            }
+            else if (iType == Item_Video)         // video 
+            {
+                CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
+                pVideoWidget->play();
+            }
+            else if (iType == Item_Table)           // table 
+            {
+            }
+        }
+        else        // ÇúÏßÍ¼ 
+        {
+            CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
+        }
+    }
 }
 
 
 void CGraphicsView::pause()
 {
+    QList<QGraphicsItem*> lstItem = this->items();
+    for (int i = 0; i < lstItem.size(); i++)
+    {
+        QGraphicsItem* pItem = lstItem.at(i);
+        if (pItem->isWidget())      // timeaxis¡¢video¡¢table 
+        {
+            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
+            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+            ITEMTYPE iType = pCustomItem->type();
+            if (iType == Item_TimeAxis)         // time axis 
+            {
+                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
+            }
+            else if (iType == Item_Video)         // video 
+            {
+                CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
+                pVideoWidget->pause();
+            }
+            else if (iType == Item_Table)           // table 
+            {
+            }
+        }
+        else        // ÇúÏßÍ¼ 
+        {
+            CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
+        }
+    }
 }
 
 
@@ -297,10 +436,14 @@ void CGraphicsView::readXml()
         }
         else if (Item_Video == itr.key())
         {
+            int i = 0;
             for (auto& obj : itr.value())
             {
                 CVideoWidget* pVideo = new CVideoWidget;
                 pVideo->setView(this);
+                //pVideo->init(m_strStoragePath);
+                //pVideo->setScape(m_dtBegin, m_dtEnd);
+                pVideo->setChannel(i++);
                 pVideo->resize(obj.m_realWidth, obj.m_realHeight);
                 m_pScene->addWidget(pVideo);
                 pVideo->move(-obj.m_realX, -obj.m_realY);
@@ -393,6 +536,8 @@ void CGraphicsView::dropEvent(QDropEvent * event)
                 CVideoWidget* pVideoWidget = new CVideoWidget;
                 pVideoWidget->setView(this);
                 pVideoWidget->setEditModeEnabled(m_bEditFlag);
+                //pVideoWidget->init(m_strStoragePath);
+                //pVideoWidget->setScape(m_dtBegin, m_dtEnd);
                 m_pScene->addWidget(pVideoWidget);
                 pVideoWidget->move(mapToScene(event->pos()).toPoint());
             }
