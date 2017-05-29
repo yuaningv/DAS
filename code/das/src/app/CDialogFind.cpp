@@ -13,14 +13,14 @@ const char* cstDictBeginTime = "Begin time";       // 开始时间
 const char* cstDictEndTime = "End time";           // 结束时间 
 
 
-CDialogFind::CDialogFind(QWidget *parent)
+CDialogFind::CDialogFind(const QDateTime& dtBegin, const QDateTime& dtEnd, QWidget *parent)
     : QDialog(parent)
 {
-    setWindowTitle(trFormString(cstDictFind));
+    setWindowTitle(trMenuString(cstDictFind));
     resize(300, 150);
 
-    m_dtBegin = QDateTime::currentDateTime();
-    m_dtEnd = m_dtBegin;
+    m_dtBegin = dtBegin;
+    m_dtEnd = dtEnd;
 
     QLabel* pTimeBeginLabel = new QLabel(this);
     pTimeBeginLabel->setText(trFormString(cstDictBeginTime));

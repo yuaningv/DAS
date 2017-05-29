@@ -110,4 +110,12 @@ typedef struct CurveLine
 
 Q_DECLARE_METATYPE(CurveLine_t);
 
+
+typedef struct 
+{
+    unsigned int iWidth; 
+    unsigned int iHeight; 
+} imageInfo_t;
+
+
 #endif // TYPE_H

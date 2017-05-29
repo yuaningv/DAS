@@ -108,8 +108,8 @@ void CTableView::initLayout()
     m_pModel = new CTableModel(this);
     m_pTableView = new CFrozenTableView(m_pModel, 1);  // 首列冻结
     m_pTableView->resizeColumnsToContents();
-    m_pTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    m_pTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    //m_pTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    //m_pTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_pTableView->setAlternatingRowColors(true);
 
     QVBoxLayout* pTmpLayout = new QVBoxLayout(this);
@@ -140,12 +140,16 @@ void CTableView::createHorizontalHeaders()
     }
 
     m_pModel->setColumnCount(m_lstHorizontalHeader.size());
+    m_pModel->insertRows(0, 1, QModelIndex());
     for (int i = 0; i < m_lstHorizontalHeader.count(); ++i)
     {
         QStandardItem* pItem = new QStandardItem(m_lstHorizontalHeader.at(i).m_strDisplayName);
         pItem->setData(m_lstHorizontalHeader.at(i).m_strName, CurveRole);
         m_pModel->setHorizontalHeaderItem(i, pItem);
+
+        m_pModel->setData(m_pModel->index(0, i), 1);
     }
+
 }
 
 // 导出excel

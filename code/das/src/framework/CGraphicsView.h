@@ -2,8 +2,10 @@
 #define CGraphicsView_h
 
 #include "QtWidgets/QGraphicsView"
+#include "QtCore/QDateTime"
 #include "CGraphicsScene.h"
 #include "type.h"
+#include "constant.h"
 
 
 class CGraphicsView : public QGraphicsView
@@ -17,6 +19,13 @@ public:
     void setEditModoEnabled(bool enable);
     void saveLayout();
 
+    void setStoragePath(const QString& strPath);
+
+    void setTimeScape(const QDateTime& dtBegin, const QDateTime& dtEnd); 
+    QDateTime getDtBegin() { return m_dtBegin; };
+    QDateTime getDtEnd() { return m_dtEnd; };
+
+    void skipTo(const QDateTime& currentDateTime);
     void play();
     void pause();
 
@@ -40,6 +49,11 @@ private:
 
     QTimer* m_pTimer;
     int m_iInterval;
+
+    QString m_strStoragePath;
+
+    QDateTime m_dtBegin;
+    QDateTime m_dtEnd;
 
 signals:
     void sigItemAttr(const ItemAttribute_t& itemAttr);

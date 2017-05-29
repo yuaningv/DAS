@@ -265,7 +265,9 @@ void DAS::setLayout()
 
 void DAS::OnOpen()
 {
-    QString dir = QFileDialog::getExistingDirectory(this, trFormString(cstSelectDir), "./", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString strStorgePath = QFileDialog::getExistingDirectory(this, trFormString(cstSelectDir), "./", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    m_pGraphicsView->setStoragePath(strStorgePath);
 }
 
 
@@ -304,11 +306,12 @@ void DAS::OnReset()
 
 void DAS::OnFind()
 {
-    CDialogFind dialogFind(this);
+    CDialogFind dialogFind(m_pGraphicsView->getDtBegin(), m_pGraphicsView->getDtEnd(), this);
     if (dialogFind.exec() == QDialog::Accepted)
     {
         QDateTime dtBegin = dialogFind.getDtBegin();
         QDateTime dtEnd = dialogFind.getDtEnd();
+        m_pGraphicsView->setTimeScape(dtBegin, dtEnd);
     }
     else
     {

@@ -11,7 +11,7 @@ class CDialogFind : public QDialog
     Q_OBJECT
 
 public:
-    CDialogFind(QWidget *parent = 0);
+    CDialogFind(const QDateTime& dtBegin, const QDateTime& dtEnd,  QWidget *parent = 0);
     ~CDialogFind();
 
     QDateTime getDtBegin();

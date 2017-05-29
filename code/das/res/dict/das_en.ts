@@ -48,12 +48,20 @@
         <translation>Select Curve</translation>
     </message>
 	<message>
-        <source>Ok</source>
-        <translation>Ok</translation>
+        <source>OK</source>
+        <translation>OK</translation>
     </message>
 	<message>
         <source>Cancel</source>
         <translation>Cancel</translation>
+    </message>
+	<message>
+        <source>Begin time</source>
+        <translation>Begin time</translation>
+    </message>
+	<message>
+        <source>End time</source>
+        <translation>End time</translation>
     </message>
 </context>
 <context>
@@ -153,22 +161,6 @@
 	<message>
         <source>Slow play</source>
         <translation>Slow play</translation>
-    </message>
-	<message>
-        <source>OK</source>
-        <translation>OK</translation>
-    </message>
-	<message>
-        <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
-	<message>
-        <source>Begin time</source>
-        <translation>Begin time</translation>
-    </message>
-	<message>
-        <source>End time</source>
-        <translation>End time</translation>
-    </message>
+    </message>	
 </context>
 </TS>

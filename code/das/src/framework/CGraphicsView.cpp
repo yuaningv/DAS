@@ -19,7 +19,8 @@
 CGraphicsView::CGraphicsView(QWidget *parent)
     : QGraphicsView(parent),
     m_bEditFlag(false),
-    m_iInterval(1000)
+    m_iInterval(1000),
+    m_strStoragePath("")
 {
     setAttribute(Qt::WA_DeleteOnClose);
     setCursor(Qt::ArrowCursor);
@@ -36,6 +37,9 @@ CGraphicsView::CGraphicsView(QWidget *parent)
     setRenderHint(QPainter::Antialiasing, true);
 
     readXml();
+
+    m_dtBegin = QDateTime::currentDateTime();
+    m_dtEnd = m_dtBegin;
 
     m_pTimer = new QTimer(this);
     m_pTimer->setInterval(m_iInterval);
@@ -71,15 +75,31 @@ void CGraphicsView::setEditModoEnabled(bool enable)
 }
 
 
+void CGraphicsView::setTimeScape(const QDateTime& dtBegin, const QDateTime& dtEnd)
+{
+    m_dtBegin = dtBegin;
+    m_dtEnd = dtEnd;
+}
+
+
+void CGraphicsView::setStoragePath(const QString& strPath)
+{
+
+}
+
+
+void CGraphicsView::skipTo(const QDateTime& currentDateTime)
+{
+}
+
+
 void CGraphicsView::play()
 {
-    m_pTimer->start();
 }
 
 
 void CGraphicsView::pause()
 {
-    m_pTimer->stop();
 }
 
 
