@@ -132,7 +132,7 @@ HWND CVideoWidget::GetWndHandle()
 void CVideoWidget::OnMedia(unsigned char* buffer, unsigned long length, 
     unsigned long payload, unsigned long secs, unsigned long usecs, void* pCustomData)
 {
-    updateFrame();
+    //updateFrame();
     CLogManager::getInstance()->log(eLogDebug, "CVideoWidget::OnMedia", "update frame, hwnd:%d", winId());
 }
 

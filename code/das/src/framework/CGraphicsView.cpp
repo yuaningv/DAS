@@ -19,7 +19,9 @@
 CGraphicsView::CGraphicsView(QWidget *parent)
     : QGraphicsView(parent),
     m_bEditFlag(false),
-    m_strStoragePath("")
+    m_strStoragePath(""),
+    m_strVideoStorage(""),
+    m_strCanStorage("")
 {
     setAttribute(Qt::WA_DeleteOnClose);
     setCursor(Qt::ArrowCursor);
@@ -38,6 +40,8 @@ CGraphicsView::CGraphicsView(QWidget *parent)
     m_dtBegin = QDateTime::fromString("2017/04/11 01:01:01", "yyyy/MM/dd hh:mm:ss");
     m_dtEnd = QDateTime::fromString("2017/05/01 01:01:01", "yyyy/MM/dd hh:mm:ss");
 
+    m_mapVideoSession.clear();
+    m_mapCanSession.clear();
     m_profile.Init("./candatadefine.xml");
 
     readXml();
@@ -52,9 +56,19 @@ CGraphicsView::~CGraphicsView()
         m_pScene = NULL;
     }
 
-    m_videoSession.Deinit();
-    m_canSession.Deinit();
+    QMap<int, CVideoFileSession*>::iterator iterVideo = m_mapVideoSession.begin();
+    for (; iterVideo != m_mapVideoSession.end(); iterVideo++)
+    {
+        iterVideo.value()->Deinit();
+    }
+
+    QMap<int, CCanFileSession*>::iterator iterCan = m_mapCanSession.begin();
+    for (; iterCan != m_mapCanSession.end(); iterCan++)
+    {
+        iterCan.value()->Deinit();
+    }
 }
+
 
 void CGraphicsView::setEditModoEnabled(bool enable)
 {
@@ -78,39 +92,19 @@ void CGraphicsView::setEditModoEnabled(bool enable)
 void CGraphicsView::setStoragePath(const QString& strPath)
 {
     m_strStoragePath = strPath;
+    m_strVideoStorage = m_strStoragePath + "/videos";
+    m_strCanStorage = m_strStoragePath + "/cans";
 
-    QList<QGraphicsItem*> lstItem = this->items();
-    for (int i = 0; i < lstItem.size(); i++)
+    QMap<int, CVideoFileSession*>::iterator iterVideo = m_mapVideoSession.begin();
+    for (; iterVideo != m_mapVideoSession.end(); iterVideo++)
     {
-        QGraphicsItem* pItem = lstItem.at(i);
-        if (pItem->isWidget())      // timeaxis、video、table 
-        {
-            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
-            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
-            ITEMTYPE iType = pCustomItem->type();
-            if (iType == Item_TimeAxis)         // time axis 
-            {
-                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
-            }
-            else if (iType == Item_Video)         // video 
-            {
-                CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
-                m_videoSession.Init(m_strStoragePath.toStdString().c_str(), pVideoWidget->getChannel());    // 新建组件默认channel为-1 
-                m_videoSession.GetStreamMgr()->AddStream(pVideoWidget);
-            }
-            else if (iType == Item_Table)           // table 
-            {
-                CTableView *pTableView = dynamic_cast<CTableView*>(pCustomItem);
-                m_canSession.Init(m_strStoragePath.toStdString().c_str(), &m_profile, pTableView->getChannel());
-                m_canSession.GetStreamMgr()->AddStream(pTableView);
-            }
-        }
-        else        // 曲线图 
-        {
-            CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
-            m_canSession.Init(m_strStoragePath.toStdString().c_str(), &m_profile, pCurveItem->getChannel());
-            m_canSession.GetStreamMgr()->AddStream(pCurveItem);
-        }
+        iterVideo.value()->Init(m_strVideoStorage.toStdString().c_str(), iterVideo.key());
+    }
+
+    QMap<int, CCanFileSession*>::iterator iterCan = m_mapCanSession.begin();
+    for (; iterCan != m_mapCanSession.end(); iterCan++)
+    {
+        iterCan.value()->Init(m_strCanStorage.toStdString().c_str(), &m_profile, iterCan.key());
     }
 }
 
@@ -121,9 +115,20 @@ void CGraphicsView::setTimeScape(const QDateTime& dtBegin, const QDateTime& dtEn
     m_dtEnd = dtEnd;
 
     QString strTime = m_dtBegin.toString("yyyyMMddhhmmss") + "-" + m_dtEnd.toString("yyyyMMddhhmmss");
-    m_videoSession.SetScape(strTime.toStdString().c_str());
-    m_canSession.SetScape(strTime.toStdString().c_str());
 
+    QMap<int, CVideoFileSession*>::iterator iterVideo = m_mapVideoSession.begin();
+    for (; iterVideo != m_mapVideoSession.end(); iterVideo++)
+    {
+        iterVideo.value()->SetScape(strTime.toStdString().c_str());
+    }
+
+    QMap<int, CCanFileSession*>::iterator iterCan = m_mapCanSession.begin();
+    for (; iterCan != m_mapCanSession.end(); iterCan++)
+    {
+        iterCan.value()->SetScape(strTime.toStdString().c_str());
+    }
+
+    // test curve ??? 
     QList<QGraphicsItem*> lstItem = this->items();
     for (int i = 0; i < lstItem.size(); i++)
     {
@@ -146,25 +151,157 @@ void CGraphicsView::skipTo(const QDateTime& currentDateTime)
 {
     m_dtSkip = currentDateTime;
     QString strTime = m_dtSkip.toString("yyyyMMddhhmmss");
-    m_videoSession.SkipTo(strTime.toStdString().c_str());
-    m_canSession.SkipTo(strTime.toStdString().c_str());
+
+    QMap<int, CVideoFileSession*>::iterator iterVideo = m_mapVideoSession.begin();
+    for (; iterVideo != m_mapVideoSession.end(); iterVideo++)
+    {
+        iterVideo.value()->SkipTo(strTime.toStdString().c_str());
+    }
+
+    QMap<int, CCanFileSession*>::iterator iterCan = m_mapCanSession.begin();
+    for (; iterCan != m_mapCanSession.end(); iterCan++)
+    {
+        iterCan.value()->SkipTo(strTime.toStdString().c_str());
+    }
 }
 
 
 void CGraphicsView::play()
 {
-    m_videoSession.SkipTo("20170411131010");
-    m_videoSession.Play();
+    QMap<int, CVideoFileSession*>::iterator iterVideo = m_mapVideoSession.begin();
+    for (; iterVideo != m_mapVideoSession.end(); iterVideo++)
+    {
+        iterVideo.value()->SkipTo("20170411131010");        // test ??? 
+        iterVideo.value()->Play();
+    }
 
-    m_canSession.SkipTo("20170413151254");
-    m_canSession.Play();
+    QMap<int, CCanFileSession*>::iterator iterCan = m_mapCanSession.begin();
+    for (; iterCan != m_mapCanSession.end(); iterCan++)
+    {
+        iterCan.value()->SkipTo("20170413151254");        // test ??? 
+        iterCan.value()->Play();
+    }
 }
 
 
 void CGraphicsView::pause()
 {
-    m_videoSession.Pause();
-    m_canSession.Pause();
+    QMap<int, CVideoFileSession*>::iterator iterVideo = m_mapVideoSession.begin();
+    for (; iterVideo != m_mapVideoSession.end(); iterVideo++)
+    {
+        iterVideo.value()->Pause();
+    }
+
+    QMap<int, CCanFileSession*>::iterator iterCan = m_mapCanSession.begin();
+    for (; iterCan != m_mapCanSession.end(); iterCan++)
+    {
+        iterCan.value()->Pause();
+    }
+}
+
+
+// 读取XML
+void CGraphicsView::readXml()
+{
+    CFileOperationManager cfm("das.xml");
+    QMap<int, QList<WidgetProperty_t> > mapTmpItems;
+    if (!cfm.ReadXmlFile(mapTmpItems))
+    {
+        CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::readXml", "read xml failed!");
+        return;
+    }
+
+    for (auto& itr = mapTmpItems.begin(); itr != mapTmpItems.end(); ++itr)
+    {
+        if (Item_TimeAxis == itr.key())
+        {
+            for (auto& obj : itr.value())
+            {
+                CTimeAxis* pTimeAxis = new CTimeAxis;
+                pTimeAxis->resize(obj.m_realWidth, obj.m_realHeight);
+                pTimeAxis->setTimeRange(obj.m_strStart, obj.m_strEnd);
+                pTimeAxis->setValue(obj.m_strPlayPos);
+                m_pScene->addWidget(pTimeAxis);
+                pTimeAxis->move(-obj.m_realX, -obj.m_realY);
+            }
+        }
+        else if (Item_Video == itr.key())
+        {
+            for (auto& obj : itr.value())
+            {
+                CVideoWidget* pVideo = new CVideoWidget;
+                pVideo->setView(this);
+                pVideo->resize(obj.m_realWidth, obj.m_realHeight);
+                m_pScene->addWidget(pVideo);
+                pVideo->move(-obj.m_realX, -obj.m_realY);
+
+                // 绑定session与listener 
+                QMap<int, CVideoFileSession*>::iterator iter = m_mapVideoSession.find(0);    // 0 - channel ??? 
+                if (iter != m_mapVideoSession.end() && iter.key() == 0) // 存在 
+                {
+                    iter.value()->GetStreamMgr()->AddStream(pVideo);
+                }
+                else // 不存在 
+                {
+                    CVideoFileSession* pSession = new CVideoFileSession;
+                    pSession->Init(m_strVideoStorage.toStdString().c_str(), 0);
+                    pSession->GetStreamMgr()->AddStream(pVideo);
+                    m_mapVideoSession.insert(0, pSession);
+                }
+            }
+        }
+        else if (Item_Chart == itr.key())
+        {
+            for (auto& obj : itr.value())
+            {
+                CCurveGraphicsItem* pItem = new CCurveGraphicsItem;
+                QRectF rectF(0, 0, obj.m_realWidth, obj.m_realHeight);
+                pItem->resetItemSize(rectF);
+                m_pScene->addItem(pItem);
+                pItem->moveBy(-obj.m_realX, -obj.m_realY);
+
+                // 绑定session与listener 
+                QMap<int, CCanFileSession*>::iterator iter = m_mapCanSession.find(1);    // 1 - channel ??? 
+                if (iter != m_mapCanSession.end() && iter.key() == 1)       // 存在，直接绑定 
+                {
+                    iter.value()->GetStreamMgr()->AddStream(pItem);
+                }
+                else    // 不存在 
+                {
+                    CCanFileSession* pSession = new CCanFileSession;
+                    pSession->Init(m_strCanStorage.toStdString().c_str(), &m_profile, 1);
+                    pSession->GetStreamMgr()->AddStream(pItem);
+                    m_mapCanSession.insert(1, pSession);
+                }
+            }
+        }
+        else if (Item_Table == itr.key())
+        {
+            for (auto& obj : itr.value())
+            {
+                CTableView* pTable = new CTableView;
+                pTable->resize(obj.m_realWidth, obj.m_realHeight);
+                m_pScene->addWidget(pTable);
+                pTable->move(-obj.m_realX, -obj.m_realY);
+
+                // 绑定session与listener 
+                QMap<int, CCanFileSession*>::iterator iter = m_mapCanSession.find(1);    // 1 - channel ??? 
+                if (iter != m_mapCanSession.end() && iter.key() == 1)
+                {
+                    iter.value()->GetStreamMgr()->AddStream(pTable);
+                }
+                else    // 不存在 
+                {
+                    CCanFileSession* pSession = new CCanFileSession;
+                    pSession->Init(m_strCanStorage.toStdString().c_str(), &m_profile, 1);
+                    pSession->GetStreamMgr()->AddStream(pTable);
+                    m_mapCanSession.insert(1, pSession);
+                }
+            }
+        }
+    }
+
+    CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::readXml", "read xml success!");
 }
 
 
@@ -239,70 +376,6 @@ void CGraphicsView::saveLayout()
         CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::saveLayout", "save laout failed!");
     }
 }
-
-
-// 读取XML
-void CGraphicsView::readXml()
-{
-    CFileOperationManager cfm("das.xml");
-    QMap<int, QList<WidgetProperty_t>> mapTmpItems;
-    if (!cfm.ReadXmlFile(mapTmpItems))
-    {
-        CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::readXml", "read xml failed!");
-        return;
-    }
-
-    for (auto& itr = mapTmpItems.begin(); itr != mapTmpItems.end(); ++itr)
-    {
-        if (Item_TimeAxis == itr.key())
-        {
-            for (auto& obj : itr.value())
-            {
-                CTimeAxis* pTimeAxis = new CTimeAxis;
-                pTimeAxis->resize(obj.m_realWidth, obj.m_realHeight);
-                pTimeAxis->setTimeRange(obj.m_strStart, obj.m_strEnd);
-                pTimeAxis->setValue(obj.m_strPlayPos);
-                m_pScene->addWidget(pTimeAxis);
-                pTimeAxis->move(-obj.m_realX, -obj.m_realY);
-            }
-        }
-        else if (Item_Video == itr.key())
-        {
-            for (auto& obj : itr.value())
-            {
-                CVideoWidget* pVideo = new CVideoWidget;
-                pVideo->setView(this);
-                pVideo->resize(obj.m_realWidth, obj.m_realHeight);
-                m_pScene->addWidget(pVideo);
-                pVideo->move(-obj.m_realX, -obj.m_realY);
-            }
-        }
-        else if (Item_Chart == itr.key())
-        {
-            for (auto& obj : itr.value())
-            {
-                CCurveGraphicsItem* pItem = new CCurveGraphicsItem;
-                QRectF rectF(0, 0, obj.m_realWidth, obj.m_realHeight);
-                pItem->resetItemSize(rectF);
-                m_pScene->addItem(pItem);
-                pItem->moveBy(-obj.m_realX, -obj.m_realY);
-            }
-        }
-        else if (Item_Table == itr.key())
-        {
-            for (auto& obj : itr.value())
-            {
-                CTableView* pTable = new CTableView;
-                pTable->resize(obj.m_realWidth, obj.m_realHeight);
-                m_pScene->addWidget(pTable);
-                pTable->move(-obj.m_realX, -obj.m_realY);
-            }
-        }
-    }
-
-    CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::readXml", "read xml success!");
-}
-
 
 void CGraphicsView::dragEnterEvent(QDragEnterEvent * event)
 {

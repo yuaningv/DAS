@@ -50,12 +50,14 @@ private:
     bool m_bEditFlag;
 
     QString m_strStoragePath;           // storage path 
+    QString m_strVideoStorage;          // video storage path 
+    QString m_strCanStorage;            // can storage path 
     QDateTime m_dtBegin;                // begin time 
     QDateTime m_dtEnd;                  // end time 
     QDateTime m_dtSkip;                 // skip time  
 
-    CVideoFileSession m_videoSession;
-    CCanFileSession m_canSession;
+    QMap<int, CVideoFileSession*> m_mapVideoSession;         // key - channel, value - video session 
+    QMap<int, CCanFileSession*> m_mapCanSession;             // key - channel, value - can session 
     CCanDataProfile m_profile;
 
 signals:
