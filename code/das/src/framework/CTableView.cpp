@@ -83,6 +83,12 @@ void CTableView::createHorizontalHeaders()
         return;
     }
 
+    // 添加时间头
+    CurveLine_t TimeHeader;
+    TimeHeader.m_strName = "time";
+    TimeHeader.m_strDisplayName = QStringLiteral("时间");
+    m_lstHorizontalHeader.push_front(TimeHeader);
+
     m_pModel->setColumnCount(m_lstHorizontalHeader.size());
     for (int i = 0; i < m_lstHorizontalHeader.count(); ++i)
     {
@@ -113,11 +119,18 @@ void CTableView::OnMedia(unsigned char* buffer, unsigned long length,
     QList<CurveLine_t> lstCanData;
     CurveLine_t canData;
 
+    // time
+    canData.m_strName = "time";
+    canData.m_strDisplayName = QStringLiteral("时间");
+    quint64 TmpMsecs = static_cast<quint64>(secs)* 1000 + static_cast<quint64>(usecs);
+    canData.m_strValue = QDateTime::fromMSecsSinceEpoch(TmpMsecs).toString("yyyy/MM/dd hh:mm:ss.zzz");
+    lstCanData.push_back(canData);
+
     char buf[256];
     CCanData* pData = (CCanData*)buffer;
     for (int i = 0; i < length; i++)
     {
-        canData.m_strDisplayName = QString::fromStdString(pData[i].m_pCanItem->m_DispName);
+        canData.m_strDisplayName = QString::fromLocal8Bit(pData[i].m_pCanItem->m_DispName.c_str());
         canData.m_strName = QString::fromStdString(pData[i].m_pCanItem->m_Name);
         canData.m_strValue = QString::number(pData[i].m_Value, 'f', 2);
         lstCanData.append(canData);
@@ -158,7 +171,7 @@ void CTableView::insertRowData(QList<CurveLine_t>& lstRowData)
     {
         for (auto& TmpData : lstRowData)
         {
-            if (TmpData.m_strName == m_pModel->horizontalHeaderItem(iCol)->data(CurveRole).toString())
+            if (TmpData.m_strDisplayName == m_pModel->horizontalHeaderItem(iCol)->text().trimmed())
             {
                 m_pModel->setData(m_pModel->index(iRow, iCol), TmpData.m_strValue);
                 break;

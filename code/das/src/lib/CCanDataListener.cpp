@@ -85,14 +85,14 @@ void CCanDataListener::OnMedia(unsigned char* buffer, unsigned long length, unsi
         CCanData* pData = (CCanData*)buffer;
         for (int i = 0; i < length; i++)
         {
-            canData.m_strDisplayName = QString::fromStdString(pData[i].m_pCanItem->m_DispName);
+            canData.m_strDisplayName = QString::fromLocal8Bit(pData[i].m_pCanItem->m_DispName.c_str());
             canData.m_strName = QString::fromStdString(pData[i].m_pCanItem->m_Name);
             canData.m_strValue = QString::number(pData[i].m_Value, 'f', 2);
             lstCanData.append(canData);
         }
 
         // current time 
-        QDateTime currentDateTime = QDateTime::fromMSecsSinceEpoch(secs * 1000 + msecs);
+        QDateTime currentDateTime = QDateTime::fromMSecsSinceEpoch(static_cast<quint64>(secs)* 1000 + static_cast<quint64>(msecs));
 
         emit sigCanUpdate(lstCanData, currentDateTime);
     }

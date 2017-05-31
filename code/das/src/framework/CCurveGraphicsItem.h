@@ -67,7 +67,7 @@ public:
     QRectF boundingRect() const;
     void resetItemSize(const QRectF &rect);
 
-    void setChannel(int iChannel);       // 通过channel来判断该组件是否已经关联数据，iChannel < 0无关联数据，iChannel >= 0关联数据 
+    void setChannel(int iChannel) { m_iChannel = iChannel; };       // 通过channel来判断该组件是否已经关联数据，iChannel < 0无关联数据，iChannel >= 0关联数据 
     int getChannel() { return m_iChannel; };
 
 private:

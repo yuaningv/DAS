@@ -185,11 +185,11 @@ void CGraphicsView::saveLayout()
             if (iType == Item_Video)
             {
                 tmpWgtPro.m_type = Item_Video;
+                tmpWgtPro.m_iChannel = dynamic_cast<CVideoWidget*>(pCustomItem)->getChannel();
                 tmpWgtPro.m_realX = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().x();
                 tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
                 tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
                 tmpWgtPro.m_realHeight = item->boundingRect().bottomRight().y() - item->boundingRect().topLeft().y();
-
                 //mapTmpItems[Item_Video].append(tmpWgtPro);
             }
             else if (iType == Item_TimeAxis)
@@ -208,6 +208,7 @@ void CGraphicsView::saveLayout()
             else if (iType == Item_Table)
             {
                 tmpWgtPro.m_type = Item_Table;
+                tmpWgtPro.m_iChannel = dynamic_cast<CTableView*>(pCustomItem)->getChannel();
                 tmpWgtPro.m_realX = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().x();
                 tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
                 tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
@@ -219,6 +220,7 @@ void CGraphicsView::saveLayout()
         else
         {
             tmpWgtPro.m_type = Item_Chart;
+            tmpWgtPro.m_iChannel = dynamic_cast<CCurveGraphicsItem*>(item)->getChannel();
             tmpWgtPro.m_realX = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().x();
             tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
             tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
@@ -272,6 +274,7 @@ void CGraphicsView::readXml()
             {
                 CVideoWidget* pVideo = new CVideoWidget;
                 pVideo->setView(this);
+                pVideo->setChannel(obj.m_iChannel);
                 pVideo->resize(obj.m_realWidth, obj.m_realHeight);
                 m_pScene->addWidget(pVideo);
                 pVideo->move(-obj.m_realX, -obj.m_realY);
@@ -284,6 +287,7 @@ void CGraphicsView::readXml()
                 CCurveGraphicsItem* pItem = new CCurveGraphicsItem;
                 QRectF rectF(0, 0, obj.m_realWidth, obj.m_realHeight);
                 pItem->resetItemSize(rectF);
+                pItem->setChannel(obj.m_iChannel);
                 m_pScene->addItem(pItem);
                 pItem->moveBy(-obj.m_realX, -obj.m_realY);
             }
@@ -294,6 +298,7 @@ void CGraphicsView::readXml()
             {
                 CTableView* pTable = new CTableView;
                 pTable->resize(obj.m_realWidth, obj.m_realHeight);
+                pTable->setChannel(obj.m_iChannel);
                 m_pScene->addWidget(pTable);
                 pTable->move(-obj.m_realX, -obj.m_realY);
             }
