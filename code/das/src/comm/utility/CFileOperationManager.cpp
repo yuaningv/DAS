@@ -48,7 +48,6 @@ bool CFileOperationManager::ReadXmlFile(QMap<int, QList<WidgetProperty_t>>& mapT
         if (!e.isNull()) 
         {
             WidgetProperty_t tmpWgtPro;
-            qDebug() << e.tagName(); // the node really is an element.
             QDomNode tmpNode = e.firstChild();
             while (!tmpNode.isNull())
             {
