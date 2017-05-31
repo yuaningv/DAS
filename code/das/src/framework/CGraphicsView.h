@@ -7,6 +7,10 @@
 #include "type.h"
 #include "constant.h"
 
+#include "VideoFileSession.h"
+#include "CanDecoder.h"
+#include "CanFileSession.h"
+
 
 class CGraphicsView : public QGraphicsView
 {
@@ -45,20 +49,20 @@ private:
     CGraphicsScene* m_pScene;
     bool m_bEditFlag;
 
-    QTimer* m_pTimer;
-    int m_iInterval;
-
     QString m_strStoragePath;           // storage path 
     QDateTime m_dtBegin;                // begin time 
     QDateTime m_dtEnd;                  // end time 
     QDateTime m_dtSkip;                 // skip time  
 
+    CVideoFileSession m_videoSession;
+    CCanFileSession m_canSession;
+    CCanDataProfile m_profile;
+
 signals:
-    void sigItemAttr(const ItemAttribute_t& itemAttr);
+    void sigItemAttr(const ItemAttribute_t& itemAttr);      // test 
     void sigEnd();
 
 private slots:
-    void OnUpdateWork();
 };
 
 

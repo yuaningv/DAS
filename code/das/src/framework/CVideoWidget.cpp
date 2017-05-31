@@ -10,7 +10,6 @@ CVideoWidget::CVideoWidget(QWidget* parent /*= 0*/)
     : CCustomWidgetBase(parent),
     m_bFullscreenFlag(false),
     m_bFlag(true),
-    m_pVideoData(NULL),
     m_iChannel(0)
 {
     static int iVideoSquenceNumber = 1;
@@ -28,19 +27,11 @@ CVideoWidget::CVideoWidget(QWidget* parent /*= 0*/)
     m_iLastY = this->y();
     m_iLastWidth = this->width();
     m_iLastHeight = this->height();
-
-    m_pVideoData = new CVideoDataListener;
-    connect(m_pVideoData, SIGNAL(sigVideoUpdate(const QImage&, const QDateTime&)), this, SLOT(OnUpdateFrame(const QImage&, const QDateTime&)));
 }
 
 
 CVideoWidget::~CVideoWidget()
 {
-    if (m_pVideoData != NULL)
-    {
-        delete m_pVideoData;
-        m_pVideoData = NULL;
-    }
 }
 
 
@@ -51,83 +42,11 @@ void CVideoWidget::setTitle(const QString& strTitle)
 }
 
 
-int CVideoWidget::init(const QString& strStorage, int iChannel /* = -1 */)
-{
-    m_strStorage = strStorage;
-    m_iChannel = iChannel;
-    if (m_iChannel < 0)
-    {
-        return 0;
-    }
-
-    m_pVideoData->init(strStorage, iChannel);
-
-    return 1;
-}
-
-
 void CVideoWidget::setChannel(int iChannel)
 {
     m_iChannel = iChannel;
-    if (m_iChannel < 0)
-    {
-        return;
-    }
-
-    m_pVideoData->init(m_strStorage, iChannel);
 }
 
-
-int CVideoWidget::setScape(const QDateTime& dtBegin, const QDateTime& dtEnd)
-{
-    if (m_iChannel < 0)
-    {
-        return 0;
-    }
-
-    m_pVideoData->setScape(dtBegin, dtEnd);
-
-    return 1;
-}
-
-
-int CVideoWidget::skipTo(const QDateTime& dtPos)
-{
-    if (m_iChannel < 0)
-    {
-        return 0;
-    }
-
-    m_pVideoData->skipTo(dtPos);
-
-    return 1;
-}
-
-
-int CVideoWidget::play()
-{
-    if (m_iChannel < 0)
-    {
-        return 0;
-    }
-
-    m_pVideoData->play();
-
-    return 1;
-}
-
-
-int CVideoWidget::pause()
-{
-    if (m_iChannel < 0)
-    {
-        return 0;
-    }
-
-    m_pVideoData->pause();
-
-    return 1;
-}
 
 
 void CVideoWidget::updateFrame()
@@ -199,35 +118,21 @@ void CVideoWidget::paintEvent(QPaintEvent *ev)
     Q_UNUSED(ev);
 
     return;
-
-    QPainter painter;
-    painter.begin(this);
-
-    if (m_image.size().width() <= 0)
-    {
-    }
-
-    QRect rect(0, 0, this->width(), this->height());
-    painter.drawImage(rect, m_image);
-
-    painter.end();
 }
 
 
-void CVideoWidget::OnUpdateFrame(const QImage& image, const QDateTime& currentDateTime)
+HWND CVideoWidget::GetWndHandle()
 {
-    //qobject_cast<CVideoDataListener *>(sender());
+    //CLogManager::getInstance()->log(eLogDebug, "CVideoWidget::GetWndHandle", "update frame, hwnd:%d", winId());
 
-    //m_labelTitle->setText("1111111");
+    return (HWND)this->winId();
+}
 
-    CLogManager::getInstance()->log(eLogDebug, "CVideoWidget::OnUpdateFrame", "update frame, hwnd:%d", winId());
 
-    /*QPalette pal;
-    pal.setBrush(QPalette::Background, QBrush(image));
-    this->setPalette(pal);*/
-
+void CVideoWidget::OnMedia(unsigned char* buffer, unsigned long length, 
+    unsigned long payload, unsigned long secs, unsigned long usecs, void* pCustomData)
+{
     updateFrame();
-
-    CLogManager::getInstance()->log(eLogDebug, "CVideoWidget::OnUpdateFrame", "update frame, hwnd:%d", winId());
+    CLogManager::getInstance()->log(eLogDebug, "CVideoWidget::OnMedia", "update frame, hwnd:%d", winId());
 }
 

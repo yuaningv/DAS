@@ -19,7 +19,6 @@
 CGraphicsView::CGraphicsView(QWidget *parent)
     : QGraphicsView(parent),
     m_bEditFlag(false),
-    m_iInterval(1000),
     m_strStoragePath("")
 {
     setAttribute(Qt::WA_DeleteOnClose);
@@ -39,11 +38,9 @@ CGraphicsView::CGraphicsView(QWidget *parent)
     m_dtBegin = QDateTime::fromString("2017/04/11 01:01:01", "yyyy/MM/dd hh:mm:ss");
     m_dtEnd = QDateTime::fromString("2017/05/01 01:01:01", "yyyy/MM/dd hh:mm:ss");
 
-    readXml();
+    m_profile.Init("./candatadefine.xml");
 
-    m_pTimer = new QTimer(this);
-    m_pTimer->setInterval(m_iInterval);
-    connect(m_pTimer, SIGNAL(timeout()), this, SLOT(OnUpdateWork()));
+    readXml();
 }
 
 
@@ -54,6 +51,9 @@ CGraphicsView::~CGraphicsView()
         delete m_pScene;
         m_pScene = NULL;
     }
+
+    m_videoSession.Deinit();
+    m_canSession.Deinit();
 }
 
 void CGraphicsView::setEditModoEnabled(bool enable)
@@ -95,15 +95,21 @@ void CGraphicsView::setStoragePath(const QString& strPath)
             else if (iType == Item_Video)         // video 
             {
                 CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
-                pVideoWidget->init(m_strStoragePath, pVideoWidget->getChannel());
+                m_videoSession.Init(m_strStoragePath.toStdString().c_str(), pVideoWidget->getChannel());    // 新建组件默认channel为-1 
+                m_videoSession.GetStreamMgr()->AddStream(pVideoWidget);
             }
             else if (iType == Item_Table)           // table 
             {
+                CTableView *pTableView = dynamic_cast<CTableView*>(pCustomItem);
+                m_canSession.Init(m_strStoragePath.toStdString().c_str(), &m_profile, pTableView->getChannel());
+                m_canSession.GetStreamMgr()->AddStream(pTableView);
             }
         }
         else        // 曲线图 
         {
             CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
+            m_canSession.Init(m_strStoragePath.toStdString().c_str(), &m_profile, pCurveItem->getChannel());
+            m_canSession.GetStreamMgr()->AddStream(pCurveItem);
         }
     }
 }
@@ -114,31 +120,23 @@ void CGraphicsView::setTimeScape(const QDateTime& dtBegin, const QDateTime& dtEn
     m_dtBegin = dtBegin;
     m_dtEnd = dtEnd;
 
+    QString strTime = m_dtBegin.toString("yyyyMMddhhmmss") + "-" + m_dtEnd.toString("yyyyMMddhhmmss");
+    m_videoSession.SetScape(strTime.toStdString().c_str());
+    m_canSession.SetScape(strTime.toStdString().c_str());
+
     QList<QGraphicsItem*> lstItem = this->items();
     for (int i = 0; i < lstItem.size(); i++)
     {
         QGraphicsItem* pItem = lstItem.at(i);
         if (pItem->isWidget())      // timeaxis、video、table 
         {
-            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
-            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
-            ITEMTYPE iType = pCustomItem->type();
-            if (iType == Item_TimeAxis)         // time axis 
-            {
-                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
-            }
-            else if (iType == Item_Video)         // video 
-            {
-                CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
-                pVideoWidget->setScape(m_dtBegin, m_dtEnd);
-            }
-            else if (iType == Item_Table)           // table 
-            {
-            }
         }
         else        // 曲线图 
         {
             CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
+            double dbMin = QDateTime::fromString("20170412141154", "yyyyMMddhhmmss").toMSecsSinceEpoch();
+            double dbMax = QDateTime::fromString("20170412142154", "yyyyMMddhhmmss").toMSecsSinceEpoch();
+            pCurveItem->setXAxisRange(dbMin, dbMax);
         }
     }
 }
@@ -147,192 +145,26 @@ void CGraphicsView::setTimeScape(const QDateTime& dtBegin, const QDateTime& dtEn
 void CGraphicsView::skipTo(const QDateTime& currentDateTime)
 {
     m_dtSkip = currentDateTime;
-
-    QList<QGraphicsItem*> lstItem = this->items();
-    for (int i = 0; i < lstItem.size(); i++)
-    {
-        QGraphicsItem* pItem = lstItem.at(i);
-        if (pItem->isWidget())      // timeaxis、video、table 
-        {
-            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
-            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
-            ITEMTYPE iType = pCustomItem->type();
-            if (iType == Item_TimeAxis)         // time axis 
-            {
-                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
-            }
-            else if (iType == Item_Video)         // video 
-            {
-                CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
-                pVideoWidget->skipTo(m_dtSkip);
-            }
-            else if (iType == Item_Table)           // table 
-            {
-            }
-        }
-        else        // 曲线图 
-        {
-            CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
-        }
-    }
+    QString strTime = m_dtSkip.toString("yyyyMMddhhmmss");
+    m_videoSession.SkipTo(strTime.toStdString().c_str());
+    m_canSession.SkipTo(strTime.toStdString().c_str());
 }
 
 
 void CGraphicsView::play()
 {
-    QList<QGraphicsItem*> lstItem = this->items();
-    for (int i = 0; i < lstItem.size(); i++)
-    {
-        QGraphicsItem* pItem = lstItem.at(i);
-        if (pItem->isWidget())      // timeaxis、video、table 
-        {
-            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
-            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
-            ITEMTYPE iType = pCustomItem->type();
-            if (iType == Item_TimeAxis)         // time axis 
-            {
-                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
-            }
-            else if (iType == Item_Video)         // video 
-            {
-                CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
-                pVideoWidget->play();
-            }
-            else if (iType == Item_Table)           // table 
-            {
-            }
-        }
-        else        // 曲线图 
-        {
-            CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
-        }
-    }
+    m_videoSession.SkipTo("20170411131010");
+    m_videoSession.Play();
+
+    m_canSession.SkipTo("20170413151254");
+    m_canSession.Play();
 }
 
 
 void CGraphicsView::pause()
 {
-    QList<QGraphicsItem*> lstItem = this->items();
-    for (int i = 0; i < lstItem.size(); i++)
-    {
-        QGraphicsItem* pItem = lstItem.at(i);
-        if (pItem->isWidget())      // timeaxis、video、table 
-        {
-            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
-            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
-            ITEMTYPE iType = pCustomItem->type();
-            if (iType == Item_TimeAxis)         // time axis 
-            {
-                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
-            }
-            else if (iType == Item_Video)         // video 
-            {
-                CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
-                pVideoWidget->pause();
-            }
-            else if (iType == Item_Table)           // table 
-            {
-            }
-        }
-        else        // 曲线图 
-        {
-            CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
-        }
-    }
-}
-
-
-void CGraphicsView::OnUpdateWork()
-{
-    QList<QGraphicsItem*> lstItem = this->items();
-    for (int i = 0; i < lstItem.size(); i++)
-    {
-        QGraphicsItem* pItem = lstItem.at(i);
-        if (pItem->isWidget())      // timeaxis、video、table 
-        {
-            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
-            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
-            ITEMTYPE iType = pCustomItem->type();
-            if (iType == Item_TimeAxis)         // time axis 
-            {
-                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
-
-                if (pTimeAxis->getValue() >= pTimeAxis->getEndTime())
-                {
-                    m_pTimer->stop();
-                    pTimeAxis->setValue(pTimeAxis->getStartTime());
-                    emit sigEnd();
-                    return;
-                }
-
-                QDateTime dt = QDateTime::fromString(pTimeAxis->getValue(), "yyyy/MM/dd hh:mm:ss:zzz");
-                QString dtCurrent = dt.toString("yyyy/MM/dd hh:mm:ss:zzz");
-                QString strValue = dt.addMSecs(m_iInterval).toString("yyyy/MM/dd hh:mm:ss:zzz");
-                pTimeAxis->setValue(strValue);
-            }
-            else if (iType == Item_Video)         // video 
-            {
-                CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
-                pVideoWidget->updateFrame();
-            }
-            else if (iType == Item_Table)
-            {
-                // 接收回调数据 
-                CurveLine_t curverLine;
-                QList<CurveLine_t> lstTmpData;
-                curverLine.m_strName = "time";
-                curverLine.m_strValue = QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss");
-                lstTmpData.append(curverLine);
-                curverLine.m_strName = "multi_rate";
-                curverLine.m_strValue = QString::number(-80 + qrand() % 88);
-                lstTmpData.append(curverLine);
-                curverLine.m_strName = "main_arm_length";
-                curverLine.m_strValue = QString::number(13.3 + qrand() % 86);
-                lstTmpData.append(curverLine);
-                curverLine.m_strName = "main_arm_angle";
-                curverLine.m_strValue = QString::number(qrand() % 90);
-                lstTmpData.append(curverLine);
-                curverLine.m_strName = "normal_weight";
-                curverLine.m_strValue = QString::number(qrand() % 550);
-                lstTmpData.append(curverLine);
-                curverLine.m_strName = "actual_weight";
-                curverLine.m_strValue = QString::number(qrand() % 2000);
-                lstTmpData.append(curverLine);
-                curverLine.m_strName = "moment_force_percent";
-                curverLine.m_strValue = QString::number(qrand() % 120);
-                lstTmpData.append(curverLine);
-                curverLine.m_strName = "distance_range";
-                curverLine.m_strValue = QString::number(13.3 + qrand() % 69);
-                lstTmpData.append(curverLine);
-
-                CTableView *pTable = dynamic_cast<CTableView*>(pCustomItem);
-                pTable->insertRowData(lstTmpData);
-            }
-        }
-        else        // 曲线图 
-        {
-            CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
-
-            QList<CurveLine_t> lstTmpLines = pCurveItem->getLines();
-
-            // 接收数据点
-            for (auto& TmpLine : lstTmpLines)
-            {
-                if (TmpLine.m_strName == "")  // 判断回调数据是哪条线 
-                {
-                    if (lstTmpLines.size() > 1)
-                    {
-                        TmpLine.m_vecPoints.append(TmpLine.m_vecPoints.last());
-                    }
-
-                    TmpLine.m_vecPoints.append(QPointF());  // 当前点记录起来 
-                }
-            }
-
-            // 更新曲线图 
-            pCurveItem->setLines(lstTmpLines);
-        }
-    }
+    m_videoSession.Pause();
+    m_canSession.Pause();
 }
 
 
@@ -436,14 +268,10 @@ void CGraphicsView::readXml()
         }
         else if (Item_Video == itr.key())
         {
-            int i = 0;
             for (auto& obj : itr.value())
             {
                 CVideoWidget* pVideo = new CVideoWidget;
                 pVideo->setView(this);
-                //pVideo->init(m_strStoragePath);
-                //pVideo->setScape(m_dtBegin, m_dtEnd);
-                pVideo->setChannel(i++);
                 pVideo->resize(obj.m_realWidth, obj.m_realHeight);
                 m_pScene->addWidget(pVideo);
                 pVideo->move(-obj.m_realX, -obj.m_realY);
@@ -536,8 +364,7 @@ void CGraphicsView::dropEvent(QDropEvent * event)
                 CVideoWidget* pVideoWidget = new CVideoWidget;
                 pVideoWidget->setView(this);
                 pVideoWidget->setEditModeEnabled(m_bEditFlag);
-                //pVideoWidget->init(m_strStoragePath);
-                //pVideoWidget->setScape(m_dtBegin, m_dtEnd);
+
                 m_pScene->addWidget(pVideoWidget);
                 pVideoWidget->move(mapToScene(event->pos()).toPoint());
             }

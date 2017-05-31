@@ -18,12 +18,12 @@
 #include "CGraphicsView.h"
 
 #include "type.h"
-#include "CVideoDataListener.h"
+#include "StreamMgr.h"
 
 class QLabel;
 
 
-class CVideoWidget : public CCustomWidgetBase
+class CVideoWidget : public CCustomWidgetBase, public CStreamListener
 {
     Q_OBJECT
 
@@ -47,13 +47,8 @@ public:
 public:
     HWND getWinId() { return (HWND)this->winId(); };
 
-    int init(const QString& strStorage, int iChannel = -1);
     void setChannel(int iChannel);       // 通过channel来判断该组件是否已经关联数据，iChannel < 0无关联数据，iChannel >= 0关联数据 
     int getChannel() { return m_iChannel; };
-    int setScape(const QDateTime& dtBegin, const QDateTime& dtEnd);
-    int skipTo(const QDateTime& dtPos);
-    int play();
-    int pause();
 
 protected:
     virtual void mouseReleaseEvent(QMouseEvent *ev);
@@ -63,6 +58,10 @@ protected:
     virtual ITEMTYPE type();
     virtual void paintEvent(QPaintEvent *ev);
 
+    virtual HWND GetWndHandle();
+    virtual void OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload, 
+        unsigned long secs, unsigned long usecs, void* pCustomData);
+
 private:
     int m_iID;
     QLabel* m_labelTitle;
@@ -70,13 +69,9 @@ private:
 
     ItemAttribute_t m_tItemAttr;
     bool m_bFullscreenFlag;
-    bool m_bFlag;           // test video 
+    bool m_bFlag;               // test video 
 
-    // 关联video数据 
-    CVideoDataListener* m_pVideoData;
     int m_iChannel;
-    QString m_strStorage;
-    QImage m_image;
 
 private:
     int m_iLastX;
@@ -86,7 +81,6 @@ private:
     CGraphicsView* m_pView;             // 获取View窗口大小 
 
 private slots:
-    void OnUpdateFrame(const QImage& image, const QDateTime& currentDateTime);
 };
 
 

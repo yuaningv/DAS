@@ -12,6 +12,7 @@ public:
 
 public:
 	virtual int Init(const char* storage, int channel);
+	virtual CStreamMgr* GetStreamMgr();
 
 protected:
 	virtual unsigned int Process();

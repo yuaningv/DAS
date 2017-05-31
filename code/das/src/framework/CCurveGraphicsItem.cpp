@@ -10,6 +10,9 @@
 #include "QtCore/QDebug"
 #include "QtWidgets/QMenu"
 
+#include "CLogManager.h"
+
+
 static int index = 1;
 CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
     : QGraphicsItem(parent)
@@ -28,7 +31,8 @@ CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
     , m_realScale(1.0)
     , m_realXDefault(1.0)
     , m_bEditFlag(false)
-    , m_iType(Item_Chart)
+    , m_iType(Item_Chart),
+    m_iChannel(1)
 {
     setAcceptDrops(true);
     setAcceptHoverEvents(true);
@@ -40,28 +44,6 @@ CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
     m_itemRectF = QRectF(2, 2, 400, 300);
     m_strTitle = QString(tr("chart %1")).arg(index++);
     m_lstLines.clear();
-
-    CurveLine_t c1;
-    c1.m_color = Qt::red;
-    c1.m_strDisplayName = "aa";
-    c1.m_realMin = 0.0;
-    c1.m_realMax = 1.0;
-    c1.m_vecPoints = { QPointF(0, 0), QPointF(0.2, 0.1), QPointF(0.2, 0.1), QPointF(0.3, 0.5) };
-    m_lstLines.append(c1);
-
-    c1.m_color = Qt::blue;
-    c1.m_strDisplayName = "bb";
-    c1.m_realMin = 0.0;
-    c1.m_realMax = 5.0;
-    c1.m_vecPoints = { QPointF(0, 1), QPointF(0.1, 3), QPointF(0.1, 3), QPointF(0.3, 1.5) };
-    m_lstLines.append(c1);
-
-    c1.m_color = Qt::green;
-    c1.m_strDisplayName = "cc";
-    c1.m_realMin = 1.0;
-    c1.m_realMax = 10.0;
-    c1.m_vecPoints = { QPointF(0, 3), QPointF(0.3, 2), QPointF(0.3, 2), QPointF(0.6, 8) };
-    m_lstLines.append(c1);
 
     m_line = QLine(0, 0, 0, 0);
 }
@@ -97,6 +79,7 @@ QRectF CCurveGraphicsItem::boundingRect() const
     return QRectF(m_itemRectF.x() - 2, m_itemRectF.y() - 2, m_itemRectF.width() + 4, m_itemRectF.height() + 4);
 }
 
+
 // item大小跟随拖拽改变
 void CCurveGraphicsItem::resetItemSize(const QRectF &rect)
 { 
@@ -104,8 +87,9 @@ void CCurveGraphicsItem::resetItemSize(const QRectF &rect)
     update(boundingRect());
 }
 
+
 // 点转换为相对坐标轴的点
-QPointF& CCurveGraphicsItem::mapToAxis(QPointF& point) const
+QPointF& CCurveGraphicsItem::mapToAxis(const QString& strKeyName, QPointF& point) const
 {
     // 坐标轴的（0,0）点
     qreal x = m_itemRectF.bottomLeft().x() + m_iOffset;
@@ -113,23 +97,45 @@ QPointF& CCurveGraphicsItem::mapToAxis(QPointF& point) const
 
     if (m_realX != 0)
     {
-        qreal px = point.x() / m_realX * m_realXLength;
+        qreal px = (point.x() - m_dbXAxisMin) / m_realX * m_realXLength;
         point.setX(px + x);
     }
     if (m_realY != 0)
     {
-        qreal py = point.y() / m_realY * m_realYLength;
+        qreal ymin = m_mapAxis.value(strKeyName).m_dbYAxisMin;
+        qreal ylen = m_mapAxis.value(strKeyName).m_realYLength;
+        qreal yTmp = m_mapAxis.value(strKeyName).m_realY;
+        qreal py = (point.y() - ymin) / yTmp * ylen;
         point.setY(y - py);
     }
 
     return point;
 }
 
+
+
+void CCurveGraphicsItem::setLines(const QList<CurveLine_t>& lstTmpVec)
+{
+    m_lstLines = lstTmpVec;
+    CAxisData_t TmpAxisData;
+    for (auto& TmpData : lstTmpVec)
+    {
+        TmpAxisData.m_dbYAxisMax = TmpData.m_realMax;
+        TmpAxisData.m_dbYAxisMin = TmpData.m_realMin;
+        TmpAxisData.m_realY = (TmpData.m_realMax - TmpData.m_realMin) / m_iYTicksCount;;
+        TmpAxisData.m_realYLength = ((m_itemRectF.bottomLeft().y() - m_iOffset) - (m_itemRectF.topLeft().y() + m_iOffset)) / m_iYTicksCount;
+        m_mapAxis[TmpData.m_strName] = TmpAxisData;
+    }
+    //scene()->update();
+    update(boundingRect());
+
+}
+
+
 // 绘制曲线图
 void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget /*= 0*/)
 {
     Q_UNUSED(widget);
-
 
     if ((option->state & QStyle::State_Selected) == QStyle::State_Selected && m_bEditFlag)
     {
@@ -147,7 +153,7 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
 
 
     // title
-    painter->drawText(m_itemRectF.topLeft() + QPointF(15, 15), m_strTitle);
+    painter->drawText(m_itemRectF.topLeft() + QPointF(15, 15), "aaa");
 
     // x坐标轴
     painter->drawLine(m_itemRectF.bottomLeft() + QPointF(m_iOffset, -m_iOffset), m_itemRectF.bottomRight() + QPointF(-m_iOffset, -m_iOffset));
@@ -162,55 +168,47 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
         painter->setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
         painter->drawLine(m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1), m_itemRectF.bottomLeft().y() - m_iOffset, m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1), m_itemRectF.topLeft().y() + m_iOffset /*- 5*/);
         painter->setPen(QPen(Qt::black, 1, Qt::SolidLine));
-        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1) - 5, m_itemRectF.bottomLeft().y() - m_iOffset + 10, QString::number(m_realX*(i + 1) + m_dbXAxisMin));
+        QString strText = QDateTime::fromMSecsSinceEpoch(m_realX*(i + 1) + m_dbXAxisMin).toString("hh:mm:ss:zzz");
+        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1) - 5, m_itemRectF.bottomLeft().y() - m_iOffset + 10, strText/* QString::number(m_realX*(i + 1) + m_dbXAxisMin)*/);
     }
-    painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 5, m_itemRectF.bottomLeft().y() - m_iOffset + 10, QString::number(m_dbXAxisMin));
+    QString strTextMin = QDateTime::fromMSecsSinceEpoch(m_dbXAxisMin).toString("hh:mm:ss:zzz");
+    painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 5, m_itemRectF.bottomLeft().y() - m_iOffset + 10, strTextMin/*QString::number(m_dbXAxisMin)*/);
 
     // y 坐标轴
     painter->drawLine(m_itemRectF.bottomLeft() + QPointF(m_iOffset, -m_iOffset), m_itemRectF.topLeft() + QPointF(m_iOffset, m_iOffset));
     int iTmpLineCount = m_lstLines.count();
     // 每个图例位置长度
-    int iLength = ((m_itemRectF.bottomRight().x()) - m_iOffset*2 - (m_itemRectF.bottomLeft().x() + m_iOffset*2)) / iTmpLineCount;
+    int iLength = ((m_itemRectF.bottomRight().x()) - m_iOffset * 2 - (m_itemRectF.bottomLeft().x() + m_iOffset * 2)) / iTmpLineCount;
 
     for (int n = 0; n < iTmpLineCount; ++n)
     {
-        setYAxisRange(m_lstLines.at(n).m_realMin, m_lstLines.at(n).m_realMax);
+        //setYAxisRange(m_lstLines.at(n).m_realMin, m_lstLines.at(n).m_realMax);
 
         // 每个刻度值
-        m_realY = (m_dbYAxisMax - m_dbYAxisMin) / m_iYTicksCount;
+        //m_realY = (m_dbYAxisMax - m_dbYAxisMin) / m_iYTicksCount;
+        m_realY = m_mapAxis[m_lstLines[n].m_strName].m_realY;
         // 每个刻度长度
-        m_realYLength = ((m_itemRectF.bottomLeft().y() - m_iOffset) - (m_itemRectF.topLeft().y() + m_iOffset)) / m_iYTicksCount;
+        //m_realYLength = ((m_itemRectF.bottomLeft().y() - m_iOffset) - (m_itemRectF.topLeft().y() + m_iOffset)) / m_iYTicksCount;
+        m_realYLength = m_mapAxis[m_lstLines[n].m_strName].m_realYLength;
+        m_dbYAxisMin = m_mapAxis[m_lstLines[n].m_strName].m_dbYAxisMin;
+        m_dbYAxisMax = m_mapAxis[m_lstLines[n].m_strName].m_dbYAxisMax;
         for (int i = 0; i < m_iYTicksCount; ++i)
         {
             painter->setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
             painter->drawLine(m_itemRectF.bottomLeft().x() + m_iOffset, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1), m_itemRectF.bottomRight().x() - m_iOffset/* + 5*/, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1));
             painter->setPen(QPen(m_lstLines.at(n).m_color, 1, Qt::SolidLine));
-            painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 20, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1)-n*10 + 10, QString::number(m_realY*(i + 1) + m_dbYAxisMin));
+            painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 20, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1) - n * 10 + 10, QString::number(m_realY*(i + 1) + m_dbYAxisMin));
         }
-        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 20, m_itemRectF.bottomLeft().y() - m_iOffset-n*10 + 10, QString::number(m_dbYAxisMin));
+        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 20, m_itemRectF.bottomLeft().y() - m_iOffset - n * 10 + 10, QString::number(m_dbYAxisMin));
 
         // 图例
-        painter->fillRect(m_itemRectF.bottomLeft().x() + m_iOffset*2 + iLength*n, m_itemRectF.bottomLeft().y() - 20, 5, 5, m_lstLines.at(n).m_color);
+        painter->fillRect(m_itemRectF.bottomLeft().x() + m_iOffset * 2 + iLength*n, m_itemRectF.bottomLeft().y() - 20, 5, 5, m_lstLines.at(n).m_color);
         painter->setPen(QPen(Qt::black, 1, Qt::SolidLine));
-        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset*2 + iLength*n + 15, m_itemRectF.bottomLeft().y() - 15, m_lstLines.at(n).m_strDisplayName);
+        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset * 2 + iLength*n + 15, m_itemRectF.bottomLeft().y() - 15, m_lstLines.at(n).m_strDisplayName);
 
         // 绘制曲线图
         painter->setPen(QPen(m_lstLines.at(n).m_color, 1, Qt::SolidLine));
-        QVector<QPointF> vecTmpPoint;
-        for (QPointF p : m_lstLines[n].m_vecPoints)
-        {
-            // 转换成坐标轴坐标
-            QPointF tmpP = p;
-            vecTmpPoint.append(mapToAxis(p));
-            //qDebug() << "p.x = " << p.x();
-            //qDebug() << "line.x = " << m_line.p1().x();
-
-            if (p.x() >= m_line.p1().x() - 0.5 && p.x() <= m_line.p1().x() + 0.5)
-            {
-                painter->drawText(p + QPointF(5, 0), QString::number(tmpP.y()));
-            }
-        }
-        painter->drawLines(vecTmpPoint);
+        painter->drawLines(m_lstLines[n].m_vecPoints);
     }
 }
 
@@ -519,3 +517,48 @@ void CCurveGraphicsItem::keyPressEvent(QKeyEvent * event)
     
     QGraphicsItem::keyPressEvent(event);
 }
+
+
+void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length,
+    unsigned long payload, unsigned long secs, unsigned long usecs, void* pCustomData)
+{
+    QList<CurveLine_t> lstCanData;
+    CurveLine_t canData;
+
+    char buf[256];
+    CCanData* pData = (CCanData*)buffer;
+    for (int i = 0; i < length; i++)
+    {
+        canData.m_strDisplayName = QString::fromLocal8Bit(pData[i].m_pCanItem->m_DispName.c_str());
+        canData.m_strName = QString::fromStdString(pData[i].m_pCanItem->m_Name);
+        canData.m_strValue = QString::number(pData[i].m_Value, 'f', 2);
+        canData.m_realMax = pData[i].m_pCanItem->m_maxValue;
+        canData.m_realMin = pData[i].m_pCanItem->m_minValue;
+        if (m_lstLines.contains(canData))
+        {
+            for (auto& TmpData : m_lstLines)
+            {
+                if (TmpData.m_strDisplayName == canData.m_strDisplayName)
+                {
+                    quint64 x = static_cast<quint64>(secs)* 1000 + static_cast<quint64>(usecs);
+                    QPointF TmpPoint(x, pData[i].m_Value);
+                    if (TmpData.m_vecPoints.count() > 1)
+                    {
+                        TmpData.m_vecPoints.append(TmpData.m_vecPoints.last());
+                    }
+                    TmpData.m_vecPoints.append(mapToAxis(TmpData.m_strName, TmpPoint));
+                    break;
+                }
+            }
+        }
+    }
+
+    //scene()->update();
+    update(boundingRect());
+
+    CLogManager::getInstance()->log(eLogDebug, "CCurveGraphicsItem::OnMedia", "------CCurveGraphicsItem::OnMedia");
+}
+
+
+
+

@@ -14,6 +14,9 @@
 #include "QtCore/QThread"
 #include "QtWidgets/QScrollBar"
 
+#include "CLogManager.h"
+
+
 const char* cstExportSuccess = "Export Success!";
 const char* cstExportFailed = "Export Failed!";
 const char* cstTips = "Tips";
@@ -25,21 +28,14 @@ CTableView::CTableView(QWidget* parent /*= 0*/)
     , m_pModel(nullptr)
     , m_strStartTime("")
     , m_strEndTime("")
-    , m_pThread(nullptr)
+    , m_pThread(nullptr),
+    m_iChannel(1)
 {
     m_lstHorizontalHeader.clear();
 
     m_pThread = new QThread(this);
 
     initLayout();
-    createHorizontalHeaders();
-
-    //test 
-    /*insertRowData(m_lstHorizontalHeader);
-    QList<CurveLine_t> lstData = m_lstHorizontalHeader;
-    lstData.pop_front();
-    lstData.first().m_realMax = 111;
-    insertRowData(lstData);*/
 }
 
 CTableView::~CTableView()
@@ -48,10 +44,91 @@ CTableView::~CTableView()
 }
 
 
+// 初始化布局
+void CTableView::initLayout()
+{
+    m_pModel = new CTableModel(this);
+    createHorizontalHeaders();
+
+    m_pTableView = new CFrozenTableView(m_pModel, 1);  // 首列冻结
+    m_pTableView->resizeColumnsToContents();
+    //m_pTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    //m_pTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    m_pTableView->setAlternatingRowColors(true);
+
+    QVBoxLayout* pTmpLayout = new QVBoxLayout(this);
+    pTmpLayout->addWidget(m_pTableView);
+
+    m_pExcelBtn = new QPushButton(trFormString(cstExport), this);
+    connect(m_pExcelBtn, &QPushButton::clicked, this, &CTableView::OnExport);
+
+    pTmpLayout->addWidget(m_pExcelBtn, 0, Qt::AlignRight);
+
+    this->setLayout(pTmpLayout);
+}
+
+
+// 填充表格数据
+void CTableView::setTableViewData()
+{
+
+}
+
+void CTableView::createHorizontalHeaders()
+{
+    // 读取xml
+    CFileOperationManager cfm("candatadefine.xml");
+    if (!cfm.ReadXmlFile(m_lstHorizontalHeader))
+    {
+        return;
+    }
+
+    m_pModel->setColumnCount(m_lstHorizontalHeader.size());
+    for (int i = 0; i < m_lstHorizontalHeader.count(); ++i)
+    {
+        QStandardItem* pItem = new QStandardItem(m_lstHorizontalHeader.at(i).m_strDisplayName);
+        pItem->setData(m_lstHorizontalHeader.at(i).m_strName, CurveRole);
+        m_pModel->setHorizontalHeaderItem(i, pItem);
+    }
+}
+
+
 ITEMTYPE CTableView::type()
 {
     return Item_Table;
 }
+
+
+HWND CTableView::GetWndHandle()
+{
+    CLogManager::getInstance()->log(eLogDebug, "CTableView::GetWndHandle", "update frame, hwnd:%d", winId());
+    return (HWND)this->winId();
+}
+
+
+void CTableView::OnMedia(unsigned char* buffer, unsigned long length,
+    unsigned long payload, unsigned long secs, unsigned long usecs, void* pCustomData)
+{
+    // can data 
+    QList<CurveLine_t> lstCanData;
+    CurveLine_t canData;
+
+    char buf[256];
+    CCanData* pData = (CCanData*)buffer;
+    for (int i = 0; i < length; i++)
+    {
+        canData.m_strDisplayName = QString::fromStdString(pData[i].m_pCanItem->m_DispName);
+        canData.m_strName = QString::fromStdString(pData[i].m_pCanItem->m_Name);
+        canData.m_strValue = QString::number(pData[i].m_Value, 'f', 2);
+        lstCanData.append(canData);
+    }
+
+    // current time 
+    QDateTime currentDateTime = QDateTime::fromMSecsSinceEpoch(secs * 1000 + usecs);
+
+    insertRowData(lstCanData);
+}
+
 
 void CTableView::setHorizontalHeader(QList<CurveLine_t>& lstHeader)
 {
@@ -101,56 +178,6 @@ void CTableView::setTimeRange(const QString& strStart, const QString& strEnd)
     m_strEndTime = strEnd;
 }
 
-
-// 初始化布局
-void CTableView::initLayout()
-{
-    m_pModel = new CTableModel(this);
-    m_pTableView = new CFrozenTableView(m_pModel, 1);  // 首列冻结
-    m_pTableView->resizeColumnsToContents();
-    //m_pTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    //m_pTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    m_pTableView->setAlternatingRowColors(true);
-
-    QVBoxLayout* pTmpLayout = new QVBoxLayout(this);
-    pTmpLayout->addWidget(m_pTableView);
-
-    m_pExcelBtn = new QPushButton(trFormString(cstExport), this);
-    connect(m_pExcelBtn, &QPushButton::clicked, this, &CTableView::OnExport);
-
-    pTmpLayout->addWidget(m_pExcelBtn, 0, Qt::AlignRight);
-
-    this->setLayout(pTmpLayout);
-}
-
-
-// 填充表格数据
-void CTableView::setTableViewData()
-{
-
-}
-
-void CTableView::createHorizontalHeaders()
-{
-    // 读取xml
-    CFileOperationManager cfm("candatadefine.xml");
-    if (!cfm.ReadXmlFile(m_lstHorizontalHeader))
-    {
-        return;
-    }
-
-    m_pModel->setColumnCount(m_lstHorizontalHeader.size());
-    m_pModel->insertRows(0, 1, QModelIndex());
-    for (int i = 0; i < m_lstHorizontalHeader.count(); ++i)
-    {
-        QStandardItem* pItem = new QStandardItem(m_lstHorizontalHeader.at(i).m_strDisplayName);
-        pItem->setData(m_lstHorizontalHeader.at(i).m_strName, CurveRole);
-        m_pModel->setHorizontalHeaderItem(i, pItem);
-
-        m_pModel->setData(m_pModel->index(0, i), 1);
-    }
-
-}
 
 // 导出excel
 void CTableView::OnExport()

@@ -27,6 +27,11 @@ class QPushButton;
 class QThread;
 QT_END_NAMESPACE
 
+#include "constant.h"
+#include "StreamMgr.h"
+#include "CanDecoder.h"
+
+
 class CTableModel : public QStandardItemModel
 {
 public:
@@ -72,7 +77,7 @@ private:
 };
 
 
-class CTableView : public CCustomWidgetBase
+class CTableView : public CCustomWidgetBase, public CStreamListener
 {
     Q_OBJECT
 
@@ -85,6 +90,9 @@ public:
 
     void setTimeRange(const QString& strStart, const QString& strEnd);
 
+    void setChannel(int iChannel);       // 通过channel来判断该组件是否已经关联数据，iChannel < 0无关联数据，iChannel >= 0关联数据 
+    int getChannel() { return m_iChannel; };
+
 private:
     void initLayout();
 
@@ -96,9 +104,12 @@ private:
 protected:
     virtual ITEMTYPE type();
 
+    virtual HWND GetWndHandle();
+    virtual void OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload,
+        unsigned long secs, unsigned long usecs, void* pCustomData);
+
 private slots:
     void OnExport();
-
 
 private:
     CFrozenTableView* m_pTableView;
@@ -110,6 +121,8 @@ private:
     QPushButton* m_pExcelBtn;
     QList<CurveLine_t> m_lstHorizontalHeader;
     QThread* m_pThread;
+
+    int m_iChannel;
 };
 
 #endif // CTABLEVIEW_H

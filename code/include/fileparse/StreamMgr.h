@@ -8,6 +8,7 @@ public:
 	virtual ~CStreamListener();
 
 public:
+	virtual HWND GetWndHandle(){ return NULL; }
 	virtual void OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload, unsigned long secs, unsigned long usecs, void* pCustomData){}
 };
 
@@ -19,11 +20,11 @@ public:
 	virtual ~CStreamMgr();
 
 public:
-	int AddStream(CStreamListener* pStream);
-	int RemoveStream(CStreamListener* pStream);
+	virtual int AddStream(CStreamListener* pStream);
+	virtual int RemoveStream(CStreamListener* pStream);
 	
-	void OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload, unsigned long secs, unsigned long usecs, void* pCustomData);
-private:
+	virtual void OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload, unsigned long secs, unsigned long usecs, void* pCustomData);
+protected:
 	CStreamMgrPrivateData*	m_data;
 };
 #endif
