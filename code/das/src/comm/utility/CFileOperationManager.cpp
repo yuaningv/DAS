@@ -57,6 +57,10 @@ bool CFileOperationManager::ReadXmlFile(QMap<int, QList<WidgetProperty_t>>& mapT
                 {
                     tmpWgtPro.m_type = (ITEMTYPE)tmpElement.text().toInt();
                 }
+                else if ("Channel" == tmpElement.tagName())
+                {
+                    tmpWgtPro.m_iChannel = tmpElement.text().toInt();
+                }
                 else if ("X" == tmpElement.tagName())
                 {
                     tmpWgtPro.m_realX = tmpElement.text().toDouble();
@@ -237,6 +241,11 @@ bool CFileOperationManager::writeXmlFile(QMap<int, QList<WidgetProperty_t>>& map
                 tmpEle.appendChild(tmpText);
                 note.appendChild(tmpEle);
 
+                tmpEle = m_doc->createElement("Channel");
+                tmpText = m_doc->createTextNode(QString::number(tmpObj.m_iChannel));
+                tmpEle.appendChild(tmpText);
+                note.appendChild(tmpEle);
+
                 tmpEle = m_doc->createElement("X");
                 tmpText = m_doc->createTextNode(QString::number(tmpObj.m_realX));
                 tmpEle.appendChild(tmpText);
@@ -269,6 +278,11 @@ bool CFileOperationManager::writeXmlFile(QMap<int, QList<WidgetProperty_t>>& map
                 tmpEle.appendChild(tmpText);
                 note.appendChild(tmpEle);
 
+                tmpEle = m_doc->createElement("Channel");
+                tmpText = m_doc->createTextNode(QString::number(tmpObj.m_iChannel));
+                tmpEle.appendChild(tmpText);
+                note.appendChild(tmpEle);
+
                 tmpEle = m_doc->createElement("X");
                 tmpText = m_doc->createTextNode(QString::number(tmpObj.m_realX));
                 tmpEle.appendChild(tmpText);
@@ -298,6 +312,11 @@ bool CFileOperationManager::writeXmlFile(QMap<int, QList<WidgetProperty_t>>& map
                 root.appendChild(note);
                 QDomElement tmpEle = m_doc->createElement("Type");
                 QDomText tmpText = m_doc->createTextNode(QString::number(tmpObj.m_type));
+                tmpEle.appendChild(tmpText);
+                note.appendChild(tmpEle);
+
+                tmpEle = m_doc->createElement("Channel");
+                tmpText = m_doc->createTextNode(QString::number(tmpObj.m_iChannel));
                 tmpEle.appendChild(tmpText);
                 note.appendChild(tmpEle);
 

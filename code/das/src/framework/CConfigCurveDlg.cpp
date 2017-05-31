@@ -10,7 +10,7 @@
 #include "QtCore/QDebug"
 
 const char* cstSelectCurve = "Select Curve";
-const char* cstOk = "Ok";
+const char* cstOk = "OK";
 const char* cstCancel = "Cancel";
 
 CConfigCurveDlg::CConfigCurveDlg(QWidget *parent /*= 0*/)
@@ -78,21 +78,6 @@ void CConfigCurveDlg::createListWidgetData()
     cfm.ReadXmlFile(lstLine);
 
     // 读取配置文件中所有项
-    CurveLine_t tmpLine;
-    tmpLine.m_strDisplayName = "aa";
-    tmpLine.m_color = Qt::red;
-    lstLine << tmpLine;
-    tmpLine.m_strDisplayName = "bb";
-    tmpLine.m_color = Qt::blue;
-    tmpLine.m_realMin = 0.0;
-    tmpLine.m_realMax = 5.0;
-    lstLine << tmpLine;
-    tmpLine.m_strDisplayName = "cc";
-    tmpLine.m_color = Qt::green;
-    tmpLine.m_realMin = 1.0;
-    tmpLine.m_realMax = 10.0;
-    lstLine << tmpLine;
-
     for (auto& TmpData : lstLine)
     {
         QListWidgetItem* pItem = new QListWidgetItem(TmpData.m_strDisplayName);

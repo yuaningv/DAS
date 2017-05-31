@@ -232,22 +232,21 @@ void CGraphicsView::readXml()
                 CVideoWidget* pVideo = new CVideoWidget;
                 pVideo->setView(this);
                 pVideo->resize(obj.m_realWidth, obj.m_realHeight);
-                pVideo->setChannel(obj.m_iChannel);
                 m_pScene->addWidget(pVideo);
                 pVideo->move(-obj.m_realX, -obj.m_realY);
 
                 // 绑定session与listener 
-                QMap<int, CVideoFileSession*>::iterator iter = m_mapVideoSession.find(obj.m_iChannel); 
-                if (iter != m_mapVideoSession.end() && iter.key() == obj.m_iChannel) // 存在 
+                QMap<int, CVideoFileSession*>::iterator iter = m_mapVideoSession.find(0);    // 0 - channel ??? 
+                if (iter != m_mapVideoSession.end() && iter.key() == 0) // 存在 
                 {
                     iter.value()->GetStreamMgr()->AddStream(pVideo);
                 }
                 else // 不存在 
                 {
                     CVideoFileSession* pSession = new CVideoFileSession;
-                    pSession->Init(m_strVideoStorage.toStdString().c_str(), obj.m_iChannel);
+                    pSession->Init(m_strVideoStorage.toStdString().c_str(), 0);
                     pSession->GetStreamMgr()->AddStream(pVideo);
-                    m_mapVideoSession.insert(obj.m_iChannel, pSession);
+                    m_mapVideoSession.insert(0, pSession);
                 }
             }
         }
@@ -260,20 +259,19 @@ void CGraphicsView::readXml()
                 pItem->resetItemSize(rectF);
                 m_pScene->addItem(pItem);
                 pItem->moveBy(-obj.m_realX, -obj.m_realY);
-                pItem->setChannel(obj.m_iChannel);
 
                 // 绑定session与listener 
-                QMap<int, CCanFileSession*>::iterator iter = m_mapCanSession.find(obj.m_iChannel);
-                if (iter != m_mapCanSession.end() && iter.key() == obj.m_iChannel)       // 存在，直接绑定 
+                QMap<int, CCanFileSession*>::iterator iter = m_mapCanSession.find(1);    // 1 - channel ??? 
+                if (iter != m_mapCanSession.end() && iter.key() == 1)       // 存在，直接绑定 
                 {
                     iter.value()->GetStreamMgr()->AddStream(pItem);
                 }
                 else    // 不存在 
                 {
                     CCanFileSession* pSession = new CCanFileSession;
-                    pSession->Init(m_strCanStorage.toStdString().c_str(), &m_profile, obj.m_iChannel);
+                    pSession->Init(m_strCanStorage.toStdString().c_str(), &m_profile, 1);
                     pSession->GetStreamMgr()->AddStream(pItem);
-                    m_mapCanSession.insert(obj.m_iChannel, pSession);
+                    m_mapCanSession.insert(1, pSession);
                 }
             }
         }
@@ -285,20 +283,19 @@ void CGraphicsView::readXml()
                 pTable->resize(obj.m_realWidth, obj.m_realHeight);
                 m_pScene->addWidget(pTable);
                 pTable->move(-obj.m_realX, -obj.m_realY);
-                pTable->setChannel(obj.m_iChannel);
 
                 // 绑定session与listener 
-                QMap<int, CCanFileSession*>::iterator iter = m_mapCanSession.find(obj.m_iChannel);
-                if (iter != m_mapCanSession.end() && iter.key() == obj.m_iChannel)
+                QMap<int, CCanFileSession*>::iterator iter = m_mapCanSession.find(1);    // 1 - channel ??? 
+                if (iter != m_mapCanSession.end() && iter.key() == 1)
                 {
                     iter.value()->GetStreamMgr()->AddStream(pTable);
                 }
                 else    // 不存在 
                 {
                     CCanFileSession* pSession = new CCanFileSession;
-                    pSession->Init(m_strCanStorage.toStdString().c_str(), &m_profile, obj.m_iChannel);
+                    pSession->Init(m_strCanStorage.toStdString().c_str(), &m_profile, 1);
                     pSession->GetStreamMgr()->AddStream(pTable);
-                    m_mapCanSession.insert(obj.m_iChannel, pSession);
+                    m_mapCanSession.insert(1, pSession);
                 }
             }
         }
@@ -325,11 +322,11 @@ void CGraphicsView::saveLayout()
             if (iType == Item_Video)
             {
                 tmpWgtPro.m_type = Item_Video;
-                tmpWgtPro.m_iChannel = dynamic_cast<CVideoWidget*>(pCustomItem)->getChannel();
                 tmpWgtPro.m_realX = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().x();
                 tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
                 tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
                 tmpWgtPro.m_realHeight = item->boundingRect().bottomRight().y() - item->boundingRect().topLeft().y();
+
                 //mapTmpItems[Item_Video].append(tmpWgtPro);
             }
             else if (iType == Item_TimeAxis)
@@ -348,7 +345,6 @@ void CGraphicsView::saveLayout()
             else if (iType == Item_Table)
             {
                 tmpWgtPro.m_type = Item_Table;
-                tmpWgtPro.m_iChannel = dynamic_cast<CTableView*>(pCustomItem)->getChannel();
                 tmpWgtPro.m_realX = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().x();
                 tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
                 tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
@@ -360,7 +356,6 @@ void CGraphicsView::saveLayout()
         else
         {
             tmpWgtPro.m_type = Item_Chart;
-            tmpWgtPro.m_iChannel = dynamic_cast<CCurveGraphicsItem*>(item)->getChannel();
             tmpWgtPro.m_realX = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().x();
             tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
             tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
@@ -381,7 +376,6 @@ void CGraphicsView::saveLayout()
         CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::saveLayout", "save laout failed!");
     }
 }
-
 
 void CGraphicsView::dragEnterEvent(QDragEnterEvent * event)
 {

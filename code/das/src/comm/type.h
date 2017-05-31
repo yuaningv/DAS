@@ -41,6 +41,7 @@ typedef struct WidgetProperty
     QString m_strStart;
     QString m_strEnd;
     QString m_strPlayPos;
+    int m_iChannel;
 
     WidgetProperty()
     {
@@ -52,6 +53,7 @@ typedef struct WidgetProperty
         m_strStart.clear();
         m_strEnd.clear();
         m_strPlayPos.clear();
+        m_iChannel = -1;
     }
 
 }WidgetProperty_t; 

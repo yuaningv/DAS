@@ -124,7 +124,7 @@ void CCurveGraphicsItem::setLines(const QList<CurveLine_t>& lstTmpVec)
         TmpAxisData.m_dbYAxisMin = TmpData.m_realMin;
         TmpAxisData.m_realY = (TmpData.m_realMax - TmpData.m_realMin) / m_iYTicksCount;;
         TmpAxisData.m_realYLength = ((m_itemRectF.bottomLeft().y() - m_iOffset) - (m_itemRectF.topLeft().y() + m_iOffset)) / m_iYTicksCount;
-        m_mapAxis[TmpData.m_strName] = TmpAxisData;
+        m_mapAxis[TmpData.m_strDisplayName] = TmpAxisData;
     }
     //scene()->update();
     update(boundingRect());
@@ -186,12 +186,12 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
 
         // 每个刻度值
         //m_realY = (m_dbYAxisMax - m_dbYAxisMin) / m_iYTicksCount;
-        m_realY = m_mapAxis[m_lstLines[n].m_strName].m_realY;
+        m_realY = m_mapAxis[m_lstLines[n].m_strDisplayName].m_realY;
         // 每个刻度长度
         //m_realYLength = ((m_itemRectF.bottomLeft().y() - m_iOffset) - (m_itemRectF.topLeft().y() + m_iOffset)) / m_iYTicksCount;
-        m_realYLength = m_mapAxis[m_lstLines[n].m_strName].m_realYLength;
-        m_dbYAxisMin = m_mapAxis[m_lstLines[n].m_strName].m_dbYAxisMin;
-        m_dbYAxisMax = m_mapAxis[m_lstLines[n].m_strName].m_dbYAxisMax;
+        m_realYLength = m_mapAxis[m_lstLines[n].m_strDisplayName].m_realYLength;
+        m_dbYAxisMin = m_mapAxis[m_lstLines[n].m_strDisplayName].m_dbYAxisMin;
+        m_dbYAxisMax = m_mapAxis[m_lstLines[n].m_strDisplayName].m_dbYAxisMax;
         for (int i = 0; i < m_iYTicksCount; ++i)
         {
             painter->setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
@@ -546,7 +546,7 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length,
                     {
                         TmpData.m_vecPoints.append(TmpData.m_vecPoints.last());
                     }
-                    TmpData.m_vecPoints.append(mapToAxis(TmpData.m_strName, TmpPoint));
+                    TmpData.m_vecPoints.append(mapToAxis(TmpData.m_strDisplayName, TmpPoint));
                     break;
                 }
             }

@@ -43,9 +43,9 @@ void CFrozenTableView::init()
     m_pFrozenTableView->setModel(model());
     m_pFrozenTableView->setFocusPolicy(Qt::NoFocus);
     m_pFrozenTableView->verticalHeader()->hide();
-    //   m_pFrozenTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    //m_pFrozenTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-    m_pFrozenTableView->setSortingEnabled(true);
+    //m_pFrozenTableView->setSortingEnabled(true);
     m_pFrozenTableView->resizeColumnsToContents();
     //m_pFrozenTableView->setAlternatingRowColors(true);
     //m_pFrozenTableView->verticalHeader()->setDefaultSectionSize(25);
