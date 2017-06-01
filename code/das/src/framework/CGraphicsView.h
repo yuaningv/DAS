@@ -65,6 +65,7 @@ signals:
     void sigEnd();
 
 private slots:
+    void OnChannelChanged(QGraphicsItem* item, const int& iPreChannel);
 };
 
 

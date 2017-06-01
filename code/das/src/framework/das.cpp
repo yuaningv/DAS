@@ -76,7 +76,7 @@ DAS::DAS(QWidget *parent, Qt::WindowFlags flags)
     m_pGraphicsView = new CGraphicsView(this);
     this->setCentralWidget(m_pGraphicsView);
 
-    connect(m_pGraphicsView, SIGNAL(sigItemAttr(const ItemAttribute_t&)), m_pPropertyBar, SLOT(OnShowItemAttr(const ItemAttribute_t&)));
+    //connect(m_pGraphicsView, SIGNAL(sigItemAttr(const ItemAttribute_t&)), m_pPropertyBar, SLOT(OnShowItemAttr(const ItemAttribute_t&)));
     connect(m_pGraphicsView, SIGNAL(sigEnd()), this, SLOT(OnReset()));
 }
 
@@ -293,6 +293,10 @@ void DAS::OnPlay()
         // ÔÝÍ£ 
         m_pGraphicsView->pause();
     }
+
+    m_pActOpen->setEnabled(m_bPlay);
+    m_pActFind->setEnabled(m_bPlay);
+    m_pCBoxEdit->setEnabled(m_bPlay);
 }
 
 

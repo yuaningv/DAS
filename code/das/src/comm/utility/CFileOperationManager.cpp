@@ -122,7 +122,7 @@ bool CFileOperationManager::ReadXmlFile(QList<CurveLine_t>& lstTmpItems)
         if (!e.isNull())
         {
             CurveLine_t tmpCurveline;
-            qDebug() << e.tagName(); // the node really is an element.
+            //qDebug() << e.tagName(); // the node really is an element.
             QDomNode tmpNode = e.firstChild();
             while (!tmpNode.isNull())
             {

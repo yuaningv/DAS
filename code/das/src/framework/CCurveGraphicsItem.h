@@ -16,6 +16,7 @@
 
 #include "QtWidgets/QGraphicsItem"
 #include "QtCore/QObject"
+#include "QtCore/QMutex"
 #include "type.h"
 #include "CCustomWidgetBase.h"
 
@@ -90,7 +91,7 @@ protected:
 
     //virtual HWND GetWndHandle();
     virtual void OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload,
-        unsigned long secs, unsigned long usecs, void* pCustomData);
+		CCustomDateTime* pTime, void* pCustomData);
 
 private:
     QRectF m_itemRectF;
@@ -132,6 +133,7 @@ private:
     QMap<QString, CAxisData_t> m_mapAxis;
 
     int m_iChannel;
+    QMutex m_mutex;
 signals:
 
 };

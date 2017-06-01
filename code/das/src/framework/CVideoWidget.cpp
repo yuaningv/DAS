@@ -27,6 +27,8 @@ CVideoWidget::CVideoWidget(QWidget* parent /*= 0*/)
     m_iLastY = this->y();
     m_iLastWidth = this->width();
     m_iLastHeight = this->height();
+
+    m_image = QImage(QSize(0, 0), QImage::Format_RGB888);
 }
 
 
@@ -117,6 +119,21 @@ void CVideoWidget::paintEvent(QPaintEvent *ev)
 {
     Q_UNUSED(ev);
 
+    QPainter painter;
+    painter.begin(this);
+
+    if (m_image.width() <= 0)
+    {
+        painter.end();
+        return;
+    }
+
+    m_mutex.lock();
+    QRect rect(0, 0, this->width(), this->height());
+    painter.drawImage(rect, m_image);
+    painter.end();
+    m_mutex.unlock();
+
     return;
 }
 
@@ -129,10 +146,15 @@ HWND CVideoWidget::GetWndHandle()
 }
 
 
-void CVideoWidget::OnMedia(unsigned char* buffer, unsigned long length, 
-    unsigned long payload, unsigned long secs, unsigned long usecs, void* pCustomData)
+void CVideoWidget::OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload,
+    CCustomDateTime* pTime, void* pCustomData)
 {
-    //updateFrame();
+    m_mutex.lock();
+    imageInfo_t* imageInfo = (imageInfo_t*)pCustomData;
+    m_image = QImage(buffer, imageInfo->iWidth, imageInfo->iHeight, QImage::Format_RGB888);
+
+    update();
+    m_mutex.unlock();
     CLogManager::getInstance()->log(eLogDebug, "CVideoWidget::OnMedia", "update frame, hwnd:%d", winId());
 }
 

@@ -112,21 +112,21 @@ HWND CTableView::GetWndHandle()
 }
 
 
-void CTableView::OnMedia(unsigned char* buffer, unsigned long length,
-    unsigned long payload, unsigned long secs, unsigned long usecs, void* pCustomData)
+void CTableView::OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload,
+	CCustomDateTime* pTime, void* pCustomData)
 {
     // can data 
     QList<CurveLine_t> lstCanData;
     CurveLine_t canData;
 
+    m_mutex.lock();
     // time
     canData.m_strName = "time";
     canData.m_strDisplayName = QStringLiteral("Ê±¼ä");
-    quint64 TmpMsecs = static_cast<quint64>(secs)* 1000 + static_cast<quint64>(usecs);
-    canData.m_strValue = QDateTime::fromMSecsSinceEpoch(TmpMsecs).toString("yyyy/MM/dd hh:mm:ss.zzz");
+	canData.m_strValue.sprintf("%04d/%02d/%02d %02d:%02d:%02d.%03d", pTime->year, pTime->month, pTime->mday, pTime->hour, pTime->min, pTime->sec, pTime->msec);
     lstCanData.push_back(canData);
 
-    char buf[256];
+    //char buf[256];
     CCanData* pData = (CCanData*)buffer;
     for (int i = 0; i < length; i++)
     {
@@ -136,10 +136,8 @@ void CTableView::OnMedia(unsigned char* buffer, unsigned long length,
         lstCanData.append(canData);
     }
 
-    // current time 
-    QDateTime currentDateTime = QDateTime::fromMSecsSinceEpoch(secs * 1000 + usecs);
-
     insertRowData(lstCanData);
+    m_mutex.unlock();
 }
 
 

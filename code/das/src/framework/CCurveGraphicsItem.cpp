@@ -179,7 +179,8 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
     int iTmpLineCount = m_lstLines.count();
     // 每个图例位置长度
     int iLength = ((m_itemRectF.bottomRight().x()) - m_iOffset * 2 - (m_itemRectF.bottomLeft().x() + m_iOffset * 2)) / iTmpLineCount;
-
+    
+    m_mutex.lock();
     for (int n = 0; n < iTmpLineCount; ++n)
     {
         //setYAxisRange(m_lstLines.at(n).m_realMin, m_lstLines.at(n).m_realMax);
@@ -210,6 +211,7 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
         painter->setPen(QPen(m_lstLines.at(n).m_color, 1, Qt::SolidLine));
         painter->drawLines(m_lstLines[n].m_vecPoints);
     }
+    m_mutex.unlock();
 }
 
 
@@ -519,13 +521,14 @@ void CCurveGraphicsItem::keyPressEvent(QKeyEvent * event)
 }
 
 
-void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length,
-    unsigned long payload, unsigned long secs, unsigned long usecs, void* pCustomData)
+void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload,
+	CCustomDateTime* pTime, void* pCustomData)
 {
     QList<CurveLine_t> lstCanData;
     CurveLine_t canData;
 
-    char buf[256];
+    //char buf[256];
+    m_mutex.lock();
     CCanData* pData = (CCanData*)buffer;
     for (int i = 0; i < length; i++)
     {
@@ -540,7 +543,9 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length,
             {
                 if (TmpData.m_strDisplayName == canData.m_strDisplayName)
                 {
-                    quint64 x = static_cast<quint64>(secs)* 1000 + static_cast<quint64>(usecs);
+					QDateTime dt(QDate(pTime->year, pTime->month, pTime->mday), QTime(pTime->hour, pTime->min, pTime->sec, pTime->msec));
+					quint64 x = dt.toMSecsSinceEpoch();
+
                     QPointF TmpPoint(x, pData[i].m_Value);
                     if (TmpData.m_vecPoints.count() > 1)
                     {
@@ -552,6 +557,7 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length,
             }
         }
     }
+    m_mutex.unlock();
 
     //scene()->update();
     update(boundingRect());

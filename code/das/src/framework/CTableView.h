@@ -18,6 +18,7 @@
 #include "CCustomWidgetBase.h"
 #include "QtCore/QMap"
 #include "QtGui/QStandardItemModel"
+#include "QtCore/QMutex"
 
 class CFrozenTableView;
 
@@ -106,7 +107,7 @@ protected:
 
     virtual HWND GetWndHandle();
     virtual void OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload,
-        unsigned long secs, unsigned long usecs, void* pCustomData);
+		CCustomDateTime* pTime, void* pCustomData);
 
 private slots:
     void OnExport();
@@ -123,6 +124,7 @@ private:
     QThread* m_pThread;
 
     int m_iChannel;
+    QMutex m_mutex;
 };
 
 #endif // CTABLEVIEW_H

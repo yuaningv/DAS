@@ -60,7 +60,7 @@ protected:
 
     virtual HWND GetWndHandle();
     virtual void OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload, 
-        unsigned long secs, unsigned long usecs, void* pCustomData);
+		CCustomDateTime* pTime, void* pCustomData);
 
 private:
     int m_iID;
@@ -72,7 +72,8 @@ private:
     bool m_bFlag;               // test video 
 
     int m_iChannel;
-
+    QImage m_image;
+    QMutex m_mutex;
 private:
     int m_iLastX;
     int m_iLastY;

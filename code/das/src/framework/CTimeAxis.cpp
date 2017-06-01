@@ -47,23 +47,23 @@ void CTimeAxis::initLayout()
     m_pLbScale1->setText(dt.addSecs(-600).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
 
     m_pLbScale2 = new QLabel(this);
-    m_pLbScale2->setText(dt.addSecs(-540).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
+    m_pLbScale2->setText(dt.addSecs(-540).toString("hh:mm:ss:zzz"));
     m_pLbScale3 = new QLabel(this);
-    m_pLbScale3->setText(dt.addSecs(-480).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
+    m_pLbScale3->setText(dt.addSecs(-480).toString("hh:mm:ss:zzz"));
     m_pLbScale4 = new QLabel(this);
-    m_pLbScale4->setText(dt.addSecs(-420).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
+    m_pLbScale4->setText(dt.addSecs(-420).toString("hh:mm:ss:zzz"));
     m_pLbScale5 = new QLabel(this);
-    m_pLbScale5->setText(dt.addSecs(-360).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
+    m_pLbScale5->setText(dt.addSecs(-360).toString("hh:mm:ss:zzz"));
     m_pLbScale6 = new QLabel(this);
-    m_pLbScale6->setText(dt.addSecs(-300).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
+    m_pLbScale6->setText(dt.addSecs(-300).toString("hh:mm:ss:zzz"));
     m_pLbScale7 = new QLabel(this);
-    m_pLbScale7->setText(dt.addSecs(-240).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
+    m_pLbScale7->setText(dt.addSecs(-240).toString("hh:mm:ss:zzz"));
     m_pLbScale8 = new QLabel(this);
-    m_pLbScale8->setText(dt.addSecs(-180).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
+    m_pLbScale8->setText(dt.addSecs(-180).toString("hh:mm:ss:zzz"));
     m_pLbScale9 = new QLabel(this);
-    m_pLbScale9->setText(dt.addSecs(-120).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
+    m_pLbScale9->setText(dt.addSecs(-120).toString("hh:mm:ss:zzz"));
     m_pLbScale10 = new QLabel(this);
-    m_pLbScale10->setText(dt.addSecs(-60).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
+    m_pLbScale10->setText(dt.addSecs(-60).toString("hh:mm:ss:zzz"));
 
     QHBoxLayout* pLayoutLabel = new QHBoxLayout(this);
     pLayoutLabel->setSpacing(0);
@@ -119,15 +119,15 @@ void CTimeAxis::setTimeRange(const QString& strStart, const QString& strEnd)
     // 刻度 
     int iOffset = m_dtStartTime.secsTo(m_dtEndTime) / 10;
 
-    m_pLbScale2->setText(m_dtStartTime.addSecs(iOffset).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
-    m_pLbScale3->setText(m_dtStartTime.addSecs(2 * iOffset).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
-    m_pLbScale4->setText(m_dtStartTime.addSecs(3 * iOffset).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
-    m_pLbScale5->setText(m_dtStartTime.addSecs(4 * iOffset).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
-    m_pLbScale6->setText(m_dtStartTime.addSecs(5 * iOffset).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
-    m_pLbScale7->setText(m_dtStartTime.addSecs(6 * iOffset).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
-    m_pLbScale8->setText(m_dtStartTime.addSecs(7 * iOffset).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
-    m_pLbScale9->setText(m_dtStartTime.addSecs(8 * iOffset).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
-    m_pLbScale10->setText(m_dtStartTime.addSecs(9 * iOffset).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
+    m_pLbScale2->setText(m_dtStartTime.addSecs(iOffset).toString("hh:mm:ss:zzz"));
+    m_pLbScale3->setText(m_dtStartTime.addSecs(2 * iOffset).toString("hh:mm:ss:zzz"));
+    m_pLbScale4->setText(m_dtStartTime.addSecs(3 * iOffset).toString("hh:mm:ss:zzz"));
+    m_pLbScale5->setText(m_dtStartTime.addSecs(4 * iOffset).toString("hh:mm:ss:zzz"));
+    m_pLbScale6->setText(m_dtStartTime.addSecs(5 * iOffset).toString("hh:mm:ss:zzz"));
+    m_pLbScale7->setText(m_dtStartTime.addSecs(6 * iOffset).toString("hh:mm:ss:zzz"));
+    m_pLbScale8->setText(m_dtStartTime.addSecs(7 * iOffset).toString("hh:mm:ss:zzz"));
+    m_pLbScale9->setText(m_dtStartTime.addSecs(8 * iOffset).toString("hh:mm:ss:zzz"));
+    m_pLbScale10->setText(m_dtStartTime.addSecs(9 * iOffset).toString("hh:mm:ss:zzz"));
 
     // 结束时间 
     QString strTempEnd = strEnd;

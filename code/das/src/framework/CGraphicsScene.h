@@ -12,6 +12,9 @@ public:
     CGraphicsScene(QObject *parent = 0);
     ~CGraphicsScene();
 
+    void setRightMenuEnable(bool bEnable) { m_bEnable = bEnable; }
+    void setPlayFlag(bool bFlag) { m_bPlay = bFlag; }
+
 protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent);
@@ -20,8 +23,16 @@ protected:
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
 
 private:
+    int getItemChannel(QGraphicsItem* item) const;
 
-private slots:
+private:
+    bool m_bEnable;
+    bool m_bPlay;
+
+private slots :
+
+signals :
+        void sigChannelChanged(QGraphicsItem* item, const int& iPreChannel);
 };
 
 

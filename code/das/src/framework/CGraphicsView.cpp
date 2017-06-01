@@ -29,6 +29,7 @@ CGraphicsView::CGraphicsView(QWidget *parent)
     //setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
     m_pScene = new CGraphicsScene(parent);
+    connect(m_pScene, &CGraphicsScene::sigChannelChanged, this, &CGraphicsView::OnChannelChanged);
 
     setScene(m_pScene);
     setSceneRect(QRectF(0, 0, this->width(), this->height()));
@@ -86,6 +87,7 @@ void CGraphicsView::setEditModoEnabled(bool enable)
         }
     }
     m_bEditFlag = enable; 
+    m_pScene->setRightMenuEnable(enable);
 }
 
 
@@ -135,12 +137,21 @@ void CGraphicsView::setTimeScape(const QDateTime& dtBegin, const QDateTime& dtEn
         QGraphicsItem* pItem = lstItem.at(i);
         if (pItem->isWidget())      // timeaxis、video、table 
         {
+            // update time axis 
+            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
+            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+            ITEMTYPE iType = pCustomItem->type();
+            if (iType == Item_TimeAxis)         // time axis 
+            {
+                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
+                pTimeAxis->setTimeRange(m_dtBegin.toString("yyyy/MM/dd hh:mm:ss:zzz"), m_dtEnd.toString("yyyy/MM/dd hh:mm:ss:zzz"));
+            }
         }
         else        // 曲线图 
         {
             CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
-            double dbMin = QDateTime::fromString("20170412141154", "yyyyMMddhhmmss").toMSecsSinceEpoch();
-            double dbMax = QDateTime::fromString("20170412142154", "yyyyMMddhhmmss").toMSecsSinceEpoch();
+            double dbMin = QDateTime::fromString("20170413151254", "yyyyMMddhhmmss").toMSecsSinceEpoch();
+            double dbMax = QDateTime::fromString("20170413152254", "yyyyMMddhhmmss").toMSecsSinceEpoch();
             pCurveItem->setXAxisRange(dbMin, dbMax);
         }
     }
@@ -168,6 +179,8 @@ void CGraphicsView::skipTo(const QDateTime& currentDateTime)
 
 void CGraphicsView::play()
 {
+    m_pScene->setPlayFlag(true);
+
     QMap<int, CVideoFileSession*>::iterator iterVideo = m_mapVideoSession.begin();
     for (; iterVideo != m_mapVideoSession.end(); iterVideo++)
     {
@@ -186,6 +199,8 @@ void CGraphicsView::play()
 
 void CGraphicsView::pause()
 {
+    m_pScene->setPlayFlag(false);
+
     QMap<int, CVideoFileSession*>::iterator iterVideo = m_mapVideoSession.begin();
     for (; iterVideo != m_mapVideoSession.end(); iterVideo++)
     {
@@ -223,6 +238,10 @@ void CGraphicsView::readXml()
                 pTimeAxis->setValue(obj.m_strPlayPos);
                 m_pScene->addWidget(pTimeAxis);
                 pTimeAxis->move(-obj.m_realX, -obj.m_realY);
+
+                // 更新开始时间和结束时间，一般情况下时间轴只有一个 
+                m_dtBegin = QDateTime::fromString(obj.m_strStart, "yyyy/MM/dd hh:mm:ss:zzz");
+                m_dtEnd = QDateTime::fromString(obj.m_strEnd, "yyyy/MM/dd hh:mm:ss:zzz");
             }
         }
         else if (Item_Video == itr.key())
@@ -232,7 +251,9 @@ void CGraphicsView::readXml()
                 CVideoWidget* pVideo = new CVideoWidget;
                 pVideo->setView(this);
                 pVideo->resize(obj.m_realWidth, obj.m_realHeight);
+                m_pScene->blockSignals(true);
                 pVideo->setChannel(obj.m_iChannel);
+                m_pScene->blockSignals(false);
                 m_pScene->addWidget(pVideo);
                 pVideo->move(-obj.m_realX, -obj.m_realY);
 
@@ -260,7 +281,9 @@ void CGraphicsView::readXml()
                 pItem->resetItemSize(rectF);
                 m_pScene->addItem(pItem);
                 pItem->moveBy(-obj.m_realX, -obj.m_realY);
+                m_pScene->blockSignals(true);
                 pItem->setChannel(obj.m_iChannel);
+                m_pScene->blockSignals(false);
 
                 // 绑定session与listener 
                 QMap<int, CCanFileSession*>::iterator iter = m_mapCanSession.find(obj.m_iChannel);
@@ -285,7 +308,9 @@ void CGraphicsView::readXml()
                 pTable->resize(obj.m_realWidth, obj.m_realHeight);
                 m_pScene->addWidget(pTable);
                 pTable->move(-obj.m_realX, -obj.m_realY);
+                m_pScene->blockSignals(true);
                 pTable->setChannel(obj.m_iChannel);
+                m_pScene->blockSignals(false);
 
                 // 绑定session与listener 
                 QMap<int, CCanFileSession*>::iterator iter = m_mapCanSession.find(obj.m_iChannel);
@@ -433,6 +458,7 @@ void CGraphicsView::dropEvent(QDropEvent * event)
                 pTimeAxis->setEditModeEnabled(m_bEditFlag);
                 m_pScene->addWidget(pTimeAxis);
                 pTimeAxis->move(mapToScene(event->pos()).toPoint());
+                pTimeAxis->setTimeRange(m_dtBegin.toString("yyyy/MM/dd hh:mm:ss:zzz"), m_dtEnd.toString("yyyy/MM/dd hh:mm:ss:zzz"));
 
                 CLogManager::getInstance()->log(eLogDebug, "CGraphicsView", "add time axis");
             }
@@ -545,6 +571,85 @@ void CGraphicsView::mouseDoubleClickEvent(QMouseEvent *ev)
 void CGraphicsView::keyReleaseEvent(QKeyEvent *ev)
 {
     QGraphicsView::keyReleaseEvent(ev);
+}
+
+// channel changed
+void CGraphicsView::OnChannelChanged(QGraphicsItem* item, const int& iPreChannel)
+{
+    if (!item)
+    {
+        return;
+    }
+
+    if (item->isWidget())
+    {
+        QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)item;
+        CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+        ITEMTYPE iType = pCustomItem->type();
+        if (iType == Item_Video)         // video 
+        {
+            CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
+            if (m_mapVideoSession.keys().contains(iPreChannel))
+            {
+                m_mapVideoSession.value(iPreChannel)->GetStreamMgr()->RemoveStream(pVideoWidget);
+            }
+
+            if (m_mapVideoSession.keys().contains(pVideoWidget->getChannel()))
+            {
+                m_mapVideoSession.value(pVideoWidget->getChannel())->GetStreamMgr()->AddStream(pVideoWidget);
+            }
+            else
+            {
+                CVideoFileSession* pVideoSession = new CVideoFileSession;
+                pVideoSession->Init(m_strVideoStorage.toStdString().c_str(), pVideoWidget->getChannel());
+                pVideoSession->GetStreamMgr()->AddStream(pVideoWidget);
+                m_mapVideoSession.insert(pVideoWidget->getChannel(), pVideoSession);
+            }
+        }
+        else if (iType == Item_Table)           // table 
+        {
+            CTableView *pTableView = dynamic_cast<CTableView*>(pCustomItem);
+            if (m_mapCanSession.keys().contains(iPreChannel))
+            {
+                m_mapCanSession.value(iPreChannel)->GetStreamMgr()->RemoveStream(pTableView);
+            }
+
+            if (m_mapCanSession.keys().contains(pTableView->getChannel()))
+            {
+                m_mapCanSession.value(pTableView->getChannel())->GetStreamMgr()->AddStream(pTableView);
+            }
+            else
+            {
+                CCanFileSession* pCanSession = new CCanFileSession;
+                pCanSession->Init(m_strCanStorage.toStdString().c_str(), &m_profile, pTableView->getChannel());
+                pCanSession->GetStreamMgr()->AddStream(pTableView);
+                m_mapCanSession.insert(pTableView->getChannel(), pCanSession);
+            }
+        }
+    }
+    else
+    {
+        CCurveGraphicsItem* pItem = dynamic_cast<CCurveGraphicsItem*>(item);
+        if (m_mapCanSession.keys().contains(iPreChannel))
+        {
+            m_mapCanSession.value(iPreChannel)->GetStreamMgr()->RemoveStream(pItem);
+        }
+
+        if (m_mapCanSession.keys().contains(pItem->getChannel()))
+        {
+            m_mapCanSession.value(pItem->getChannel())->GetStreamMgr()->AddStream(pItem);
+        }
+        else
+        {
+            CCanFileSession* pCanSession = new CCanFileSession;
+            pCanSession->Init(m_strCanStorage.toStdString().c_str(), &m_profile, pItem->getChannel());
+            pCanSession->GetStreamMgr()->AddStream(pItem);
+            m_mapCanSession.insert(pItem->getChannel(), pCanSession);
+        }
+    }
+
+    // save
+    saveLayout();
 }
 
 
