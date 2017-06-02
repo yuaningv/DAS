@@ -11,9 +11,14 @@ CTimeAxis::CTimeAxis(QWidget* parent /*= 0*/)
     : CCustomWidgetBase(parent)
     , m_pLbEndTime(nullptr)
     , m_pSlider(nullptr),
-    m_bProgressSlider(false)
+    m_bProgressSlider(false),
+    m_iInterval(50)
 {
     initLayout();
+
+    m_pTimer = new QTimer(this);
+    m_pTimer->setInterval(m_iInterval);
+    connect(m_pTimer, SIGNAL(timeout()), this, SLOT(OnUpdate()));
 }
 
 
@@ -49,19 +54,19 @@ void CTimeAxis::initLayout()
     m_pLbScale2 = new QLabel(this);
     m_pLbScale2->setText(dt.addSecs(-540).toString("hh:mm:ss:zzz"));
     m_pLbScale3 = new QLabel(this);
-    m_pLbScale3->setText(dt.addSecs(-480).toString("hh:mm:ss:zzz"));
+    m_pLbScale3->setText(dt.addSecs(-480).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
     m_pLbScale4 = new QLabel(this);
     m_pLbScale4->setText(dt.addSecs(-420).toString("hh:mm:ss:zzz"));
     m_pLbScale5 = new QLabel(this);
-    m_pLbScale5->setText(dt.addSecs(-360).toString("hh:mm:ss:zzz"));
+    m_pLbScale5->setText(dt.addSecs(-360).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
     m_pLbScale6 = new QLabel(this);
     m_pLbScale6->setText(dt.addSecs(-300).toString("hh:mm:ss:zzz"));
     m_pLbScale7 = new QLabel(this);
-    m_pLbScale7->setText(dt.addSecs(-240).toString("hh:mm:ss:zzz"));
+    m_pLbScale7->setText(dt.addSecs(-240).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
     m_pLbScale8 = new QLabel(this);
     m_pLbScale8->setText(dt.addSecs(-180).toString("hh:mm:ss:zzz"));
     m_pLbScale9 = new QLabel(this);
-    m_pLbScale9->setText(dt.addSecs(-120).toString("hh:mm:ss:zzz"));
+    m_pLbScale9->setText(dt.addSecs(-120).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
     m_pLbScale10 = new QLabel(this);
     m_pLbScale10->setText(dt.addSecs(-60).toString("hh:mm:ss:zzz"));
 
@@ -120,13 +125,13 @@ void CTimeAxis::setTimeRange(const QString& strStart, const QString& strEnd)
     int iOffset = m_dtStartTime.secsTo(m_dtEndTime) / 10;
 
     m_pLbScale2->setText(m_dtStartTime.addSecs(iOffset).toString("hh:mm:ss:zzz"));
-    m_pLbScale3->setText(m_dtStartTime.addSecs(2 * iOffset).toString("hh:mm:ss:zzz"));
+    m_pLbScale3->setText(m_dtStartTime.addSecs(2 * iOffset).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
     m_pLbScale4->setText(m_dtStartTime.addSecs(3 * iOffset).toString("hh:mm:ss:zzz"));
-    m_pLbScale5->setText(m_dtStartTime.addSecs(4 * iOffset).toString("hh:mm:ss:zzz"));
+    m_pLbScale5->setText(m_dtStartTime.addSecs(4 * iOffset).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
     m_pLbScale6->setText(m_dtStartTime.addSecs(5 * iOffset).toString("hh:mm:ss:zzz"));
-    m_pLbScale7->setText(m_dtStartTime.addSecs(6 * iOffset).toString("hh:mm:ss:zzz"));
+    m_pLbScale7->setText(m_dtStartTime.addSecs(6 * iOffset).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
     m_pLbScale8->setText(m_dtStartTime.addSecs(7 * iOffset).toString("hh:mm:ss:zzz"));
-    m_pLbScale9->setText(m_dtStartTime.addSecs(8 * iOffset).toString("hh:mm:ss:zzz"));
+    m_pLbScale9->setText(m_dtStartTime.addSecs(8 * iOffset).toString("yyyy/MM/dd\nhh:mm:ss:zzz"));
     m_pLbScale10->setText(m_dtStartTime.addSecs(9 * iOffset).toString("hh:mm:ss:zzz"));
 
     // 结束时间 
@@ -140,25 +145,31 @@ void CTimeAxis::setValue(const QString& strValue)
 {
     // 当前时间 
     m_dtCurrentTime = QDateTime::fromString(strValue, "yyyy/MM/dd hh:mm:ss:zzz");
-    qint64 iCurrentTime = m_dtCurrentTime.toMSecsSinceEpoch();
+    if (m_dtCurrentTime >= m_dtEndTime)
+    {
+        m_bProgressSlider = true;
+        m_pSlider->setValue(0);
+        m_bProgressSlider = false;
+        m_dtCurrentTime = m_dtStartTime;
+        m_pTimer->stop();
+        return;
+    }
 
+    qint64 iCurrentTime = m_dtCurrentTime.toMSecsSinceEpoch();
     qint64 iMaxTime = m_dtEndTime.toMSecsSinceEpoch();
     qint64 iMinTime = m_dtStartTime.toMSecsSinceEpoch();
     qint64 iTimeOffset = iMaxTime - iMinTime;
     uint iOffset = m_pSlider->maximum() - m_pSlider->minimum();
 
-    if (iTimeOffset == 0)   // 播放结束 
+    if (iTimeOffset <= 0)
     {
         return;
     }
     int iProgressValue = m_pSlider->minimum() + (iCurrentTime - iMinTime) * (1.0f * iOffset / iTimeOffset);
-    CLogManager::getInstance()->log(eLogDebug, "CTimeAxis::setValue", "Progress value:%d", iProgressValue);
-
     m_bProgressSlider = true;
     m_pSlider->setValue(iProgressValue);
     m_bProgressSlider = false;
-
-    m_pSlider->setToolTip(strValue);
+    m_pSlider->setToolTip(m_dtCurrentTime.toString("yyyy/MM/dd hh:mm:ss:zzz"));
 }
 
 
@@ -180,6 +191,18 @@ QString CTimeAxis::getEndTime() const
 }
 
 
+void CTimeAxis::play()
+{
+    m_pTimer->start();
+}
+
+
+void CTimeAxis::pause()
+{
+    m_pTimer->stop();
+}
+
+
 void CTimeAxis::OnProgressChanged(int iValue)
 {
     if (m_bProgressSlider)          // 当拖动滚动条时，才响应该槽 
@@ -196,4 +219,40 @@ void CTimeAxis::OnProgressChanged(int iValue)
     qint64 iCurrentTime = iMinTime + (iValue - m_pSlider->minimum()) * (1.0f * iTimeOffset / iOffset);
     m_dtCurrentTime = QDateTime::fromMSecsSinceEpoch(iCurrentTime);
 }
+
+
+void CTimeAxis::OnUpdate()
+{
+    // 当前时间 
+    m_dtCurrentTime = m_dtCurrentTime.addMSecs(60 * 60 * 1000);
+    //m_dtCurrentTime = m_dtCurrentTime.addMSecs(m_iInterval);
+    if (m_dtCurrentTime >= m_dtEndTime)
+    {
+        m_bProgressSlider = true;
+        m_pSlider->setValue(0);
+        m_bProgressSlider = false;
+        m_dtCurrentTime = m_dtStartTime;
+        m_pTimer->stop();
+        return;
+    }
+
+    qint64 iCurrentTime = m_dtCurrentTime.toMSecsSinceEpoch();
+    qint64 iMaxTime = m_dtEndTime.toMSecsSinceEpoch();
+    qint64 iMinTime = m_dtStartTime.toMSecsSinceEpoch();
+    qint64 iTimeOffset = iMaxTime - iMinTime;
+    uint iOffset = m_pSlider->maximum() - m_pSlider->minimum();
+
+    if (iTimeOffset <= 0)
+    {
+        return;
+    }
+    int iProgressValue = m_pSlider->minimum() + (iCurrentTime - iMinTime) * (1.0f * iOffset / iTimeOffset);
+    m_bProgressSlider = true;
+    m_pSlider->setValue(iProgressValue);
+    m_bProgressSlider = false;
+    m_pSlider->setToolTip(m_dtCurrentTime.toString("yyyy/MM/dd hh:mm:ss:zzz"));
+
+    CLogManager::getInstance()->log(eLogDebug, "CTimeAxis::OnUpdate", "Progress value:%d", iProgressValue);
+}
+
 

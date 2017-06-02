@@ -17,6 +17,7 @@
 
 #include "CCustomWidgetBase.h"
 #include "QtCore/QDateTime"
+#include "QtCore/QTimer"
 
 class QLabel;
 class QSlider;
@@ -31,13 +32,15 @@ public:
     ~CTimeAxis();
 
 public:
-    void setTimeRange(const QString& strStart, const QString& strEnd);
-
     void setValue(const QString& strValue);
     QString getValue() const;
 
+    void setTimeRange(const QString& strStart, const QString& strEnd);
     QString getStartTime() const;
     QString getEndTime() const;
+
+    void play();
+    void pause();
 
 private:
     void initLayout();
@@ -67,11 +70,14 @@ private:
     QDateTime m_dtCurrentTime;      // 当前时间 
 
     bool m_bProgressSlider;
+    QTimer* m_pTimer;
+    int m_iInterval;
 
 signals:
 
 private slots:
     void OnProgressChanged(int iValue);
+    void OnUpdate();
 };
 
 #endif // CTIME_AXIS_H 

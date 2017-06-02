@@ -175,6 +175,7 @@ void CGraphicsScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     QGraphicsScene::contextMenuEvent(event);
 }
 
+
 // 获取组件Property
 int CGraphicsScene::getItemProperty(QGraphicsItem* item, QString& strName) const
 {
@@ -182,6 +183,7 @@ int CGraphicsScene::getItemProperty(QGraphicsItem* item, QString& strName) const
     {
         return 0;
     }
+
     int iChannel = 0;
     if (item->isWidget())
     {

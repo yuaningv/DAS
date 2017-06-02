@@ -17,6 +17,7 @@
 #include "QtWidgets/QDesktopWidget"
 #include "QtGui/QScreen"
 #include "QtGui/QKeyEvent"
+#include "QtWidgets/QHBoxLayout"
 
 
 // 定义多国语关键字常量 
@@ -64,8 +65,8 @@ DAS::DAS(QWidget *parent, Qt::WindowFlags flags)
     m_bPlay(true)
 {
     setWindowTitle(trFormString(cstDictDas));
-    setWindowState(Qt::WindowMaximized);
     setWindowIcon(QIcon(IMG_LOGO));
+    setWindowState(Qt::WindowMaximized);
 
     //m_pPropertyBar = new CPropertyBar(this);
     //addDockWidget(Qt::RightDockWidgetArea, m_pPropertyBar);

@@ -29,11 +29,11 @@ CGraphicsView::CGraphicsView(QWidget *parent)
     //setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
     m_pScene = new CGraphicsScene(parent);
+    m_pScene->setSceneRect(QRectF(0, 0, this->width(), this->height()));
     connect(m_pScene, &CGraphicsScene::sigChannelChanged, this, &CGraphicsView::OnChannelChanged);
     connect(m_pScene, &CGraphicsScene::sigChanged, [=]{ this->saveLayout(); });
 
     setScene(m_pScene);
-    setSceneRect(QRectF(0, 0, this->width(), this->height()));
     setBackgroundBrush(QBrush(Qt::gray, Qt::SolidPattern));
     setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -61,12 +61,14 @@ CGraphicsView::~CGraphicsView()
     QMap<int, CVideoFileSession*>::iterator iterVideo = m_mapVideoSession.begin();
     for (; iterVideo != m_mapVideoSession.end(); iterVideo++)
     {
+        iterVideo.value()->Pause();
         iterVideo.value()->Deinit();
     }
 
     QMap<int, CCanFileSession*>::iterator iterCan = m_mapCanSession.begin();
     for (; iterCan != m_mapCanSession.end(); iterCan++)
     {
+        iterCan.value()->Pause();
         iterCan.value()->Deinit();
     }
 }
@@ -197,6 +199,28 @@ void CGraphicsView::play()
         iterCan.value()->SkipTo("20170413151254");        // test ??? 
         iterCan.value()->Play();
     }
+
+    // 更新时间轴 
+    QList<QGraphicsItem*> lstItem = this->items();
+    for (int i = 0; i < lstItem.size(); i++)
+    {
+        QGraphicsItem* pItem = lstItem.at(i);
+        if (pItem->isWidget())      // timeaxis、video、table 
+        {
+            // update time axis 
+            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
+            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+            ITEMTYPE iType = pCustomItem->type();
+            if (iType == Item_TimeAxis)         // time axis 
+            {
+                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
+                pTimeAxis->play();
+            }
+        }
+        else        // 曲线图 
+        {
+        }
+    }
 }
 
 
@@ -214,6 +238,28 @@ void CGraphicsView::pause()
     for (; iterCan != m_mapCanSession.end(); iterCan++)
     {
         iterCan.value()->Pause();
+    }
+
+    // 更新时间轴 
+    QList<QGraphicsItem*> lstItem = this->items();
+    for (int i = 0; i < lstItem.size(); i++)
+    {
+        QGraphicsItem* pItem = lstItem.at(i);
+        if (pItem->isWidget())      // timeaxis、video、table 
+        {
+            // update time axis 
+            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
+            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+            ITEMTYPE iType = pCustomItem->type();
+            if (iType == Item_TimeAxis)         // time axis 
+            {
+                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
+                pTimeAxis->pause();
+            }
+        }
+        else        // 曲线图 
+        {
+        }
     }
 }
 
@@ -466,8 +512,9 @@ void CGraphicsView::dropEvent(QDropEvent * event)
             {
                 CTimeAxis* pTimeAxis = new CTimeAxis;
                 pTimeAxis->setEditModeEnabled(m_bEditFlag);
-                m_pScene->addWidget(pTimeAxis);
+                //m_pScene->addWidget(pTimeAxis);
                 pTimeAxis->move(mapToScene(event->pos()).toPoint());
+                pTimeAxis->move(event->pos());
                 pTimeAxis->setTimeRange(m_dtBegin.toString("yyyy/MM/dd hh:mm:ss:zzz"), m_dtEnd.toString("yyyy/MM/dd hh:mm:ss:zzz"));
 
                 CLogManager::getInstance()->log(eLogDebug, "CGraphicsView", "add time axis");
