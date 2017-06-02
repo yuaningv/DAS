@@ -176,8 +176,6 @@ void CGraphicsScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 }
 
 
-// 获取组件channel
-int CGraphicsScene::getItemChannel(QGraphicsItem* item) const
 // 获取组件Property
 int CGraphicsScene::getItemProperty(QGraphicsItem* item, QString& strName) const
 {

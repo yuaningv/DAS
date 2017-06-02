@@ -61,12 +61,14 @@ CGraphicsView::~CGraphicsView()
     QMap<int, CVideoFileSession*>::iterator iterVideo = m_mapVideoSession.begin();
     for (; iterVideo != m_mapVideoSession.end(); iterVideo++)
     {
+        iterVideo.value()->Pause();
         iterVideo.value()->Deinit();
     }
 
     QMap<int, CCanFileSession*>::iterator iterCan = m_mapCanSession.begin();
     for (; iterCan != m_mapCanSession.end(); iterCan++)
     {
+        iterCan.value()->Pause();
         iterCan.value()->Deinit();
     }
 }
@@ -197,6 +199,28 @@ void CGraphicsView::play()
         iterCan.value()->SkipTo("20170413151254");        // test ??? 
         iterCan.value()->Play();
     }
+
+    // 更新时间轴 
+    QList<QGraphicsItem*> lstItem = this->items();
+    for (int i = 0; i < lstItem.size(); i++)
+    {
+        QGraphicsItem* pItem = lstItem.at(i);
+        if (pItem->isWidget())      // timeaxis、video、table 
+        {
+            // update time axis 
+            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
+            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+            ITEMTYPE iType = pCustomItem->type();
+            if (iType == Item_TimeAxis)         // time axis 
+            {
+                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
+                pTimeAxis->play();
+            }
+        }
+        else        // 曲线图 
+        {
+        }
+    }
 }
 
 
@@ -214,6 +238,28 @@ void CGraphicsView::pause()
     for (; iterCan != m_mapCanSession.end(); iterCan++)
     {
         iterCan.value()->Pause();
+    }
+
+    // 更新时间轴 
+    QList<QGraphicsItem*> lstItem = this->items();
+    for (int i = 0; i < lstItem.size(); i++)
+    {
+        QGraphicsItem* pItem = lstItem.at(i);
+        if (pItem->isWidget())      // timeaxis、video、table 
+        {
+            // update time axis 
+            QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
+            CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+            ITEMTYPE iType = pCustomItem->type();
+            if (iType == Item_TimeAxis)         // time axis 
+            {
+                CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
+                pTimeAxis->pause();
+            }
+        }
+        else        // 曲线图 
+        {
+        }
     }
 }
 

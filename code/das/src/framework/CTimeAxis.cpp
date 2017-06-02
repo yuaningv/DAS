@@ -18,7 +18,6 @@ CTimeAxis::CTimeAxis(QWidget* parent /*= 0*/)
 
     m_pTimer = new QTimer(this);
     m_pTimer->setInterval(m_iInterval);
-    m_pTimer->start();
     connect(m_pTimer, SIGNAL(timeout()), this, SLOT(OnUpdate()));
 }
 
@@ -146,28 +145,31 @@ void CTimeAxis::setValue(const QString& strValue)
 {
     // 当前时间 
     m_dtCurrentTime = QDateTime::fromString(strValue, "yyyy/MM/dd hh:mm:ss:zzz");
-    qint64 iCurrentTime = m_dtCurrentTime.toMSecsSinceEpoch();
+    if (m_dtCurrentTime >= m_dtEndTime)
+    {
+        m_bProgressSlider = true;
+        m_pSlider->setValue(0);
+        m_bProgressSlider = false;
+        m_dtCurrentTime = m_dtStartTime;
+        m_pTimer->stop();
+        return;
+    }
 
+    qint64 iCurrentTime = m_dtCurrentTime.toMSecsSinceEpoch();
     qint64 iMaxTime = m_dtEndTime.toMSecsSinceEpoch();
     qint64 iMinTime = m_dtStartTime.toMSecsSinceEpoch();
     qint64 iTimeOffset = iMaxTime - iMinTime;
     uint iOffset = m_pSlider->maximum() - m_pSlider->minimum();
 
-    // 播放结束 
     if (iTimeOffset <= 0)
     {
-        m_pTimer->stop();
         return;
     }
-
     int iProgressValue = m_pSlider->minimum() + (iCurrentTime - iMinTime) * (1.0f * iOffset / iTimeOffset);
-    CLogManager::getInstance()->log(eLogDebug, "CTimeAxis::setValue", "Progress value:%d", iProgressValue);
-
     m_bProgressSlider = true;
     m_pSlider->setValue(iProgressValue);
     m_bProgressSlider = false;
-
-    m_pSlider->setToolTip(strValue);
+    m_pSlider->setToolTip(m_dtCurrentTime.toString("yyyy/MM/dd hh:mm:ss:zzz"));
 }
 
 
@@ -186,6 +188,18 @@ QString CTimeAxis::getStartTime() const
 QString CTimeAxis::getEndTime() const 
 {
     return m_dtEndTime.toString("yyyy/MM/dd hh:mm:ss:zzz");
+}
+
+
+void CTimeAxis::play()
+{
+    m_pTimer->start();
+}
+
+
+void CTimeAxis::pause()
+{
+    m_pTimer->stop();
 }
 
 
@@ -211,6 +225,7 @@ void CTimeAxis::OnUpdate()
 {
     // 当前时间 
     m_dtCurrentTime = m_dtCurrentTime.addMSecs(60 * 60 * 1000);
+    //m_dtCurrentTime = m_dtCurrentTime.addMSecs(m_iInterval);
     if (m_dtCurrentTime >= m_dtEndTime)
     {
         m_bProgressSlider = true;

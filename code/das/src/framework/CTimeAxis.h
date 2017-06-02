@@ -39,6 +39,9 @@ public:
     QString getStartTime() const;
     QString getEndTime() const;
 
+    void play();
+    void pause();
+
 private:
     void initLayout();
 
