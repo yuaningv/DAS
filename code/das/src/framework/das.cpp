@@ -66,9 +66,6 @@ DAS::DAS(QWidget *parent, Qt::WindowFlags flags)
     setWindowTitle(trFormString(cstDictDas));
     setWindowState(Qt::WindowMaximized);
     setWindowIcon(QIcon(IMG_LOGO));
-    resize(800, 500);
-
-    setLayout();
 
     //m_pPropertyBar = new CPropertyBar(this);
     //addDockWidget(Qt::RightDockWidgetArea, m_pPropertyBar);
@@ -78,6 +75,8 @@ DAS::DAS(QWidget *parent, Qt::WindowFlags flags)
 
     //connect(m_pGraphicsView, SIGNAL(sigItemAttr(const ItemAttribute_t&)), m_pPropertyBar, SLOT(OnShowItemAttr(const ItemAttribute_t&)));
     connect(m_pGraphicsView, SIGNAL(sigEnd()), this, SLOT(OnReset()));
+    setLayout();
+
 }
 
 

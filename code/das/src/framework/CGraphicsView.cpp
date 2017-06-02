@@ -228,6 +228,8 @@ void CGraphicsView::readXml()
         CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::readXml", "read xml failed!");
         return;
     }
+    m_strVideoStorage = m_strStoragePath + "/videos";
+    m_strCanStorage = m_strStoragePath + "/cans";
 
     for (auto& itr = mapTmpItems.begin(); itr != mapTmpItems.end(); ++itr)
     {
