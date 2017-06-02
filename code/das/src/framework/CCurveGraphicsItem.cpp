@@ -112,7 +112,19 @@ QPointF& CCurveGraphicsItem::mapToAxis(const QString& strKeyName, QPointF& point
     return point;
 }
 
-
+qreal CCurveGraphicsItem::YFromAxis(const QString& strKeyName, qreal yreal) const
+{
+    qreal y = m_itemRectF.bottomLeft().y() - m_iOffset;
+    if (m_realY != 0)
+    {
+        qreal ymin = m_mapAxis.value(strKeyName).m_dbYAxisMin;
+        qreal ylen = m_mapAxis.value(strKeyName).m_realYLength;
+        qreal yTmp = m_mapAxis.value(strKeyName).m_realY;
+        qreal py = (y - yreal) / ylen * yTmp + ymin;
+        return py;
+    }
+    return 0;
+}
 
 void CCurveGraphicsItem::setLines(const QList<CurveLine_t>& lstTmpVec)
 {
@@ -153,7 +165,7 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
 
 
     // title
-    painter->drawText(m_itemRectF.topLeft() + QPointF(15, 15), "aaa");
+    painter->drawText(m_itemRectF.topLeft() + QPointF(50, 15), m_strTitle);
 
     // x×ø±êÖá
     painter->drawLine(m_itemRectF.bottomLeft() + QPointF(m_iOffset, -m_iOffset), m_itemRectF.bottomRight() + QPointF(-m_iOffset, -m_iOffset));
@@ -169,10 +181,10 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
         painter->drawLine(m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1), m_itemRectF.bottomLeft().y() - m_iOffset, m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1), m_itemRectF.topLeft().y() + m_iOffset /*- 5*/);
         painter->setPen(QPen(Qt::black, 1, Qt::SolidLine));
         QString strText = QDateTime::fromMSecsSinceEpoch(m_realX*(i + 1) + m_dbXAxisMin).toString("hh:mm:ss:zzz");
-        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1) - 5, m_itemRectF.bottomLeft().y() - m_iOffset + 10, strText/* QString::number(m_realX*(i + 1) + m_dbXAxisMin)*/);
+        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1) - 25, m_itemRectF.bottomLeft().y() - m_iOffset + 15, strText/* QString::number(m_realX*(i + 1) + m_dbXAxisMin)*/);
     }
     QString strTextMin = QDateTime::fromMSecsSinceEpoch(m_dbXAxisMin).toString("hh:mm:ss:zzz");
-    painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 5, m_itemRectF.bottomLeft().y() - m_iOffset + 10, strTextMin/*QString::number(m_dbXAxisMin)*/);
+    painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 25, m_itemRectF.bottomLeft().y() - m_iOffset + 15, strTextMin/*QString::number(m_dbXAxisMin)*/);
 
     // y ×ø±êÖá
     painter->drawLine(m_itemRectF.bottomLeft() + QPointF(m_iOffset, -m_iOffset), m_itemRectF.topLeft() + QPointF(m_iOffset, m_iOffset));
@@ -198,9 +210,9 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
             painter->setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
             painter->drawLine(m_itemRectF.bottomLeft().x() + m_iOffset, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1), m_itemRectF.bottomRight().x() - m_iOffset/* + 5*/, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1));
             painter->setPen(QPen(m_lstLines.at(n).m_color, 1, Qt::SolidLine));
-            painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 20, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1) - n * 10 + 10, QString::number(m_realY*(i + 1) + m_dbYAxisMin));
+            painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 35, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1) - n * 10 + 10, QString::number(m_realY*(i + 1) + m_dbYAxisMin));
         }
-        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 20, m_itemRectF.bottomLeft().y() - m_iOffset - n * 10 + 10, QString::number(m_dbYAxisMin));
+        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 35, m_itemRectF.bottomLeft().y() - m_iOffset - n * 10 + 10, QString::number(m_dbYAxisMin));
 
         // Í¼Àý
         painter->fillRect(m_itemRectF.bottomLeft().x() + m_iOffset * 2 + iLength*n, m_itemRectF.bottomLeft().y() - 20, 5, 5, m_lstLines.at(n).m_color);
@@ -209,7 +221,12 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
 
         // »æÖÆÇúÏßÍ¼
         painter->setPen(QPen(m_lstLines.at(n).m_color, 1, Qt::SolidLine));
+        painter->setRenderHints(QPainter::Antialiasing, true);
         painter->drawLines(m_lstLines[n].m_vecPoints);
+        if (!m_lstLines[n].m_strValue.isEmpty())
+        {
+            painter->drawText(m_line.x1(), m_lstLines[n].m_strValue.toDouble(), QString::number(YFromAxis(m_lstLines[n].m_strDisplayName, m_lstLines[n].m_strValue.toDouble()), 'f', 1));
+        }
     }
     m_mutex.unlock();
 }
@@ -306,15 +323,29 @@ void CCurveGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     if (!m_bEditFlag)
     {
         setCursor(Qt::ArrowCursor);
+        m_mutex.lock();
         if (event->pos().x() >= m_itemRectF.bottomLeft().x() + m_iOffset && event->pos().x() <= m_itemRectF.bottomRight().x() - m_iOffset
             && event->pos().y() >= m_itemRectF.topLeft().y() + m_iOffset && event->pos().y() <= m_itemRectF.bottomLeft().y() - m_iOffset)
         {
             m_line.setLine(event->pos().x(), m_itemRectF.topLeft().y() + m_iOffset, event->pos().x(), m_itemRectF.bottomLeft().y() - m_iOffset);
+            for (auto& TmpLine : m_lstLines)
+            {
+                TmpLine.m_strValue.clear();
+                for (auto& TmpPoint : TmpLine.m_vecPoints)
+                {
+                    if (event->pos().x() - 0.1 <= TmpPoint.x() && TmpPoint.x() <= event->pos().x() + 0.1)
+                    {
+                        TmpLine.m_strValue = QString::number(TmpPoint.y());
+                    }
+                }
+            }
         }
         else
         {
             m_line.setLine(0, 0, 0, 0);
         }
+        m_mutex.unlock();
+
         return QGraphicsItem::hoverEnterEvent(event);
     }
 

@@ -30,48 +30,6 @@ enum DragDirection{
 #define PADDING 5 // margin
 #define CurveRole Qt::UserRole + 100
 
-// 控件属性
-typedef struct WidgetProperty
-{
-    ITEMTYPE m_type;
-    qreal m_realX;
-    qreal m_realY;
-    qreal m_realWidth;
-    qreal m_realHeight;
-    QString m_strStart;
-    QString m_strEnd;
-    QString m_strPlayPos;
-    int m_iChannel;
-
-    WidgetProperty()
-    {
-        m_type = Item_None;
-        m_realX = 0.0;
-        m_realY = 0.0;
-        m_realWidth = 0.0;
-        m_realHeight = 0.0;
-        m_strStart.clear();
-        m_strEnd.clear();
-        m_strPlayPos.clear();
-        m_iChannel = -1;
-    }
-
-}WidgetProperty_t; 
-
-
-typedef struct ItemAttribute
-{
-    int iID;
-    ITEMTYPE iType;
-    QString strTitle;
-    int iChannel;
-    int iPosX;
-    int iPoxY;
-    int iWidth;
-    int iHeight;
-
-} ItemAttribute_t;
-
 
 typedef struct CurveLine
 {
@@ -111,6 +69,52 @@ typedef struct CurveLine
 }CurveLine_t;
 
 Q_DECLARE_METATYPE(CurveLine_t);
+
+// 控件属性
+typedef struct WidgetProperty
+{
+    ITEMTYPE m_type;
+    qreal m_realX;
+    qreal m_realY;
+    qreal m_realWidth;
+    qreal m_realHeight;
+    QString m_strStart;
+    QString m_strEnd;
+    QString m_strPlayPos;
+    int m_iChannel;
+    QString m_strTitle;
+    QList<CurveLine_t> m_lstLines;
+
+    WidgetProperty()
+    {
+        m_type = Item_None;
+        m_realX = 0.0;
+        m_realY = 0.0;
+        m_realWidth = 0.0;
+        m_realHeight = 0.0;
+        m_strStart.clear();
+        m_strEnd.clear();
+        m_strPlayPos.clear();
+        m_iChannel = -1;
+        m_strTitle.clear();
+        m_lstLines.clear();
+    }
+
+}WidgetProperty_t; 
+
+
+typedef struct ItemAttribute
+{
+    int iID;
+    ITEMTYPE iType;
+    QString strTitle;
+    int iChannel;
+    int iPosX;
+    int iPoxY;
+    int iWidth;
+    int iHeight;
+
+} ItemAttribute_t;
 
 
 typedef struct 

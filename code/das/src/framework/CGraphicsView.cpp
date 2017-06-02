@@ -19,7 +19,7 @@
 CGraphicsView::CGraphicsView(QWidget *parent)
     : QGraphicsView(parent),
     m_bEditFlag(false),
-    m_strStoragePath(""),
+    m_strStoragePath("./"),
     m_strVideoStorage(""),
     m_strCanStorage("")
 {
@@ -28,15 +28,16 @@ CGraphicsView::CGraphicsView(QWidget *parent)
     setMouseTracking(false);
     //setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
+    m_pScene = new CGraphicsScene(parent);
+    m_pScene->setSceneRect(QRectF(0, 0, this->width(), this->height()));
+    connect(m_pScene, &CGraphicsScene::sigChannelChanged, this, &CGraphicsView::OnChannelChanged);
+    connect(m_pScene, &CGraphicsScene::sigChanged, [=]{ this->saveLayout(); });
+
+    setScene(m_pScene);
     setBackgroundBrush(QBrush(Qt::gray, Qt::SolidPattern));
     setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setRenderHint(QPainter::Antialiasing, true);
-
-    m_pScene = new CGraphicsScene(this);
-    m_pScene->setSceneRect(QRectF(0, 0, this->width(), this->height()));
-    connect(m_pScene, &CGraphicsScene::sigChannelChanged, this, &CGraphicsView::OnChannelChanged);
-    setScene(m_pScene);
 
     m_dtBegin = QDateTime::fromString("2017/04/11 01:01:01", "yyyy/MM/dd hh:mm:ss");
     m_dtEnd = QDateTime::fromString("2017/05/01 01:01:01", "yyyy/MM/dd hh:mm:ss");
@@ -108,6 +109,8 @@ void CGraphicsView::setStoragePath(const QString& strPath)
     {
         iterCan.value()->Init(m_strCanStorage.toStdString().c_str(), &m_profile, iterCan.key());
     }
+
+    saveLayout();
 }
 
 
@@ -220,7 +223,7 @@ void CGraphicsView::readXml()
 {
     CFileOperationManager cfm("das.xml");
     QMap<int, QList<WidgetProperty_t> > mapTmpItems;
-    if (!cfm.ReadXmlFile(mapTmpItems))
+    if (!cfm.ReadXmlFile(mapTmpItems, m_strStoragePath))
     {
         CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::readXml", "read xml failed!");
         return;
@@ -253,6 +256,7 @@ void CGraphicsView::readXml()
                 pVideo->resize(obj.m_realWidth, obj.m_realHeight);
                 m_pScene->blockSignals(true);
                 pVideo->setChannel(obj.m_iChannel);
+                pVideo->setTitle(obj.m_strTitle);
                 m_pScene->blockSignals(false);
                 m_pScene->addWidget(pVideo);
                 pVideo->move(-obj.m_realX, -obj.m_realY);
@@ -283,6 +287,8 @@ void CGraphicsView::readXml()
                 pItem->moveBy(-obj.m_realX, -obj.m_realY);
                 m_pScene->blockSignals(true);
                 pItem->setChannel(obj.m_iChannel);
+                pItem->setTitle(obj.m_strTitle);
+                pItem->setLines(obj.m_lstLines);
                 m_pScene->blockSignals(false);
 
                 // °ó¶¨sessionÓëlistener 
@@ -355,6 +361,7 @@ void CGraphicsView::saveLayout()
                 tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
                 tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
                 tmpWgtPro.m_realHeight = item->boundingRect().bottomRight().y() - item->boundingRect().topLeft().y();
+                tmpWgtPro.m_strTitle = dynamic_cast<CVideoWidget*>(pCustomItem)->getTitle();
                 //mapTmpItems[Item_Video].append(tmpWgtPro);
             }
             else if (iType == Item_TimeAxis)
@@ -390,14 +397,15 @@ void CGraphicsView::saveLayout()
             tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
             tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
             tmpWgtPro.m_realHeight = item->boundingRect().bottomRight().y() - item->boundingRect().topLeft().y();
-
+            tmpWgtPro.m_strTitle = dynamic_cast<CCurveGraphicsItem*>(item)->getTitle();
+            tmpWgtPro.m_lstLines = dynamic_cast<CCurveGraphicsItem*>(item)->getLines();
             //mapTmpItems[Item_Chart].append(tmpWgtPro);
         }
         mapTmpItems[tmpWgtPro.m_type].append(tmpWgtPro);
     }
 
     CFileOperationManager cfm("das.xml");
-    if (cfm.writeXmlFile(mapTmpItems))
+    if (cfm.writeXmlFile(mapTmpItems, m_strStoragePath))
     {
         CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::saveLayout", "save laout success!");
     }

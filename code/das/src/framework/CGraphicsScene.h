@@ -23,7 +23,7 @@ protected:
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
 
 private:
-    int getItemChannel(QGraphicsItem* item) const;
+    int getItemProperty(QGraphicsItem* item, QString& strName) const;
 
 private:
     bool m_bEnable;
@@ -33,6 +33,7 @@ private slots :
 
 signals :
         void sigChannelChanged(QGraphicsItem* item, const int& iPreChannel);
+        void sigChanged();
 };
 
 
