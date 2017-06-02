@@ -163,6 +163,7 @@ void CGraphicsScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     QGraphicsScene::contextMenuEvent(event);
 }
 
+
 // 获取组件channel
 int CGraphicsScene::getItemChannel(QGraphicsItem* item) const
 {
@@ -170,6 +171,7 @@ int CGraphicsScene::getItemChannel(QGraphicsItem* item) const
     {
         return 0;
     }
+
     int iChannel = 0;
     if (item->isWidget())
     {

@@ -28,15 +28,15 @@ CGraphicsView::CGraphicsView(QWidget *parent)
     setMouseTracking(false);
     //setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 
-    m_pScene = new CGraphicsScene(parent);
-    connect(m_pScene, &CGraphicsScene::sigChannelChanged, this, &CGraphicsView::OnChannelChanged);
-
-    setScene(m_pScene);
-    setSceneRect(QRectF(0, 0, this->width(), this->height()));
     setBackgroundBrush(QBrush(Qt::gray, Qt::SolidPattern));
     setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setRenderHint(QPainter::Antialiasing, true);
+
+    m_pScene = new CGraphicsScene(this);
+    m_pScene->setSceneRect(QRectF(0, 0, this->width(), this->height()));
+    connect(m_pScene, &CGraphicsScene::sigChannelChanged, this, &CGraphicsView::OnChannelChanged);
+    setScene(m_pScene);
 
     m_dtBegin = QDateTime::fromString("2017/04/11 01:01:01", "yyyy/MM/dd hh:mm:ss");
     m_dtEnd = QDateTime::fromString("2017/05/01 01:01:01", "yyyy/MM/dd hh:mm:ss");
@@ -456,8 +456,9 @@ void CGraphicsView::dropEvent(QDropEvent * event)
             {
                 CTimeAxis* pTimeAxis = new CTimeAxis;
                 pTimeAxis->setEditModeEnabled(m_bEditFlag);
-                m_pScene->addWidget(pTimeAxis);
+                //m_pScene->addWidget(pTimeAxis);
                 pTimeAxis->move(mapToScene(event->pos()).toPoint());
+                pTimeAxis->move(event->pos());
                 pTimeAxis->setTimeRange(m_dtBegin.toString("yyyy/MM/dd hh:mm:ss:zzz"), m_dtEnd.toString("yyyy/MM/dd hh:mm:ss:zzz"));
 
                 CLogManager::getInstance()->log(eLogDebug, "CGraphicsView", "add time axis");
