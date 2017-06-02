@@ -224,35 +224,9 @@ void CTimeAxis::OnProgressChanged(int iValue)
 void CTimeAxis::OnUpdate()
 {
     // 当前时间 
-    m_dtCurrentTime = m_dtCurrentTime.addMSecs(60 * 60 * 1000);
-    //m_dtCurrentTime = m_dtCurrentTime.addMSecs(m_iInterval);
-    if (m_dtCurrentTime >= m_dtEndTime)
-    {
-        m_bProgressSlider = true;
-        m_pSlider->setValue(0);
-        m_bProgressSlider = false;
-        m_dtCurrentTime = m_dtStartTime;
-        m_pTimer->stop();
-        return;
-    }
-
-    qint64 iCurrentTime = m_dtCurrentTime.toMSecsSinceEpoch();
-    qint64 iMaxTime = m_dtEndTime.toMSecsSinceEpoch();
-    qint64 iMinTime = m_dtStartTime.toMSecsSinceEpoch();
-    qint64 iTimeOffset = iMaxTime - iMinTime;
-    uint iOffset = m_pSlider->maximum() - m_pSlider->minimum();
-
-    if (iTimeOffset <= 0)
-    {
-        return;
-    }
-    int iProgressValue = m_pSlider->minimum() + (iCurrentTime - iMinTime) * (1.0f * iOffset / iTimeOffset);
-    m_bProgressSlider = true;
-    m_pSlider->setValue(iProgressValue);
-    m_bProgressSlider = false;
-    m_pSlider->setToolTip(m_dtCurrentTime.toString("yyyy/MM/dd hh:mm:ss:zzz"));
-
-    CLogManager::getInstance()->log(eLogDebug, "CTimeAxis::OnUpdate", "Progress value:%d", iProgressValue);
+    //m_dtCurrentTime = m_dtCurrentTime.addMSecs(60 * 60 * 1000);
+    m_dtCurrentTime = m_dtCurrentTime.addMSecs(m_iInterval);
+    setValue(m_dtCurrentTime.toString("yyyy/MM/dd hh:mm:ss:zzz"));
 }
 
 

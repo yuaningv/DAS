@@ -83,11 +83,11 @@ DAS::DAS(QWidget *parent, Qt::WindowFlags flags)
 
 DAS::~DAS()
 {
-    if (m_pGraphicsView != NULL)
+    /*if (m_pGraphicsView != NULL)
     {
-        delete m_pGraphicsView;
-        m_pGraphicsView = NULL;
-    }
+    delete m_pGraphicsView;
+    m_pGraphicsView = NULL;
+    }*/
 
     if (m_pPropertyBar != NULL)
     {

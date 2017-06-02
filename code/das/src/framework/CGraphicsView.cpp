@@ -52,12 +52,6 @@ CGraphicsView::CGraphicsView(QWidget *parent)
 
 CGraphicsView::~CGraphicsView()
 {
-    if (m_pScene != NULL)
-    {
-        delete m_pScene;
-        m_pScene = NULL;
-    }
-
     QMap<int, CVideoFileSession*>::iterator iterVideo = m_mapVideoSession.begin();
     for (; iterVideo != m_mapVideoSession.end(); iterVideo++)
     {
