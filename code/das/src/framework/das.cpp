@@ -265,9 +265,11 @@ void DAS::setLayout()
 
 void DAS::OnOpen()
 {
-    QString strStorgePath = QFileDialog::getExistingDirectory(this, trFormString(cstSelectDir), "./", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-
-    m_pGraphicsView->setStoragePath(strStorgePath);
+    QString strStorgePath = QFileDialog::getExistingDirectory(this, trFormString(cstSelectDir), m_pGraphicsView->getStoragePath(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (m_pGraphicsView->getStoragePath() != strStorgePath)
+    {
+        m_pGraphicsView->setStoragePath(strStorgePath);
+    }
 }
 
 

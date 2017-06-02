@@ -24,6 +24,7 @@ public:
     void saveLayout();
 
     void setStoragePath(const QString& strPath);
+    QString getStoragePath() const { return m_strStoragePath; }
     void setTimeScape(const QDateTime& dtBegin, const QDateTime& dtEnd); 
     QDateTime getDtBegin() { return m_dtBegin; };
     QDateTime getDtEnd() { return m_dtEnd; };

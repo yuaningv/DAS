@@ -63,6 +63,18 @@
         <source>End time</source>
         <translation>结束时间</translation>
     </message>
+	<message>
+        <source>Property</source>
+        <translation>属性</translation>
+    </message>
+	<message>
+        <source>Title</source>
+        <translation>名称</translation>
+    </message>
+	<message>
+        <source>Channel</source>
+        <translation>通道</translation>
+    </message>
 </context>
 <context>
     <name>MENU</name>

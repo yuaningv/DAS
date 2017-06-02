@@ -57,7 +57,8 @@ public:
     void setYAxisRange(const qreal& dbMin, const qreal& dbMax) { m_dbYAxisMin = dbMin; m_dbYAxisMax = dbMax; }
 
     void setEnableEditMode(bool enable);
-    void setTitle(const QString& strTitle);
+    void setTitle(const QString& strTitle) { m_strTitle = strTitle; update(boundingRect()); };
+    QString getTitle() const { return m_strTitle; }
 
     void setType(ITEMTYPE iType) { m_iType = iType; };
     void setLines(const QList<CurveLine_t>& lstTmpVec);
@@ -73,6 +74,7 @@ public:
 
 private:
     QPointF& mapToAxis(const QString& strKeyName, QPointF& point) const;
+    qreal YFromAxis(const QString& strKeyName, qreal yreal) const;
 
 protected:
     virtual void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0);

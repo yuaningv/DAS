@@ -24,7 +24,7 @@ CConfigCurveDlg::CConfigCurveDlg(QWidget *parent /*= 0*/)
     setMinimumHeight(600);
 
     m_lstColor.clear();
-    m_lstColor << Qt::red << Qt::blue << Qt::green << Qt::cyan << Qt::black;
+    m_lstColor << Qt::red << Qt::blue << Qt::green << Qt::cyan << Qt::magenta;
 
     initLayout();
 }

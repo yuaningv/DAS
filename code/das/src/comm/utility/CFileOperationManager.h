@@ -30,12 +30,12 @@ public:
     ~CFileOperationManager();
 
     // 读取xml文件
-    bool ReadXmlFile(QMap<int, QList<WidgetProperty_t>>& mapTmpItems);
+    bool ReadXmlFile(QMap<int, QList<WidgetProperty_t>>& mapTmpItems, QString& strPath);
 
     bool ReadXmlFile(QList<CurveLine_t>& lstTmpItems);
 
     // 写xml文件
-    bool writeXmlFile(QMap<int, QList<WidgetProperty_t>>& mapTmpItems);
+    bool writeXmlFile(QMap<int, QList<WidgetProperty_t>>& mapTmpItems, const QString& strPath);
 
     // 导出excel文件
     bool writeExcelFile(const QString& strFileName, const QStringList& slstHeader, QList< QList<QVariant> >& lstExcelData);

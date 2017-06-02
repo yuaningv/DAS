@@ -1,7 +1,7 @@
 #include "CGraphicsScene.h"
 #include "constant.h"
 #include "CConfigCurveDlg.h"
-#include "CCurveGraphicsItem.h"
+#include "CPropertyDlg.h"
 
 #include "QtWidgets/QGraphicsSceneMouseEvent"
 #include "QtWidgets/QMenu"
@@ -16,6 +16,7 @@ const char* cstRemove = "Remove";
 extern const char* cstSelectCurve;
 extern const char* cstOk;
 extern const char* cstCancel;
+extern const char* cstProperty;
 
 CGraphicsScene::CGraphicsScene(QObject *parent)
     : QGraphicsScene(parent)
@@ -68,6 +69,19 @@ void CGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
 void CGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
+    QGraphicsItem* item = this->itemAt(mouseEvent->scenePos(), QTransform());
+    if (!item)
+    {
+        QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
+        return;
+    }
+    item->setZValue(0.1);
+    QList<QGraphicsItem*> lstItem = collidingItems(item);
+
+    for (auto& TmpItem : lstItem)
+    {
+        TmpItem->setZValue(0);
+    }
     QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
 }
 
@@ -106,6 +120,7 @@ void CGraphicsScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                 if (TmpObj.exec())
                 {
                     static_cast<CCurveGraphicsItem*>(item)->setLines(TmpObj.getCheckedLines());
+                    emit sigChanged();
                 }
             });
         }
@@ -113,18 +128,13 @@ void CGraphicsScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
         // 属性
         if (iType != Item_TimeAxis || !item->isWidget())         // time axis 没有channel
         {
-            QAction *propertyAction = menu.addAction(trFormString("Property"));
+            QAction *propertyAction = menu.addAction(trFormString(cstProperty));
             propertyAction->setEnabled(!m_bPlay);
             connect(propertyAction, &QAction::triggered, [=](){
-                QInputDialog oTmpDlg;
-                oTmpDlg.setWindowFlags(oTmpDlg.windowFlags() & ~Qt::WindowContextHelpButtonHint);
-                oTmpDlg.setIntMinimum(0);
-                oTmpDlg.setInputMode(QInputDialog::IntInput);
-                oTmpDlg.setWindowTitle(trFormString("Property"));
-                oTmpDlg.setLabelText(trFormString("Channel"));
-                oTmpDlg.setOkButtonText(trFormString(cstOk));
-                oTmpDlg.setCancelButtonText(trFormString(cstCancel));
-                oTmpDlg.setIntValue(getItemChannel(item));
+                CPropertyDlg oTmpDlg;
+                QString sTmpName("");
+                oTmpDlg.setChannel(getItemProperty(item, sTmpName));
+                oTmpDlg.setName(sTmpName);
                 if (oTmpDlg.exec())
                 {
                     int iPreChannel = -1;
@@ -137,19 +147,21 @@ void CGraphicsScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                         {
                             CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
                             iPreChannel = pVideoWidget->getChannel();
-                            pVideoWidget->setChannel(oTmpDlg.intValue());
+                            pVideoWidget->setChannel(oTmpDlg.getChannel());
+                            pVideoWidget->setTitle(oTmpDlg.getName());
                         }
                         else if (iType == Item_Table)           // table 
                         {
                             CTableView *pTableView = dynamic_cast<CTableView*>(pCustomItem);
                             iPreChannel = pTableView->getChannel();
-                            pTableView->setChannel(oTmpDlg.intValue());
+                            pTableView->setChannel(oTmpDlg.getChannel());
                         }
                     }
                     else // curve
                     {
                         iPreChannel = dynamic_cast<CCurveGraphicsItem*>(item)->getChannel();
-                        dynamic_cast<CCurveGraphicsItem*>(item)->setChannel(oTmpDlg.intValue());
+                        dynamic_cast<CCurveGraphicsItem*>(item)->setChannel(oTmpDlg.getChannel());
+                        dynamic_cast<CCurveGraphicsItem*>(item)->setTitle(oTmpDlg.getName());
                     }
 
                     emit sigChannelChanged(item, iPreChannel);
@@ -163,8 +175,8 @@ void CGraphicsScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     QGraphicsScene::contextMenuEvent(event);
 }
 
-// 获取组件channel
-int CGraphicsScene::getItemChannel(QGraphicsItem* item) const
+// 获取组件Property
+int CGraphicsScene::getItemProperty(QGraphicsItem* item, QString& strName) const
 {
     if (!item)
     {
@@ -180,6 +192,7 @@ int CGraphicsScene::getItemChannel(QGraphicsItem* item) const
         {
             CVideoWidget *pVideoWidget = dynamic_cast<CVideoWidget*>(pCustomItem);
             iChannel = pVideoWidget->getChannel();
+            strName = pVideoWidget->getTitle();
         }
         else if (iType == Item_Table)           // table 
         {
@@ -190,6 +203,7 @@ int CGraphicsScene::getItemChannel(QGraphicsItem* item) const
     else // curve
     {
         iChannel = dynamic_cast<CCurveGraphicsItem*>(item)->getChannel();
+        strName = dynamic_cast<CCurveGraphicsItem*>(item)->getTitle();
     }
 
     return iChannel;

@@ -63,6 +63,18 @@
         <source>End time</source>
         <translation>End time</translation>
     </message>
+	<message>
+        <source>Property</source>
+        <translation>Property</translation>
+    </message>
+	<message>
+        <source>Title</source>
+        <translation>Title</translation>
+    </message>
+	<message>
+        <source>Channel</source>
+        <translation>Channel</translation>
+    </message>
 </context>
 <context>
     <name>MENU</name>
