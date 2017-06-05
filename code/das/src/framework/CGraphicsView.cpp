@@ -5,6 +5,7 @@
 #include "CVideoWidget.h"
 #include "CCurveGraphicsItem.h"
 #include "CLogManager.h"
+#include "CFileOperationManager.h"
 
 #include "QtGui/QDropEvent"
 #include "QtGui/QDragEnterEvent"
@@ -12,8 +13,10 @@
 #include "QtGui/QDragMoveEvent"
 #include "QtCore/QMimeData"
 #include "QtWidgets/QGraphicsProxyWidget"
-#include "CFileOperationManager.h"
-#include "QtCore/QTimer"
+#include "QtWidgets/QMessageBox"
+
+
+extern const char* cstDictDas;
 
 
 CGraphicsView::CGraphicsView(QWidget *parent)
@@ -129,7 +132,6 @@ void CGraphicsView::setTimeScape(const QDateTime& dtBegin, const QDateTime& dtEn
         iterCan.value()->SetScape(strTime.toStdString().c_str());
     }
 
-    // test curve ??? 
     QList<QGraphicsItem*> lstItem = this->items();
     for (int i = 0; i < lstItem.size(); i++)
     {
@@ -149,11 +151,16 @@ void CGraphicsView::setTimeScape(const QDateTime& dtBegin, const QDateTime& dtEn
         else        // 曲线图 
         {
             CCurveGraphicsItem* pCurveItem = (CCurveGraphicsItem*)pItem;
-            double dbMin = QDateTime::fromString("20170413151254", "yyyyMMddhhmmss").toMSecsSinceEpoch();
-            double dbMax = QDateTime::fromString("20170413152254", "yyyyMMddhhmmss").toMSecsSinceEpoch();
+            double dbMin = m_dtBegin.toMSecsSinceEpoch();
+            double dbMax = m_dtEnd.toMSecsSinceEpoch();
             pCurveItem->setXAxisRange(dbMin, dbMax);
         }
     }
+
+    saveLayout();
+
+    // 每次设置范围重新调用skipto 
+    skipTo(m_dtBegin);
 }
 
 
@@ -183,14 +190,13 @@ void CGraphicsView::play()
     QMap<int, CVideoFileSession*>::iterator iterVideo = m_mapVideoSession.begin();
     for (; iterVideo != m_mapVideoSession.end(); iterVideo++)
     {
-        iterVideo.value()->SkipTo("20170411131010");        // test ??? 
         iterVideo.value()->Play();
     }
 
     QMap<int, CCanFileSession*>::iterator iterCan = m_mapCanSession.begin();
     for (; iterCan != m_mapCanSession.end(); iterCan++)
     {
-        iterCan.value()->SkipTo("20170413151254");        // test ??? 
+        //iterCan.value()->SkipTo("20170411131010");
         iterCan.value()->Play();
     }
 
@@ -209,10 +215,8 @@ void CGraphicsView::play()
             {
                 CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
                 pTimeAxis->play();
+                break;      // 时间轴只有一个 
             }
-        }
-        else        // 曲线图 
-        {
         }
     }
 }
@@ -249,11 +253,25 @@ void CGraphicsView::pause()
             {
                 CTimeAxis *pTimeAxis = dynamic_cast<CTimeAxis*>(pCustomItem);
                 pTimeAxis->pause();
+                break;      // 时间轴只有一个 
             }
         }
-        else        // 曲线图 
-        {
-        }
+    }
+}
+
+
+void CGraphicsView::setStep(int iStep)
+{
+    QMap<int, CVideoFileSession*>::iterator iterVideo = m_mapVideoSession.begin();
+    for (; iterVideo != m_mapVideoSession.end(); iterVideo++)
+    {
+        iterVideo.value()->SetStep(iStep);
+    }
+
+    QMap<int, CCanFileSession*>::iterator iterCan = m_mapCanSession.begin();
+    for (; iterCan != m_mapCanSession.end(); iterCan++)
+    {
+        iterCan.value()->SetStep(iStep);
     }
 }
 
@@ -263,13 +281,17 @@ void CGraphicsView::readXml()
 {
     CFileOperationManager cfm("das.xml");
     QMap<int, QList<WidgetProperty_t> > mapTmpItems;
-    if (!cfm.ReadXmlFile(mapTmpItems, m_strStoragePath))
+    QString strTimeBegin, strTimeEnd;
+    if (!cfm.ReadXmlFile(mapTmpItems, m_strStoragePath, strTimeBegin, strTimeEnd))
     {
         CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::readXml", "read xml failed!");
         return;
     }
+
     m_strVideoStorage = m_strStoragePath + "/videos";
     m_strCanStorage = m_strStoragePath + "/cans";
+    m_dtBegin = QDateTime::fromString(strTimeBegin, "yyyy/MM/dd hh:mm:ss:zzz");
+    m_dtEnd = QDateTime::fromString(strTimeEnd, "yyyy/MM/dd hh:mm:ss:zzz");
 
     for (auto& itr = mapTmpItems.begin(); itr != mapTmpItems.end(); ++itr)
     {
@@ -283,10 +305,8 @@ void CGraphicsView::readXml()
                 pTimeAxis->setValue(obj.m_strPlayPos);
                 m_pScene->addWidget(pTimeAxis);
                 pTimeAxis->move(-obj.m_realX, -obj.m_realY);
-
-                // 更新开始时间和结束时间，一般情况下时间轴只有一个 
-                m_dtBegin = QDateTime::fromString(obj.m_strStart, "yyyy/MM/dd hh:mm:ss:zzz");
-                m_dtEnd = QDateTime::fromString(obj.m_strEnd, "yyyy/MM/dd hh:mm:ss:zzz");
+                connect(pTimeAxis, SIGNAL(sigSkipTo(const QDateTime&)), this, SLOT(OnSkipTo(const QDateTime&)));
+                connect(pTimeAxis, SIGNAL(sigEnd()), this, SLOT(OnEnd()));
             }
         }
         else if (Item_Video == itr.key())
@@ -327,6 +347,7 @@ void CGraphicsView::readXml()
                 pItem->resetItemSize(rectF);
                 m_pScene->addItem(pItem);
                 pItem->moveBy(-obj.m_realX, -obj.m_realY);
+                pItem->setXAxisRange(m_dtBegin.toMSecsSinceEpoch(), m_dtEnd.toMSecsSinceEpoch());
                 m_pScene->blockSignals(true);
                 pItem->setChannel(obj.m_iChannel);
                 pItem->setTitle(obj.m_strTitle);
@@ -358,6 +379,7 @@ void CGraphicsView::readXml()
                 pTable->move(-obj.m_realX, -obj.m_realY);
                 m_pScene->blockSignals(true);
                 pTable->setChannel(obj.m_iChannel);
+                pTable->setTitle(obj.m_strTitle);
                 m_pScene->blockSignals(false);
 
                 // 绑定session与listener 
@@ -427,6 +449,7 @@ void CGraphicsView::saveLayout()
                 tmpWgtPro.m_realY = item->mapRectFromScene(item->boundingRect()).topLeft().toPoint().y();
                 tmpWgtPro.m_realWidth = item->boundingRect().bottomRight().x() - item->boundingRect().topLeft().x();
                 tmpWgtPro.m_realHeight = item->boundingRect().bottomRight().y() - item->boundingRect().topLeft().y();
+                tmpWgtPro.m_strTitle = dynamic_cast<CTableView*>(pCustomItem)->getTitle();
 
                 //mapTmpItems[Item_Table].append(tmpWgtPro);
             }
@@ -447,7 +470,7 @@ void CGraphicsView::saveLayout()
     }
 
     CFileOperationManager cfm("das.xml");
-    if (cfm.writeXmlFile(mapTmpItems, m_strStoragePath))
+    if (cfm.writeXmlFile(mapTmpItems, m_strStoragePath, m_dtBegin.toString("yyyy/MM/dd hh:mm:ss:zzz"), m_dtEnd.toString("yyyy/MM/dd hh:mm:ss:zzz")))
     {
         CLogManager::getInstance()->log(eLogInfo, "CGraphicsView::saveLayout", "save laout success!");
     }
@@ -504,13 +527,32 @@ void CGraphicsView::dropEvent(QDropEvent * event)
         {
         case Item_TimeAxis:  // 时间轴
             {
+                // 时间轴只有一个 
+                QList<QGraphicsItem*> lstItem = this->items();
+                for (int i = 0; i < lstItem.size(); i++)
+                {
+                    QGraphicsItem* pItem = lstItem.at(i);
+                    if (pItem->isWidget())      // timeaxis、video、table 
+                    {
+                        QGraphicsProxyWidget* pWidget = (QGraphicsProxyWidget*)pItem;
+                        CCustomWidgetBase* pCustomItem = (CCustomWidgetBase*)pWidget->widget();
+                        ITEMTYPE iType = pCustomItem->type();
+                        if (iType == Item_TimeAxis)         // time axis 
+                        {
+                            QMessageBox::warning(this, trFormString(cstDictDas), trFormString("Time axis already exists!"), QMessageBox::Ok);
+                            return;
+                        }
+                    }
+                }
+
                 CTimeAxis* pTimeAxis = new CTimeAxis;
                 pTimeAxis->setEditModeEnabled(m_bEditFlag);
-                //m_pScene->addWidget(pTimeAxis);
+                m_pScene->addWidget(pTimeAxis);
                 pTimeAxis->move(mapToScene(event->pos()).toPoint());
-                pTimeAxis->move(event->pos());
                 pTimeAxis->setTimeRange(m_dtBegin.toString("yyyy/MM/dd hh:mm:ss:zzz"), m_dtEnd.toString("yyyy/MM/dd hh:mm:ss:zzz"));
 
+                connect(pTimeAxis, SIGNAL(sigSkipTo(const QDateTime&)), this, SLOT(OnSkipTo(const QDateTime&)));
+                connect(pTimeAxis, SIGNAL(sigEnd()), this, SLOT(OnEnd()));
                 CLogManager::getInstance()->log(eLogDebug, "CGraphicsView", "add time axis");
             }
             break;
@@ -703,4 +745,16 @@ void CGraphicsView::OnChannelChanged(QGraphicsItem* item, const int& iPreChannel
     saveLayout();
 }
 
+
+void CGraphicsView::OnSkipTo(const QDateTime& currentDt)
+{
+    skipTo(currentDt);
+}
+
+
+void CGraphicsView::OnEnd()
+{
+    m_pScene->setPlayFlag(false);
+    emit sigEnd();
+}
 

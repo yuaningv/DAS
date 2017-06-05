@@ -155,6 +155,6 @@ void CVideoWidget::OnMedia(unsigned char* buffer, unsigned long length, unsigned
 
     update();
     m_mutex.unlock();
-    CLogManager::getInstance()->log(eLogDebug, "CVideoWidget::OnMedia", "update frame, hwnd:%d", winId());
+    //CLogManager::getInstance()->log(eLogDebug, "CVideoWidget::OnMedia", "update frame, hwnd:%d", winId());
 }
 

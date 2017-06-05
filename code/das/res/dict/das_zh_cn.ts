@@ -75,6 +75,10 @@
         <source>Channel</source>
         <translation>通道</translation>
     </message>
+	<message>
+        <source>Time axis already exists!</source>
+        <translation>时间轴已存在！</translation>
+    </message>
 </context>
 <context>
     <name>MENU</name>
@@ -174,5 +178,9 @@
         <source>Slow play</source>
         <translation>减慢播放</translation>
     </message>	
+	<message>
+        <source>step</source>
+        <translation>播放速率</translation>
+    </message>
 </context>
 </TS>

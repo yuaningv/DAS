@@ -26,6 +26,8 @@ CTableView::CTableView(QWidget* parent /*= 0*/)
     : CCustomWidgetBase(parent)
     , m_pTableView(nullptr)
     , m_pModel(nullptr)
+    , m_pExcelBtn(nullptr)
+    , m_pLbTitle(nullptr)
     , m_strStartTime("")
     , m_strEndTime("")
     , m_pThread(nullptr),
@@ -47,16 +49,21 @@ CTableView::~CTableView()
 // 初始化布局
 void CTableView::initLayout()
 {
+    static int ide = 1;
     m_pModel = new CTableModel(this);
     createHorizontalHeaders();
 
     m_pTableView = new CFrozenTableView(m_pModel, 1);  // 首列冻结
     m_pTableView->resizeColumnsToContents();
+    m_pTableView->setColumnWidth(0, 160);
     //m_pTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     //m_pTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_pTableView->setAlternatingRowColors(true);
 
+    m_pLbTitle = new QLabel(QString("Table %1").arg(ide++), this);
+
     QVBoxLayout* pTmpLayout = new QVBoxLayout(this);
+    pTmpLayout->addWidget(m_pLbTitle);
     pTmpLayout->addWidget(m_pTableView);
 
     m_pExcelBtn = new QPushButton(trFormString(cstExport), this);

@@ -26,7 +26,7 @@ CFileOperationManager::~CFileOperationManager()
 }
 
 // XML文件读取
-bool CFileOperationManager::ReadXmlFile(QMap<int, QList<WidgetProperty_t>>& mapTmpItems, QString& strPath)
+bool CFileOperationManager::ReadXmlFile(QMap<int, QList<WidgetProperty_t>>& mapTmpItems, QString& strPath, QString& strTimeBegin, QString& strTimeEnd)
 {
     if (!m_file->open(QIODevice::ReadOnly))
     {
@@ -56,6 +56,23 @@ bool CFileOperationManager::ReadXmlFile(QMap<int, QList<WidgetProperty_t>>& mapT
                     if ("Text" == tmpElement.tagName())
                     {
                         strPath = tmpElement.text();
+                    }
+                    tmpNode = tmpNode.nextSibling();
+                }
+            }
+            else if ("TimeRange" == e.tagName())
+            {
+                QDomNode tmpNode = e.firstChild();
+                while (!tmpNode.isNull())
+                {
+                    QDomElement tmpElement = tmpNode.toElement();
+                    if ("BeginTime" == tmpElement.tagName())
+                    {
+                        strTimeBegin = tmpElement.text();
+                    }
+                    else if ("EndTime" == tmpElement.tagName())
+                    {
+                        strTimeEnd = tmpElement.text();
                     }
                     tmpNode = tmpNode.nextSibling();
                 }
@@ -215,7 +232,8 @@ bool CFileOperationManager::ReadXmlFile(QList<CurveLine_t>& lstTmpItems)
 
 
 // 写XML文件
-bool CFileOperationManager::writeXmlFile(QMap<int, QList<WidgetProperty_t>>& mapTmpItems, const QString& strPath)
+bool CFileOperationManager::writeXmlFile(QMap<int, QList<WidgetProperty_t>>& mapTmpItems, 
+    const QString& strPath, const QString& strTimeBegin, const QString& strTimeEnd)
 {
     /*if (m_file->exists())
     {
@@ -229,6 +247,7 @@ bool CFileOperationManager::writeXmlFile(QMap<int, QList<WidgetProperty_t>>& map
     m_doc->appendChild(m_doc->createProcessingInstruction("xml", "version=\"1.0\" encoding=\"UTF-8\""));
     QDomElement root = m_doc->createElement("WidgetXml");
     m_doc->appendChild(root);
+
     // path
     QDomElement pathNote = m_doc->createElement("Path");
     root.appendChild(pathNote);
@@ -236,6 +255,19 @@ bool CFileOperationManager::writeXmlFile(QMap<int, QList<WidgetProperty_t>>& map
     QDomText pathText = m_doc->createTextNode(strPath);
     pathTmpEle.appendChild(pathText);
     pathNote.appendChild(pathTmpEle);
+
+    // time range 
+    QDomElement timeNote = m_doc->createElement("TimeRange");
+    root.appendChild(timeNote);
+    QDomElement timeTmpEle = m_doc->createElement("BeginTime");
+    QDomText timeBegin = m_doc->createTextNode(strTimeBegin);
+    timeTmpEle.appendChild(timeBegin);
+    timeNote.appendChild(timeTmpEle);
+
+    timeTmpEle = m_doc->createElement("EndTime");
+    QDomText timeEnd = m_doc->createTextNode(strTimeEnd);
+    timeTmpEle.appendChild(timeEnd);
+    timeNote.appendChild(timeTmpEle);
 
     for (auto& itr = mapTmpItems.begin(); itr != mapTmpItems.end(); ++itr)
     {
@@ -414,6 +446,11 @@ bool CFileOperationManager::writeXmlFile(QMap<int, QList<WidgetProperty_t>>& map
 
                 tmpEle = m_doc->createElement("Channel");
                 tmpText = m_doc->createTextNode(QString::number(tmpObj.m_iChannel));
+                tmpEle.appendChild(tmpText);
+                note.appendChild(tmpEle);
+
+                tmpEle = m_doc->createElement("Title");
+                tmpText = m_doc->createTextNode(tmpObj.m_strTitle);
                 tmpEle.appendChild(tmpText);
                 note.appendChild(tmpEle);
 

@@ -148,10 +148,11 @@ void CTimeAxis::setValue(const QString& strValue)
     if (m_dtCurrentTime >= m_dtEndTime)
     {
         m_bProgressSlider = true;
-        m_pSlider->setValue(0);
+        m_pSlider->setValue(m_pSlider->minimum());
         m_bProgressSlider = false;
         m_dtCurrentTime = m_dtStartTime;
         m_pTimer->stop();
+        emit sigEnd();
         return;
     }
 
@@ -203,6 +204,21 @@ void CTimeAxis::pause()
 }
 
 
+void CTimeAxis::setStep(int iStep)
+{
+    if (iStep < 0)
+    {
+        m_iInterval = m_iInterval * iStep;
+    }
+    else
+    {
+        m_iInterval = m_iInterval / iStep;
+    }
+
+    m_pTimer->setInterval(m_iInterval);
+}
+
+
 void CTimeAxis::OnProgressChanged(int iValue)
 {
     if (m_bProgressSlider)          // 当拖动滚动条时，才响应该槽 
@@ -218,6 +234,9 @@ void CTimeAxis::OnProgressChanged(int iValue)
     qint64 iTimeOffset = iMaxTime - iMinTime;
     qint64 iCurrentTime = iMinTime + (iValue - m_pSlider->minimum()) * (1.0f * iTimeOffset / iOffset);
     m_dtCurrentTime = QDateTime::fromMSecsSinceEpoch(iCurrentTime);
+    m_pSlider->setToolTip(m_dtCurrentTime.toString("yyyy/MM/dd hh:mm:ss:zzz"));
+
+    emit sigSkipTo(m_dtCurrentTime);
 }
 
 

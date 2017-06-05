@@ -31,6 +31,7 @@ public:
     void skipTo(const QDateTime& currentDateTime);
     void play();
     void pause();
+    void setStep(int iStep);
 
 private:
     void readXml();
@@ -67,6 +68,8 @@ signals:
 
 private slots:
     void OnChannelChanged(QGraphicsItem* item, const int& iPreChannel);
+    void OnSkipTo(const QDateTime& currentDt);
+    void OnEnd();
 };
 
 

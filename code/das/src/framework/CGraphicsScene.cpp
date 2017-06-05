@@ -75,7 +75,7 @@ void CGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
         QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
         return;
     }
-    item->setZValue(0.1);
+    item->setZValue(0.2);
     QList<QGraphicsItem*> lstItem = collidingItems(item);
 
     for (auto& TmpItem : lstItem)
@@ -155,6 +155,7 @@ void CGraphicsScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                             CTableView *pTableView = dynamic_cast<CTableView*>(pCustomItem);
                             iPreChannel = pTableView->getChannel();
                             pTableView->setChannel(oTmpDlg.getChannel());
+                            pTableView->setTitle(oTmpDlg.getName());
                         }
                     }
                     else // curve
@@ -200,6 +201,7 @@ int CGraphicsScene::getItemProperty(QGraphicsItem* item, QString& strName) const
         {
             CTableView *pTableView = dynamic_cast<CTableView*>(pCustomItem);
             iChannel = pTableView->getChannel();
+            strName = pTableView->getTitle();
         }
     }
     else // curve

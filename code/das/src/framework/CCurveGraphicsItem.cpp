@@ -9,6 +9,7 @@
 #include "QtWidgets/QGraphicsSceneContextMenuEvent"
 #include "QtCore/QDebug"
 #include "QtWidgets/QMenu"
+#include "QtGui/QFontMetrics"
 
 #include "CLogManager.h"
 
@@ -41,7 +42,7 @@ CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
 
 
     // 初始大小
-    m_itemRectF = QRectF(2, 2, 400, 300);
+    m_itemRectF = QRectF(0, 0, 400, 300);
     m_strTitle = QString(tr("chart %1")).arg(index++);
     m_lstLines.clear();
 
@@ -76,7 +77,7 @@ void CCurveGraphicsItem::setEnableEditMode(bool enable)
 
 QRectF CCurveGraphicsItem::boundingRect() const
 {
-    return QRectF(m_itemRectF.x() - 2, m_itemRectF.y() - 2, m_itemRectF.width() + 4, m_itemRectF.height() + 4);
+    return QRectF(m_itemRectF.x(), m_itemRectF.y(), m_itemRectF.width(), m_itemRectF.height());
 }
 
 
@@ -169,6 +170,7 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
 
     // x坐标轴
     painter->drawLine(m_itemRectF.bottomLeft() + QPointF(m_iOffset, -m_iOffset), m_itemRectF.bottomRight() + QPointF(-m_iOffset, -m_iOffset));
+
     // 每个刻度值
     m_realX = (m_dbXAxisMax - m_dbXAxisMin) / m_iXTicksCount;
     //m_realX = floor(m_realX*10 + 0.5) / 10;
@@ -180,11 +182,15 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
         painter->setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
         painter->drawLine(m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1), m_itemRectF.bottomLeft().y() - m_iOffset, m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1), m_itemRectF.topLeft().y() + m_iOffset /*- 5*/);
         painter->setPen(QPen(Qt::black, 1, Qt::SolidLine));
-        QString strText = QDateTime::fromMSecsSinceEpoch(m_realX*(i + 1) + m_dbXAxisMin).toString("hh:mm:ss:zzz");
-        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1) - 25, m_itemRectF.bottomLeft().y() - m_iOffset + 15, strText/* QString::number(m_realX*(i + 1) + m_dbXAxisMin)*/);
+        QString strTextDate = QDateTime::fromMSecsSinceEpoch(m_realX*(i + 1) + m_dbXAxisMin).toString("yyyy/MM/dd");
+        QString strTextTime = QDateTime::fromMSecsSinceEpoch(m_realX*(i + 1) + m_dbXAxisMin).toString("hh:mm:ss:zzz");
+        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1) - 25, m_itemRectF.bottomLeft().y() - m_iOffset + 15, strTextDate/* QString::number(m_realX*(i + 1) + m_dbXAxisMin)*/);
+        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset + m_realXLength*(i + 1) - 25, m_itemRectF.bottomLeft().y() - m_iOffset + 25, strTextTime/* QString::number(m_realX*(i + 1) + m_dbXAxisMin)*/);
     }
-    QString strTextMin = QDateTime::fromMSecsSinceEpoch(m_dbXAxisMin).toString("hh:mm:ss:zzz");
-    painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 25, m_itemRectF.bottomLeft().y() - m_iOffset + 15, strTextMin/*QString::number(m_dbXAxisMin)*/);
+    QString strTextMinDate = QDateTime::fromMSecsSinceEpoch(m_dbXAxisMin).toString("yyyy/MM/dd");
+    QString strTextMinTime = QDateTime::fromMSecsSinceEpoch(m_dbXAxisMin).toString("hh:mm:ss:zzz");
+    painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 25, m_itemRectF.bottomLeft().y() - m_iOffset + 15, strTextMinDate/*QString::number(m_dbXAxisMin)*/);
+    painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 25, m_itemRectF.bottomLeft().y() - m_iOffset + 25, strTextMinTime/*QString::number(m_dbXAxisMin)*/);
 
     // y 坐标轴
     painter->drawLine(m_itemRectF.bottomLeft() + QPointF(m_iOffset, -m_iOffset), m_itemRectF.topLeft() + QPointF(m_iOffset, m_iOffset));
@@ -210,14 +216,16 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
             painter->setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
             painter->drawLine(m_itemRectF.bottomLeft().x() + m_iOffset, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1), m_itemRectF.bottomRight().x() - m_iOffset/* + 5*/, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1));
             painter->setPen(QPen(m_lstLines.at(n).m_color, 1, Qt::SolidLine));
-            painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 35, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1) - n * 10 + 10, QString::number(m_realY*(i + 1) + m_dbYAxisMin));
+            int iTextWidth = painter->fontMetrics().width(QString::number(m_realY*(i + 1) + m_dbYAxisMin));
+            painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - iTextWidth - 5, m_itemRectF.bottomLeft().y() - m_iOffset - m_realYLength*(i + 1) - n * 10 + 10, QString::number(m_realY*(i + 1) + m_dbYAxisMin));
         }
-        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - 35, m_itemRectF.bottomLeft().y() - m_iOffset - n * 10 + 10, QString::number(m_dbYAxisMin));
+        int iTextWidth = painter->fontMetrics().width(QString::number(m_dbYAxisMin));
+        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset - iTextWidth -5, m_itemRectF.bottomLeft().y() - m_iOffset - n * 10 + 10, QString::number(m_dbYAxisMin));
 
         // 图例
         painter->fillRect(m_itemRectF.bottomLeft().x() + m_iOffset * 2 + iLength*n, m_itemRectF.bottomLeft().y() - 20, 5, 5, m_lstLines.at(n).m_color);
         painter->setPen(QPen(Qt::black, 1, Qt::SolidLine));
-        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset * 2 + iLength*n + 15, m_itemRectF.bottomLeft().y() - 15, m_lstLines.at(n).m_strDisplayName);
+        painter->drawText(m_itemRectF.bottomLeft().x() + m_iOffset * 2 + iLength*n + 15, m_itemRectF.bottomLeft().y() - 10, m_lstLines.at(n).m_strDisplayName);
 
         // 绘制曲线图
         painter->setPen(QPen(m_lstLines.at(n).m_color, 1, Qt::SolidLine));
@@ -522,38 +530,38 @@ void CCurveGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void CCurveGraphicsItem::keyPressEvent(QKeyEvent * event)
 {
-    if (m_bEditFlag)
-    {
-        return QGraphicsItem::keyPressEvent(event);
-    }
+    //if (m_bEditFlag)
+    //{
+    //    return QGraphicsItem::keyPressEvent(event);
+    //}
 
-    if (event->key() == Qt::Key_Plus)
-    {
-        if (m_dbXAxisMax > m_realXDefault*0.4)
-        {
-            m_dbXAxisMax -= m_dbXAxisMax*0.20;
-           // m_iXTicksCount += m_iXTicksCount*0.5;
-            update();
-        }
+    //if (event->key() == Qt::Key_Plus)
+    //{
+    //    if (m_dbXAxisMax > m_realXDefault*0.4)
+    //    {
+    //        m_dbXAxisMax -= m_dbXAxisMax*0.20;
+    //       // m_iXTicksCount += m_iXTicksCount*0.5;
+    //        update();
+    //    }
 
-    }
-    else if (event->key() == Qt::Key_Minus)
-    {
-        
-        if (m_dbXAxisMax < m_realXDefault*1.6)
-        {
-            m_dbXAxisMax += m_dbXAxisMax*0.20;
-           // m_iXTicksCount -= m_iXTicksCount*0.5;
-            update();
-        }
-    }
-    
+    //}
+    //else if (event->key() == Qt::Key_Minus)
+    //{
+    //    
+    //    if (m_dbXAxisMax < m_realXDefault*1.6)
+    //    {
+    //        m_dbXAxisMax += m_dbXAxisMax*0.20;
+    //       // m_iXTicksCount -= m_iXTicksCount*0.5;
+    //        update();
+    //    }
+    //}
+
     QGraphicsItem::keyPressEvent(event);
 }
 
 
 void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload,
-	CCustomDateTime* pTime, void* pCustomData)
+    CCustomDateTime* pTime, void* pCustomData)
 {
     QList<CurveLine_t> lstCanData;
     CurveLine_t canData;
@@ -574,8 +582,8 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, un
             {
                 if (TmpData.m_strDisplayName == canData.m_strDisplayName)
                 {
-					QDateTime dt(QDate(pTime->year, pTime->month, pTime->mday), QTime(pTime->hour, pTime->min, pTime->sec, pTime->msec));
-					quint64 x = dt.toMSecsSinceEpoch();
+                    QDateTime dt(QDate(pTime->year, pTime->month, pTime->mday), QTime(pTime->hour, pTime->min, pTime->sec, pTime->msec));
+                    quint64 x = dt.toMSecsSinceEpoch();
 
                     QPointF TmpPoint(x, pData[i].m_Value);
                     if (TmpData.m_vecPoints.count() > 1)
@@ -593,7 +601,7 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, un
     //scene()->update();
     update(boundingRect());
 
-    CLogManager::getInstance()->log(eLogDebug, "CCurveGraphicsItem::OnMedia", "------CCurveGraphicsItem::OnMedia");
+    //CLogManager::getInstance()->log(eLogDebug, "CCurveGraphicsItem::OnMedia", "------CCurveGraphicsItem::OnMedia");
 }
 
 

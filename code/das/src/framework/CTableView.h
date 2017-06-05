@@ -19,6 +19,7 @@
 #include "QtCore/QMap"
 #include "QtGui/QStandardItemModel"
 #include "QtCore/QMutex"
+#include "QtWidgets/QLabel"
 
 class CFrozenTableView;
 
@@ -26,6 +27,7 @@ QT_BEGIN_NAMESPACE
 //class QStandardItemModel;
 class QPushButton;
 class QThread;
+class QLabel;
 QT_END_NAMESPACE
 
 #include "constant.h"
@@ -94,6 +96,9 @@ public:
     void setChannel(int iChannel) { m_iChannel = iChannel; };       // 通过channel来判断该组件是否已经关联数据，iChannel < 0无关联数据，iChannel >= 0关联数据 
     int getChannel() { return m_iChannel; };
 
+    void setTitle(const QString& strTitle) { m_pLbTitle->setText(strTitle); }
+    QString getTitle() const { return m_pLbTitle->text().trimmed(); }
+
 private:
     void initLayout();
 
@@ -120,11 +125,13 @@ private:
     QString m_strEndTime;
 
     QPushButton* m_pExcelBtn;
+    QLabel* m_pLbTitle;
     QList<CurveLine_t> m_lstHorizontalHeader;
     QThread* m_pThread;
 
     int m_iChannel;
     QMutex m_mutex;
+
 };
 
 #endif // CTABLEVIEW_H

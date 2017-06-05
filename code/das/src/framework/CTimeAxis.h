@@ -41,6 +41,7 @@ public:
 
     void play();
     void pause();
+    void setStep(int iStep);
 
 private:
     void initLayout();
@@ -74,6 +75,8 @@ private:
     int m_iInterval;
 
 signals:
+    void sigSkipTo(const QDateTime& currentDt);
+    void sigEnd();
 
 private slots:
     void OnProgressChanged(int iValue);

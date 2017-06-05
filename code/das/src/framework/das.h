@@ -5,6 +5,7 @@
 #include "QtCore/QTranslator"
 #include "CGraphicsView.h"
 #include "CPropertyBar.h"
+#include "QtWidgets/QComboBox"
 
 class CToolBar;
 class QLabel;
@@ -37,8 +38,7 @@ private:
     QAction* m_pActEn;
     QAction* m_pActAbout;
     QAction* m_pActScreenshot;
-    QAction* m_pActPlayFast;
-    QAction* m_pActPlaySlow;
+    QComboBox* m_pStepCombo;
 
     QLabel* m_pLbTimeAxis;
     QLabel* m_pLbVideo;
@@ -75,8 +75,9 @@ private slots:
     void OnAbout();
 
     void OnScreenshot();
-    void OnPlayFast();
-    void OnPlaySlow();
+    /*void OnPlayFast();
+    void OnPlaySlow();*/
+    void OnStepChanged(const QString& strStep);
     void OnScreenShotAreaSelected(const QRect& rect);
 
     void OnEditCheckBoxStateChanged(int state);

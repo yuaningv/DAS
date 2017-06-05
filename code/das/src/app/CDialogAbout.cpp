@@ -14,7 +14,7 @@ const char* cstDictOK = "OK";
 CDialogAbout::CDialogAbout(QWidget *parent)
     : QDialog(parent)
 {
-    setWindowTitle(trFormString(cstDictAbout));
+    setWindowTitle(trMenuString(cstDictAbout));
     setFixedSize(450, 250);
 
     QLabel* pLblLogo = new QLabel(this);

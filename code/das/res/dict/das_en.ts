@@ -75,6 +75,10 @@
         <source>Channel</source>
         <translation>Channel</translation>
     </message>
+	<message>
+        <source>Time axis already exists!</source>
+        <translation>Time axis already exists!</translation>
+    </message>
 </context>
 <context>
     <name>MENU</name>
@@ -148,7 +152,7 @@
     </message>
     <message>
         <source>Timeline</source>
-        <translation>Timeline</translation>
+        <translation>Time axis</translation>
     </message>
     <message>
         <source>Video</source>
@@ -173,6 +177,10 @@
 	<message>
         <source>Slow play</source>
         <translation>Slow play</translation>
-    </message>	
+    </message>		
+	<message>
+        <source>step</source>
+        <translation>step</translation>
+    </message>
 </context>
 </TS>
