@@ -148,6 +148,7 @@ void DAS::setLayout()
     m_pStepCombo->addItem(QString().setNum(-2));
     m_pStepCombo->addItem(QString().setNum(-4));
     m_pStepCombo->addItem(QString().setNum(-8));
+    m_pStepCombo->setCurrentText(QString::number(1));
     connect(m_pStepCombo, SIGNAL(currentIndexChanged(QString)), this, SLOT(OnStepChanged(QString)));
 
     m_pActFind = new QAction(trMenuString(cstDictFind), this);    // ≤È’“ 

@@ -17,6 +17,7 @@ CTimeAxis::CTimeAxis(QWidget* parent /*= 0*/)
     initLayout();
 
     m_pTimer = new QTimer(this);
+    m_pTimer->setTimerType(Qt::PreciseTimer);
     m_pTimer->setInterval(m_iInterval);
     connect(m_pTimer, SIGNAL(timeout()), this, SLOT(OnUpdate()));
 }
@@ -194,6 +195,8 @@ QString CTimeAxis::getEndTime() const
 
 void CTimeAxis::play()
 {
+    m_dtBeginTime = m_dtToUpdateTime = QDateTime::currentDateTime();
+
     m_pTimer->start();
 }
 
@@ -242,10 +245,16 @@ void CTimeAxis::OnProgressChanged(int iValue)
 
 void CTimeAxis::OnUpdate()
 {
+    m_dtToUpdateTime = QDateTime::currentDateTime();
+    quint64 TmpMsecs = m_dtToUpdateTime.toMSecsSinceEpoch() - m_dtBeginTime.toMSecsSinceEpoch();
+    m_dtBeginTime = m_dtToUpdateTime;
     // 当前时间 
     //m_dtCurrentTime = m_dtCurrentTime.addMSecs(60 * 60 * 1000);
-    m_dtCurrentTime = m_dtCurrentTime.addMSecs(m_iInterval);
+    //m_dtCurrentTime = m_dtCurrentTime.addMSecs(m_iInterval);
+    m_dtCurrentTime = m_dtCurrentTime.addMSecs(TmpMsecs);
     setValue(m_dtCurrentTime.toString("yyyy/MM/dd hh:mm:ss:zzz"));
+    //CLogManager::getInstance()->log(eLogDebug, "CTimeAxis::OnUpdate", QString("system:%1, time:%2").arg(QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss:zzz")).arg(m_dtCurrentTime.toString("yyyy/MM/dd hh:mm:ss:zzz")).toStdString().c_str());
+
 }
 
 

@@ -74,6 +74,9 @@ private:
     QTimer* m_pTimer;
     int m_iInterval;
 
+    QDateTime m_dtBeginTime;
+    QDateTime m_dtToUpdateTime;
+
 signals:
     void sigSkipTo(const QDateTime& currentDt);
     void sigEnd();

@@ -4,6 +4,7 @@
 #include "QtWidgets/QStyleOptionGraphicsItem"
 #include "QtWidgets/QGraphicsSceneHoverEvent"
 #include "QtWidgets/QGraphicsSceneMouseEvent"
+#include "QtWidgets/QGraphicsSceneWheelEvent"
 #include "QtWidgets/QGraphicsScene"
 #include "QtGui/QKeyEvent"
 #include "QtWidgets/QGraphicsSceneContextMenuEvent"
@@ -30,7 +31,8 @@ CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
     , m_iYTicksCount(5)
     , m_iOffset(50)
     , m_realScale(1.0)
-    , m_realXDefault(1.0)
+    , m_realXMaxDefault(1.0)
+    , m_realXMinDefault(0.0)
     , m_bEditFlag(false)
     , m_iType(Item_Chart),
     m_iChannel(1)
@@ -62,6 +64,18 @@ void CCurveGraphicsItem::setTimeRange(const QString& strStart, const QString& st
     m_strEndTime = strEnd;
 }
 
+void CCurveGraphicsItem::setXAxisRange(const qreal& dbMin, const qreal& dbMax) 
+{ 
+    m_dbXAxisMin = dbMin; 
+    m_dbXAxisMax = dbMax; 
+    m_realXMaxDefault = m_dbXAxisMax;
+    m_realXMinDefault = m_dbXAxisMin;
+
+    // 每个刻度值
+    m_realX = (m_dbXAxisMax - m_dbXAxisMin) / m_iXTicksCount;
+}
+
+
 void CCurveGraphicsItem::setEnableEditMode(bool enable)
 { 
     m_bEditFlag = enable; 
@@ -85,6 +99,9 @@ QRectF CCurveGraphicsItem::boundingRect() const
 void CCurveGraphicsItem::resetItemSize(const QRectF &rect)
 { 
     m_itemRectF = rect; 
+
+    // 每个刻度长度
+    m_realXLength = ((m_itemRectF.bottomRight().x() - m_iOffset) - (m_itemRectF.bottomLeft().x() + m_iOffset)) / m_iXTicksCount;
     update(boundingRect());
 }
 
@@ -127,6 +144,19 @@ qreal CCurveGraphicsItem::YFromAxis(const QString& strKeyName, qreal yreal) cons
     return 0;
 }
 
+qreal CCurveGraphicsItem::XFromAxis(qreal xreal) const
+{
+    qreal x = m_itemRectF.bottomLeft().x() + m_iOffset;
+    if (m_realX != 0)
+    {
+        qreal px = (xreal - x) / m_realXLength * m_realX + m_dbXAxisMin;
+        return px;
+    }
+
+    return 0;
+}
+
+
 void CCurveGraphicsItem::setLines(const QList<CurveLine_t>& lstTmpVec)
 {
     m_lstLines = lstTmpVec;
@@ -139,9 +169,10 @@ void CCurveGraphicsItem::setLines(const QList<CurveLine_t>& lstTmpVec)
         TmpAxisData.m_realYLength = ((m_itemRectF.bottomLeft().y() - m_iOffset) - (m_itemRectF.topLeft().y() + m_iOffset)) / m_iYTicksCount;
         m_mapAxis[TmpData.m_strDisplayName] = TmpAxisData;
     }
-    //scene()->update();
-    update(boundingRect());
 
+    ConvertPointsToAxis();
+
+    update(boundingRect());
 }
 
 
@@ -149,7 +180,7 @@ void CCurveGraphicsItem::setLines(const QList<CurveLine_t>& lstTmpVec)
 void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget /*= 0*/)
 {
     Q_UNUSED(widget);
-
+    painter->setRenderHints(QPainter::Antialiasing, true);
     if ((option->state & QStyle::State_Selected) == QStyle::State_Selected && m_bEditFlag)
     {
         painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
@@ -172,10 +203,10 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
     painter->drawLine(m_itemRectF.bottomLeft() + QPointF(m_iOffset, -m_iOffset), m_itemRectF.bottomRight() + QPointF(-m_iOffset, -m_iOffset));
 
     // 每个刻度值
-    m_realX = (m_dbXAxisMax - m_dbXAxisMin) / m_iXTicksCount;
+    //m_realX = (m_dbXAxisMax - m_dbXAxisMin) / m_iXTicksCount;
     //m_realX = floor(m_realX*10 + 0.5) / 10;
     // 每个刻度长度
-    m_realXLength = ((m_itemRectF.bottomRight().x() - m_iOffset) - (m_itemRectF.bottomLeft().x() + m_iOffset)) / m_iXTicksCount;
+    //m_realXLength = ((m_itemRectF.bottomRight().x() - m_iOffset) - (m_itemRectF.bottomLeft().x() + m_iOffset)) / m_iXTicksCount;
 
     for (int i = 0; i < m_iXTicksCount; ++i)
     {
@@ -229,7 +260,7 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
 
         // 绘制曲线图
         painter->setPen(QPen(m_lstLines.at(n).m_color, 1, Qt::SolidLine));
-        painter->setRenderHints(QPainter::Antialiasing, true);
+        //painter->setRenderHints(QPainter::Antialiasing, true);
         painter->drawLines(m_lstLines[n].m_vecPoints);
         if (!m_lstLines[n].m_strValue.isEmpty())
         {
@@ -527,36 +558,41 @@ void CCurveGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-
-void CCurveGraphicsItem::keyPressEvent(QKeyEvent * event)
+void CCurveGraphicsItem::wheelEvent(QGraphicsSceneWheelEvent * event)
 {
-    //if (m_bEditFlag)
-    //{
-    //    return QGraphicsItem::keyPressEvent(event);
-    //}
+    QRectF TmpRect(m_itemRectF.topLeft() + QPointF(m_iOffset, m_iOffset), m_itemRectF.bottomRight() - QPointF(m_iOffset, m_iOffset));
+    if (TmpRect.contains(event->pos()))
+    {
+        qreal x = XFromAxis(event->pos().x());
+        if (event->delta() > 0)   // 放大
+        {
+            if (m_dbXAxisMax - m_dbXAxisMin <= 30000)   // 30s
+            {
+                QGraphicsItem::wheelEvent(event);
+                return;
+            }
+            m_dbXAxisMin = (x - m_dbXAxisMin) / 2 + m_dbXAxisMin;
+            m_dbXAxisMax = (m_dbXAxisMax - x) / 2 + x;
+        }
+        else if (event->delta() < 0)   // 缩小
+        {
+            m_dbXAxisMin = 2 * m_dbXAxisMin - x;
+            if (m_dbXAxisMin <= m_realXMinDefault)
+            {
+                m_dbXAxisMin = m_realXMinDefault;
+            }
 
-    //if (event->key() == Qt::Key_Plus)
-    //{
-    //    if (m_dbXAxisMax > m_realXDefault*0.4)
-    //    {
-    //        m_dbXAxisMax -= m_dbXAxisMax*0.20;
-    //       // m_iXTicksCount += m_iXTicksCount*0.5;
-    //        update();
-    //    }
+            m_dbXAxisMax = 2 * m_dbXAxisMax - x;
+            if (m_dbXAxisMax >= m_realXMaxDefault)
+            {
+                m_dbXAxisMax = m_realXMaxDefault;
+            }
+        }
 
-    //}
-    //else if (event->key() == Qt::Key_Minus)
-    //{
-    //    
-    //    if (m_dbXAxisMax < m_realXDefault*1.6)
-    //    {
-    //        m_dbXAxisMax += m_dbXAxisMax*0.20;
-    //       // m_iXTicksCount -= m_iXTicksCount*0.5;
-    //        update();
-    //    }
-    //}
-
-    QGraphicsItem::keyPressEvent(event);
+        ConvertPointsToAxis();
+        update(boundingRect());
+    }
+    QGraphicsItem::wheelEvent(event);
 }
 
 
@@ -576,15 +612,16 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, un
         canData.m_strValue = QString::number(pData[i].m_Value, 'f', 2);
         canData.m_realMax = pData[i].m_pCanItem->m_maxValue;
         canData.m_realMin = pData[i].m_pCanItem->m_minValue;
+
+        QDateTime dt(QDate(pTime->year, pTime->month, pTime->mday), QTime(pTime->hour, pTime->min, pTime->sec, pTime->msec));
+        quint64 x = dt.toMSecsSinceEpoch();
+
         if (m_lstLines.contains(canData))
         {
             for (auto& TmpData : m_lstLines)
             {
                 if (TmpData.m_strDisplayName == canData.m_strDisplayName)
                 {
-                    QDateTime dt(QDate(pTime->year, pTime->month, pTime->mday), QTime(pTime->hour, pTime->min, pTime->sec, pTime->msec));
-                    quint64 x = dt.toMSecsSinceEpoch();
-
                     QPointF TmpPoint(x, pData[i].m_Value);
                     if (TmpData.m_vecPoints.count() > 1)
                     {
@@ -595,6 +632,14 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, un
                 }
             }
         }
+
+        // 存储转化之前的点
+        if (m_mapPoints.keys().contains(canData.m_strDisplayName) && m_mapPoints.value(canData.m_strDisplayName).count() > 1)
+        {
+            QPointF pointF = m_mapPoints.value(canData.m_strDisplayName).last();
+            m_mapPoints[canData.m_strDisplayName].append(pointF);
+        }
+        m_mapPoints[canData.m_strDisplayName].append(QPointF(x, pData[i].m_Value));
     }
     m_mutex.unlock();
 
@@ -606,4 +651,34 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, un
 
 
 
-
+// 转换数据点为坐标系点, 只转化坐标系上有的曲线点
+void CCurveGraphicsItem::ConvertPointsToAxis()
+{
+    m_mutex.lock();
+    m_realX = (m_dbXAxisMax - m_dbXAxisMin) / m_iXTicksCount;
+    for (auto& TmpLine : m_lstLines)
+    {
+        for (auto itr = m_mapPoints.begin(); itr != m_mapPoints.end(); ++itr)
+        {
+            if (0 == TmpLine.m_strDisplayName.compare(itr.key()))
+            {
+                // 清除之前的点 重新插入
+                TmpLine.m_vecPoints.clear();
+                for (auto point : itr.value())
+                {
+                    qreal x = point.x();
+                    if (m_dbXAxisMin <= x && x <= m_dbXAxisMax)
+                    {
+                        TmpLine.m_vecPoints.append(mapToAxis(TmpLine.m_strDisplayName, point));
+                    }
+                }
+                if (TmpLine.m_vecPoints.count() >= 2 && TmpLine.m_vecPoints.first() == TmpLine.m_vecPoints.at(1))
+                {
+                    TmpLine.m_vecPoints.pop_front();
+                }
+                break;
+            }
+        }
+    }
+    m_mutex.unlock();
+}

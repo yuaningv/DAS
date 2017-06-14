@@ -53,7 +53,7 @@ public:
     void setTimeRange(const QString& strStart, const QString& strEnd);
     void setXAxisTicksCount(const int& iCount) { m_iXTicksCount = iCount; }
     void setYAxisTicksCount(const int& iCount) { m_iYTicksCount = iCount; }
-    void setXAxisRange(const qreal& dbMin, const qreal& dbMax) { m_dbXAxisMin = dbMin; m_dbXAxisMax = dbMax; m_realXDefault = m_dbXAxisMax; }
+    void setXAxisRange(const qreal& dbMin, const qreal& dbMax);
     void setYAxisRange(const qreal& dbMin, const qreal& dbMax) { m_dbYAxisMin = dbMin; m_dbYAxisMax = dbMax; }
 
     void setEnableEditMode(bool enable);
@@ -75,6 +75,9 @@ public:
 private:
     QPointF& mapToAxis(const QString& strKeyName, QPointF& point) const;
     qreal YFromAxis(const QString& strKeyName, qreal yreal) const;
+    qreal XFromAxis(qreal xreal) const;
+
+    void ConvertPointsToAxis();
 
 protected:
     virtual void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0);
@@ -89,7 +92,7 @@ protected:
 
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 
-    virtual void keyPressEvent(QKeyEvent * event);
+    void wheelEvent(QGraphicsSceneWheelEvent * event);
 
     //virtual HWND GetWndHandle();
     virtual void OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload,
@@ -121,7 +124,8 @@ private:
 
     qreal m_realScale;   // 缩放比例
 
-    qreal m_realXDefault;  // X轴最大值初始值
+    qreal m_realXMaxDefault;  // X轴最大值初始值
+    qreal m_realXMinDefault;  // X轴最大值初始值
 
     bool m_bEditFlag;    // 是否是编辑模式
     ITEMTYPE m_iType;
@@ -136,6 +140,9 @@ private:
 
     int m_iChannel;
     QMutex m_mutex;
+
+    QMap<QString, QList<QPointF>> m_mapPoints;    // 转换之前的数据<displayname, ponits>
+
 signals:
 
 };
