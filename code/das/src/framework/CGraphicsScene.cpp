@@ -58,11 +58,22 @@ void CGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
 void CGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
+    QGraphicsItem* item = this->itemAt(mouseEvent->scenePos(), QTransform());
+    if (item && !item->isWidget())
+    {
+        dynamic_cast<CCurveGraphicsItem*>(item)->dragCurve(mouseEvent);
+    }
     QGraphicsScene::mouseMoveEvent(mouseEvent);
 }
 
 void CGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
+    QGraphicsItem* item = this->itemAt(mouseEvent->scenePos(), QTransform());
+    if (item && !item->isWidget())
+    {
+        dynamic_cast<CCurveGraphicsItem*>(item)->setMouseLeftButtonRelease(true);
+    }
+
     QGraphicsScene::mouseReleaseEvent(mouseEvent);
 }
 

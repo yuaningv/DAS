@@ -8,6 +8,7 @@
 #include "QtWidgets/QGraphicsScene"
 #include "QtGui/QKeyEvent"
 #include "QtWidgets/QGraphicsSceneContextMenuEvent"
+#include "QtCore/QEvent"
 #include "QtCore/QDebug"
 #include "QtWidgets/QMenu"
 #include "QtGui/QFontMetrics"
@@ -36,6 +37,8 @@ CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
     , m_bEditFlag(false)
     , m_iType(Item_Chart),
     m_iChannel(1)
+    , m_CurveStartPos(0, 0)
+    , m_CurveEndPos(0, 0)
 {
     setAcceptDrops(true);
     setAcceptHoverEvents(true);
@@ -356,7 +359,7 @@ void CCurveGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     {
         setCursor(Qt::ArrowCursor);
         m_dragDir = NONE;
-        return QGraphicsItem::hoverEnterEvent(event);
+        return QGraphicsItem::hoverMoveEvent(event);
     }
 
     if (!m_bEditFlag)
@@ -385,7 +388,8 @@ void CCurveGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         }
         m_mutex.unlock();
 
-        return QGraphicsItem::hoverEnterEvent(event);
+        update(boundingRect());
+        return QGraphicsItem::hoverMoveEvent(event);
     }
 
     m_line.setLine(0, 0, 0, 0);
@@ -470,10 +474,14 @@ void CCurveGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     {
         m_startPos = event->scenePos();
     }
+    else if (event->button() == Qt::LeftButton && !m_bEditFlag)
+    {
+        m_bLeftPress = true;
+        m_CurveStartPos = m_CurveEndPos = event->scenePos();
+    }
 
     QGraphicsItem::mousePressEvent(event);
 }
-
 
 void CCurveGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
@@ -620,7 +628,7 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, un
         {
             for (auto& TmpData : m_lstLines)
             {
-                if (TmpData.m_strDisplayName == canData.m_strDisplayName)
+                if (TmpData.m_strDisplayName == canData.m_strDisplayName && m_dbXAxisMin <= x && x <= m_dbXAxisMax)
                 {
                     QPointF TmpPoint(x, pData[i].m_Value);
                     if (TmpData.m_vecPoints.count() > 1)
@@ -681,4 +689,42 @@ void CCurveGraphicsItem::ConvertPointsToAxis()
         }
     }
     m_mutex.unlock();
+}
+
+void CCurveGraphicsItem::dragCurve(QGraphicsSceneMouseEvent* event)
+{
+    if (!m_bEditFlag && m_bLeftPress)
+    {
+        m_CurveEndPos = event->scenePos();
+        qreal dis = 0/* = m_realX*(m_CurveEndPos.x() - m_CurveStartPos.x()) / m_realXLength*/;
+        if (m_CurveEndPos.x() - m_CurveStartPos.x() > 0)
+        {
+            dis = 100;
+        }
+        else
+        {
+            dis = -100;
+        }
+        if (m_dbXAxisMax < m_realXMaxDefault)
+        {
+            m_dbXAxisMin -= dis;
+            if (m_dbXAxisMin <= m_realXMinDefault)
+            {
+                m_dbXAxisMin = m_realXMinDefault;
+            }
+        }
+
+        if (m_dbXAxisMin > m_realXMinDefault)
+        {
+            m_dbXAxisMax -= dis;
+            if (m_dbXAxisMax >= m_realXMaxDefault)
+            {
+                m_dbXAxisMax = m_realXMaxDefault;
+            }
+        }
+
+        ConvertPointsToAxis();
+        update(boundingRect());
+        m_CurveStartPos = m_CurveEndPos;
+    }
 }
