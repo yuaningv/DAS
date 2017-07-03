@@ -36,6 +36,9 @@ private:
     QAction* m_pActFullScreen;
     QAction* m_pActZhCn;
     QAction* m_pActEn;
+
+    QAction* m_pActExport;
+
     QAction* m_pActAbout;
     QAction* m_pActScreenshot;
     QComboBox* m_pStepCombo;
@@ -81,7 +84,7 @@ private slots:
     void OnScreenShotAreaSelected(const QRect& rect);
 
     void OnEditCheckBoxStateChanged(int state);
-
+    void OnExportCanData();
 };
 
 #endif // SMS_H

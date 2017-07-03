@@ -18,6 +18,7 @@
 #include "QtGui/QScreen"
 #include "QtGui/QKeyEvent"
 #include "QtWidgets/QHBoxLayout"
+#include "CDialogExportSetting.h"
 
 
 // 定义多国语关键字常量 
@@ -58,6 +59,7 @@ const char* cstSaveScreenshot = "Save screenshot";
 const char* cstSelectDir = "Select direction";
 
 const char* cstDictStep = "step";
+const char* cstExportCanData = "export can data";
 
 DAS::DAS(QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags),
@@ -186,9 +188,14 @@ void DAS::setLayout()
     m_pActEn = new QAction(QStringLiteral("English"), this);       // 英语 
     m_pActEn->setIcon(QIcon(IMG_ENGLISH));
     m_pActEn->setCheckable(true);
+    m_pActExport = new QAction(trMenuString(cstExportCanData), this);   // 导出can数据 
+    m_pActExport->setIcon(QIcon(IMG_EXPORT));
+    m_pActExport->setStatusTip(trMenuString(cstExportCanData));
+    connect(m_pActExport, SIGNAL(triggered()), this, SLOT(OnExportCanData()));
 
     m_pMenuTool = new QMenu(trMenuString(cstTool), this);
     m_pMenuTool->addAction(m_pActPlay);
+    m_pMenuTool->addAction(m_pActExport);
     /*m_pMenuTool->addAction(m_pActPlayFast);
     m_pMenuTool->addAction(m_pActPlaySlow);*/
     m_pMenuLanuage = new QMenu(trMenuString(cstDictLanuage), m_pMenuTool);
@@ -229,6 +236,7 @@ void DAS::setLayout()
     /*m_pOperatorToolBar->addAction(m_pActPlaySlow);
     m_pOperatorToolBar->addAction(m_pActPlayFast);*/
     m_pOperatorToolBar->addWidget(m_pStepCombo);
+    m_pOperatorToolBar->addAction(m_pActExport);
 
     m_pLbTimeAxis = new QLabel(this);                   // 时间轴组件  
     m_pLbTimeAxis->setPixmap(QPixmap(IMG_TIMELINE));
@@ -456,6 +464,7 @@ void DAS::OnEditCheckBoxStateChanged(int state)
         /*m_pActPlayFast->setEnabled(false);
         m_pActPlaySlow->setEnabled(false);*/
         m_pStepCombo->setEnabled(false);
+        m_pActExport->setEnabled(false);
     }
     else if (Qt::Unchecked == state)
     {
@@ -475,10 +484,27 @@ void DAS::OnEditCheckBoxStateChanged(int state)
         /*m_pActPlayFast->setEnabled(true);
         m_pActPlaySlow->setEnabled(true);*/
         m_pStepCombo->setEnabled(true);
+        m_pActExport->setEnabled(true);
         if (!m_pGraphicsView->scene()->items().isEmpty())
         {
             m_pGraphicsView->saveLayout();
         }
+    }
+}
+
+
+void DAS::OnExportCanData()
+{
+    CDialogExportSetting dialogExport(m_pGraphicsView->getDtBegin(), m_pGraphicsView->getDtEnd(), this);
+    if (dialogExport.exec() == QDialog::Accepted)
+    {
+        QDateTime dtBegin = dialogExport.getDtBegin();
+        QDateTime dtEnd = dialogExport.getDtEnd();
+        int iChannel = dialogExport.getChannel();
+    }
+    else
+    {
+        return;
     }
 }
 
@@ -529,6 +555,10 @@ void DAS::retranslate()
 
     m_pStepCombo->setToolTip(trMenuString(cstDictStep));
     m_pStepCombo->setStatusTip(trMenuString(cstDictStep));
+
+    m_pActExport->setText(trMenuString(cstExportCanData));
+    m_pActExport->setToolTip(trMenuString(cstExportCanData));
+    m_pActExport->setStatusTip(trMenuString(cstExportCanData));
 
     // 帮助菜单翻译 
     m_pMenuHelp->setTitle(trMenuString(cstHelp));

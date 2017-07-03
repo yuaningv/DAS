@@ -27,4 +27,6 @@
 #define IMG_PLAYFAST        ":/images/play_fast.png"
 #define IMG_PLAYSLOW        ":/images/play_slow.png"
 
+#define IMG_EXPORT          ":/images/export.png"
+
 #endif // IMAGE_H

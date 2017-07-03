@@ -182,5 +182,9 @@
         <source>step</source>
         <translation>step</translation>
     </message>
+	<message>
+        <source>export can data</source>
+        <translation>export can data</translation>
+    </message>
 </context>
 </TS>

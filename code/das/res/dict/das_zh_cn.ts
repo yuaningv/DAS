@@ -182,5 +182,9 @@
         <source>step</source>
         <translation>播放速率</translation>
     </message>
+	<message>
+        <source>export can data</source>
+        <translation>导出CAN数据</translation>
+    </message>
 </context>
 </TS>

@@ -23,5 +23,6 @@
         <file>images/play_fast.png</file>
         <file>images/play_slow.png</file>
         <file>images/logo.png</file>
+        <file>images/export.png</file>
     </qresource>
 </RCC>
