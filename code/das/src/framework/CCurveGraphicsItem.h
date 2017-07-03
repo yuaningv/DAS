@@ -72,6 +72,10 @@ public:
     void setChannel(int iChannel) { m_iChannel = iChannel; };       // 通过channel来判断该组件是否已经关联数据，iChannel < 0无关联数据，iChannel >= 0关联数据 
     int getChannel() { return m_iChannel; };
 
+    void setMouseLeftButtonRelease(bool bEnable) { m_bLeftPress = !bEnable; }
+
+    void dragCurve(QGraphicsSceneMouseEvent* event);
+
 private:
     QPointF& mapToAxis(const QString& strKeyName, QPointF& point) const;
     qreal YFromAxis(const QString& strKeyName, qreal yreal) const;
@@ -97,6 +101,7 @@ protected:
     //virtual HWND GetWndHandle();
     virtual void OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload,
 		CCustomDateTime* pTime, void* pCustomData);
+
 
 private:
     QRectF m_itemRectF;
@@ -142,6 +147,10 @@ private:
     QMutex m_mutex;
 
     QMap<QString, QList<QPointF>> m_mapPoints;    // 转换之前的数据<displayname, ponits>
+
+    bool m_bLeftPress = false;
+    QPointF m_CurveStartPos;        // 拖动曲线起始点
+    QPointF m_CurveEndPos;          // 拖动曲线结束点
 
 signals:
 
