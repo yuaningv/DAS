@@ -148,7 +148,7 @@ void DAS::setLayout()
     m_pStepCombo->addItem(QString().setNum(-2));
     m_pStepCombo->addItem(QString().setNum(-4));
     m_pStepCombo->addItem(QString().setNum(-8));
-    m_pStepCombo->setCurrentText(QString::number(1));
+    m_pStepCombo->setCurrentIndex(3);
     connect(m_pStepCombo, SIGNAL(currentIndexChanged(QString)), this, SLOT(OnStepChanged(QString)));
 
     m_pActFind = new QAction(trMenuString(cstDictFind), this);    // ²éÕÒ 
@@ -166,6 +166,7 @@ void DAS::setLayout()
     m_pActFullScreen->setShortcut(QKeySequence("Alt+Enter"));
     m_pActFullScreen->setStatusTip(trMenuString(cstDictFullScreen));
     connect(m_pActFullScreen, SIGNAL(triggered()), this, SLOT(OnFullScreen()));
+    m_pActFullScreen->setVisible(false);
 
     m_pActScreenshot = new QAction(trMenuString(cstScreenshot), this);  // ½ØÆÁ
     m_pActScreenshot->setIcon(QIcon(IMG_SCREENSHOT));
@@ -569,6 +570,8 @@ void DAS::changeEvent(QEvent *ev)
 
 void DAS::keyReleaseEvent(QKeyEvent *ev)
 {
+    return;
+
     if (ev->key() == Qt::Key_Escape)
     {
         this->showMaximized();

@@ -14,16 +14,19 @@
 #ifndef CTIME_AXIS_H
 #define CTIME_AXIS_H
 
+#include "constant.h"
 
 #include "CCustomWidgetBase.h"
 #include "QtCore/QDateTime"
 #include "QtCore/QTimer"
 
+#include "StreamMgr.h"
+
 class QLabel;
 class QSlider;
 
 
-class CTimeAxis : public CCustomWidgetBase
+class CTimeAxis : public CCustomWidgetBase, public CStreamListener
 {
     Q_OBJECT
 
@@ -42,6 +45,9 @@ public:
     void play();
     void pause();
     void setStep(int iStep);
+
+	virtual void OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload,
+						CCustomDateTime* pTime, void* pCustomData);
 
 private:
     void initLayout();
@@ -68,18 +74,21 @@ private:
 
     QDateTime m_dtStartTime;
     QDateTime m_dtEndTime;
+
+	QDateTime m_dtPlayTime;
+	QDateTime m_dtFromTime;
     QDateTime m_dtCurrentTime;      // 当前时间 
+
+	QMutex m_mutex;
 
     bool m_bProgressSlider;
     QTimer* m_pTimer;
     int m_iInterval;
-
-    QDateTime m_dtBeginTime;
-    QDateTime m_dtToUpdateTime;
-
+	int m_iStep;
 signals:
     void sigSkipTo(const QDateTime& currentDt);
     void sigEnd();
+    void sigTimeChanged();
 
 private slots:
     void OnProgressChanged(int iValue);

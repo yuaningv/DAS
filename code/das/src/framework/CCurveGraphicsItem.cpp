@@ -620,7 +620,7 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, un
         {
             for (auto& TmpData : m_lstLines)
             {
-                if (TmpData.m_strDisplayName == canData.m_strDisplayName)
+                if (TmpData.m_strDisplayName == canData.m_strDisplayName && m_dbXAxisMin <= x && x <= m_dbXAxisMax)
                 {
                     QPointF TmpPoint(x, pData[i].m_Value);
                     if (TmpData.m_vecPoints.count() > 1)

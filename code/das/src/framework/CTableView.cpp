@@ -56,6 +56,7 @@ void CTableView::initLayout()
     m_pTableView = new CFrozenTableView(m_pModel, 1);  // Ê×ÁÐ¶³½á
     m_pTableView->resizeColumnsToContents();
     m_pTableView->setColumnWidth(0, 160);
+    m_pTableView->verticalHeader()->hide();
     //m_pTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     //m_pTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_pTableView->setAlternatingRowColors(true);

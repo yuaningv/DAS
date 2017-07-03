@@ -11,15 +11,17 @@ CTimeAxis::CTimeAxis(QWidget* parent /*= 0*/)
     : CCustomWidgetBase(parent)
     , m_pLbEndTime(nullptr)
     , m_pSlider(nullptr),
-    m_bProgressSlider(false),
-    m_iInterval(50)
+    m_bProgressSlider(false)
 {
     initLayout();
 
+	m_iStep = 1;
+
     m_pTimer = new QTimer(this);
-    m_pTimer->setTimerType(Qt::PreciseTimer);
-    m_pTimer->setInterval(m_iInterval);
-    connect(m_pTimer, SIGNAL(timeout()), this, SLOT(OnUpdate()));
+    m_pTimer->setInterval(50);
+	//m_pTimer->setTimerType(Qt::PreciseTimer);
+    //connect(m_pTimer, SIGNAL(timeout()), this, SLOT(OnUpdate()));
+    connect(this, SIGNAL(sigTimeChanged()), this, SLOT(OnUpdate()));
 }
 
 
@@ -195,30 +197,29 @@ QString CTimeAxis::getEndTime() const
 
 void CTimeAxis::play()
 {
-    m_dtBeginTime = m_dtToUpdateTime = QDateTime::currentDateTime();
-
-    m_pTimer->start();
+	m_dtPlayTime = QDateTime::currentDateTime();
+	m_dtFromTime = m_dtCurrentTime;
+    //m_pTimer->start();
 }
 
 
 void CTimeAxis::pause()
 {
-    m_pTimer->stop();
+    //m_pTimer->stop();
 }
 
 
 void CTimeAxis::setStep(int iStep)
 {
-    if (iStep < 0)
-    {
-        m_iInterval = m_iInterval * iStep;
-    }
-    else
-    {
-        m_iInterval = m_iInterval / iStep;
-    }
+	m_dtPlayTime = QDateTime::currentDateTime();
+	m_dtFromTime = m_dtCurrentTime;
 
-    m_pTimer->setInterval(m_iInterval);
+	m_iStep = iStep;
+
+	CLogManager::getInstance()->log(eLogDebug, "CTimeAxis::setStep", "play:%s, from:%s, step:%d\n", 
+								    m_dtPlayTime.toString("yyyy/MM/dd hh:mm:ss:zzz").toStdString().c_str(),
+									m_dtFromTime.toString("yyyy/MM/dd hh:mm:ss:zzz").toStdString().c_str(),
+									m_iStep);
 }
 
 
@@ -236,25 +237,35 @@ void CTimeAxis::OnProgressChanged(int iValue)
     qint64 iMinTime = m_dtStartTime.toMSecsSinceEpoch();
     qint64 iTimeOffset = iMaxTime - iMinTime;
     qint64 iCurrentTime = iMinTime + (iValue - m_pSlider->minimum()) * (1.0f * iTimeOffset / iOffset);
-    m_dtCurrentTime = QDateTime::fromMSecsSinceEpoch(iCurrentTime);
+	
+	m_dtFromTime = m_dtCurrentTime = QDateTime::fromMSecsSinceEpoch(iCurrentTime);
+	m_dtPlayTime = QDateTime::currentDateTime();
+	
     m_pSlider->setToolTip(m_dtCurrentTime.toString("yyyy/MM/dd hh:mm:ss:zzz"));
 
     emit sigSkipTo(m_dtCurrentTime);
 }
 
+void CTimeAxis::OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload,
+	CCustomDateTime* pTime, void* pCustomData)
+{
+	m_mutex.lock();
+	
+	m_dtCurrentTime.setDate(QDate(pTime->year, pTime->month, pTime->mday));
+	m_dtCurrentTime.setTime(QTime(pTime->hour, pTime->min, pTime->sec, pTime->msec));
+
+    emit sigTimeChanged();
+
+	m_mutex.unlock();
+
+	//CLogManager::getInstance()->log(eLogDebug, "CTimeAxis::OnMedia", "time:%04d%02d%02d %02d%02d%02d.%03d", pTime->year, pTime->month, pTime->mday, pTime->hour, pTime->min, pTime->sec, pTime->msec);
+}
 
 void CTimeAxis::OnUpdate()
 {
-    m_dtToUpdateTime = QDateTime::currentDateTime();
-    quint64 TmpMsecs = m_dtToUpdateTime.toMSecsSinceEpoch() - m_dtBeginTime.toMSecsSinceEpoch();
-    m_dtBeginTime = m_dtToUpdateTime;
-    // 当前时间 
-    //m_dtCurrentTime = m_dtCurrentTime.addMSecs(60 * 60 * 1000);
-    //m_dtCurrentTime = m_dtCurrentTime.addMSecs(m_iInterval);
-    m_dtCurrentTime = m_dtCurrentTime.addMSecs(TmpMsecs);
+	m_mutex.lock();
     setValue(m_dtCurrentTime.toString("yyyy/MM/dd hh:mm:ss:zzz"));
-    //CLogManager::getInstance()->log(eLogDebug, "CTimeAxis::OnUpdate", QString("system:%1, time:%2").arg(QDateTime::currentDateTime().toString("yyyy/MM/dd hh:mm:ss:zzz")).arg(m_dtCurrentTime.toString("yyyy/MM/dd hh:mm:ss:zzz")).toStdString().c_str());
-
+	m_mutex.unlock();
 }
 
 

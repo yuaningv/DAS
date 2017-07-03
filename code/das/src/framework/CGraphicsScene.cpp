@@ -75,13 +75,14 @@ void CGraphicsScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent)
         QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
         return;
     }
-    item->setZValue(0.2);
-    QList<QGraphicsItem*> lstItem = collidingItems(item);
 
+    QList<QGraphicsItem*> lstItem = items(); //collidingItems(item);
     for (auto& TmpItem : lstItem)
     {
         TmpItem->setZValue(0);
     }
+
+    item->setZValue(0.2);
     QGraphicsScene::mouseDoubleClickEvent(mouseEvent);
 }
 

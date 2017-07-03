@@ -84,7 +84,7 @@ void CVideoWidget::mouseReleaseEvent(QMouseEvent *ev)
 
 void CVideoWidget::mouseDoubleClickEvent(QMouseEvent *ev)
 {
-    if (m_pView != NULL)
+    if (m_pView != NULL && m_bFullscreenFlag == false)
     {
         m_iLastX = m_pView->mapFromScene(QPoint(this->x(), this->y())).x();
         m_iLastY = m_pView->mapFromScene(QPoint(this->x(), this->y())).y();
@@ -95,6 +95,7 @@ void CVideoWidget::mouseDoubleClickEvent(QMouseEvent *ev)
         int iHeight = m_pView->height();
         this->resize(iWidth, iHeight);
         this->move(m_pView->mapToScene(QPoint(0, 0)).toPoint());
+        //this->showFullScreen();
 
         m_bFullscreenFlag = true;
     }
