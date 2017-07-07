@@ -25,6 +25,35 @@ public:
 	unsigned int msec;
 };
 
+void ConvertSecsToCustomDateTime(unsigned int sec, unsigned int msecs, CCustomDateTime* pTime);
+
+class DLL_EXPORT CMediaPayload
+{
+public:
+	CMediaPayload(){
+		pBuffer = NULL;
+		uLength = 0;
+		uPayload = 0;
+		uTime = 0;
+		pCustomData = NULL;
+	}
+
+	virtual ~CMediaPayload(){ 
+		pBuffer = NULL;
+		uLength = 0;
+		uPayload = 0;
+		uTime = 0;
+		pCustomData = NULL;
+	}
+
+public:
+	unsigned char* pBuffer;
+	unsigned long  uLength;
+	unsigned long  uPayload;
+	unsigned long long uTime;
+	void*			pCustomData;
+};
+
 class DLL_EXPORT CStreamListener
 {
 public:
@@ -32,7 +61,6 @@ public:
 	virtual ~CStreamListener();
 
 public:
-	virtual HWND GetWndHandle(){ return NULL; }
 	virtual void OnMedia(unsigned char* buffer, unsigned long length, unsigned long payload, CCustomDateTime* pTime, void* pCustomData){}
 };
 

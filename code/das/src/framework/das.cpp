@@ -61,11 +61,14 @@ const char* cstSelectDir = "Select direction";
 const char* cstDictStep = "step";
 const char* cstExportCanData = "export can data";
 
+extern const char* cstExport;
+
 DAS::DAS(QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags),
     m_pGraphicsView(NULL),
     m_pPropertyBar(NULL),
-    m_bPlay(true)
+    m_bPlay(true),
+    m_pExportCanData(NULL)
 {
     setWindowTitle(trFormString(cstDictDas));
     setWindowIcon(QIcon(IMG_LOGO));
@@ -96,6 +99,12 @@ DAS::~DAS()
     {
         delete m_pPropertyBar;
         m_pPropertyBar = NULL;
+    }
+
+    if (m_pExportCanData != NULL)
+    {
+        delete m_pExportCanData;
+        m_pExportCanData = NULL;
     }
 }
 
@@ -236,6 +245,7 @@ void DAS::setLayout()
     /*m_pOperatorToolBar->addAction(m_pActPlaySlow);
     m_pOperatorToolBar->addAction(m_pActPlayFast);*/
     m_pOperatorToolBar->addWidget(m_pStepCombo);
+    m_pOperatorToolBar->addSeparator();
     m_pOperatorToolBar->addAction(m_pActExport);
 
     m_pLbTimeAxis = new QLabel(this);                   // 时间轴组件  
@@ -501,6 +511,26 @@ void DAS::OnExportCanData()
         QDateTime dtBegin = dialogExport.getDtBegin();
         QDateTime dtEnd = dialogExport.getDtEnd();
         int iChannel = dialogExport.getChannel();
+
+        QString strFileName = QFileDialog::getSaveFileName(nullptr, trFormString(cstExport), "./", "*.xlsx");
+        if (strFileName.isEmpty())
+        {
+            return;
+        }
+        if (QFileInfo(strFileName).suffix().isEmpty())
+        {
+            strFileName += ".xlsx";
+        }
+
+        if (m_pExportCanData == NULL)
+        {
+            m_pExportCanData = new CExportCanData;
+        }
+
+        m_pExportCanData->setExcelFileName(strFileName);
+        m_pExportCanData->setInitData(iChannel, m_pGraphicsView->getStoragePath() + "/cans");
+        m_pExportCanData->setTimeRange(dtBegin, dtEnd);
+        m_pExportCanData->play();
     }
     else
     {

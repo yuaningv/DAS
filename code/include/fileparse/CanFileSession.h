@@ -15,10 +15,21 @@ public:
 	virtual int Init(const char* storage, CCanDataProfile* pProfile, int channel);
 	
 protected:
+	virtual void ReleaseData(void* pData);
 	virtual unsigned int Process();
 	virtual unsigned int GetFileDuration(const char* file);
 
-private:
+protected:
 	CCanFileSessionPrivateData* m_pCanSessionData;
+};
+
+class DLL_EXPORT CCanFileExportSession : public CCanFileSession
+{
+public:
+	CCanFileExportSession();
+	virtual ~CCanFileExportSession();
+	
+protected:
+	virtual unsigned int Process();
 };
 #endif

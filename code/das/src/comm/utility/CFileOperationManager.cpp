@@ -538,6 +538,5 @@ bool CFileOperationManager::writeExcelFile(const QString& strFileName, const QSt
     }
     oTmpXlsx.save();
 
-
     return true;
 }

@@ -44,7 +44,7 @@ CDialogExportSetting::CDialogExportSetting(const QDateTime& dtBegin, const QDate
     pLabelChannel->setFixedWidth(100);
 
     m_pSpinBoxChannel = new QSpinBox(this);
-    m_pSpinBoxChannel->setValue(0);
+    m_pSpinBoxChannel->setValue(1);
 
     QPushButton* pOkBtn = new QPushButton(trFormString(cstDictOK));
     pOkBtn->setDefault(true);
@@ -92,7 +92,7 @@ void CDialogExportSetting::OnOk()
 {
     m_dtBegin = m_pEditBegin->dateTime();
     m_dtEnd = m_pEditEnd->dateTime();
-
+    m_iChannel = m_pSpinBoxChannel->value();
     this->accept();
 }
 

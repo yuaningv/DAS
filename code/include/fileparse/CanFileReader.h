@@ -26,6 +26,8 @@ public:
     int SkipTo(unsigned int lOffset);
     int ReadMedia(unsigned char* buffer, unsigned long* length, unsigned long* payload, unsigned long* timestamp);
 
+	int ForceReadMedia(unsigned char* buffer, unsigned long* length, unsigned long* payload, unsigned long* timestamp);
+
 	unsigned int GetFirstTime(){return m_iFirstTime;}
 	unsigned int GetLastTime(){return m_iLastTime;}
 	unsigned int GetFileSize() {return m_iFileSize;}

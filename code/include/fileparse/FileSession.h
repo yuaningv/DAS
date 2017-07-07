@@ -3,6 +3,7 @@
 
 class CStreamMgr;
 class CFileSessionPrivateData;
+class CSyncSession;
 class DLL_EXPORT CFileSession
 {
 public:
@@ -24,8 +25,11 @@ public:
 	virtual int  SkipTo(const char* pos);
 
 	virtual int	 SetStep(int step);
-
+	
 	virtual unsigned int Process();
+	
+	virtual void ReleaseData(void* pData);
+	virtual void SetSyncSession(CSyncSession* pSyncSession);
 
 protected:
 	virtual void SwitchNextFile(const char* time);
@@ -34,4 +38,5 @@ protected:
 protected:
 	CFileSessionPrivateData* m_data;
 };
+
 #endif

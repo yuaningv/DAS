@@ -17,6 +17,8 @@
 
 
 static int index = 1;
+#define TIMEDIFFER 600000		// 10分钟 ms
+
 CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
     : QGraphicsItem(parent)
     , m_startPos(0, 0)
@@ -69,13 +71,24 @@ void CCurveGraphicsItem::setTimeRange(const QString& strStart, const QString& st
 
 void CCurveGraphicsItem::setXAxisRange(const qreal& dbMin, const qreal& dbMax) 
 { 
-    m_dbXAxisMin = dbMin; 
-    m_dbXAxisMax = dbMax; 
-    m_realXMaxDefault = m_dbXAxisMax;
-    m_realXMinDefault = m_dbXAxisMin;
+	if (dbMax - dbMin > TIMEDIFFER)
+	{
+		m_dbXAxisMin = dbMin;
+		m_dbXAxisMax = dbMin + TIMEDIFFER;
+		m_realXMaxDefault = m_dbXAxisMax;
+		m_realXMinDefault = m_dbXAxisMin;
+	}
+	else
+	{
+		m_dbXAxisMin = dbMin;
+		m_dbXAxisMax = dbMax;
+		m_realXMaxDefault = m_dbXAxisMax;
+		m_realXMinDefault = m_dbXAxisMin;
+	}
 
     // 每个刻度值
     m_realX = (m_dbXAxisMax - m_dbXAxisMin) / m_iXTicksCount;
+	//update(boundingRect());
 }
 
 
@@ -105,7 +118,12 @@ void CCurveGraphicsItem::resetItemSize(const QRectF &rect)
 
     // 每个刻度长度
     m_realXLength = ((m_itemRectF.bottomRight().x() - m_iOffset) - (m_itemRectF.bottomLeft().x() + m_iOffset)) / m_iXTicksCount;
-    update(boundingRect());
+    for (auto& TmpData : m_mapAxis)
+    {
+		TmpData.m_realYLength = ((m_itemRectF.bottomLeft().y() - m_iOffset) - (m_itemRectF.topLeft().y() + m_iOffset)) / m_iYTicksCount;
+    }
+
+	update(boundingRect());
 }
 
 
@@ -613,6 +631,9 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, un
     //char buf[256];
     m_mutex.lock();
     CCanData* pData = (CCanData*)buffer;
+	bool bFlag = false;
+	QDateTime dt(QDate(pTime->year, pTime->month, pTime->mday), QTime(pTime->hour, pTime->min, pTime->sec, pTime->msec));
+	quint64 x = dt.toMSecsSinceEpoch();
     for (int i = 0; i < length; i++)
     {
         canData.m_strDisplayName = QString::fromLocal8Bit(pData[i].m_pCanItem->m_DispName.c_str());
@@ -621,10 +642,26 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, un
         canData.m_realMax = pData[i].m_pCanItem->m_maxValue;
         canData.m_realMin = pData[i].m_pCanItem->m_minValue;
 
-        QDateTime dt(QDate(pTime->year, pTime->month, pTime->mday), QTime(pTime->hour, pTime->min, pTime->sec, pTime->msec));
-        quint64 x = dt.toMSecsSinceEpoch();
+        /*QDateTime dt(QDate(pTime->year, pTime->month, pTime->mday), QTime(pTime->hour, pTime->min, pTime->sec, pTime->msec));
+        quint64 x = dt.toMSecsSinceEpoch();*/
 
-        if (m_lstLines.contains(canData))
+		// 存储转化之前的点
+		if (m_mapPoints.keys().contains(canData.m_strDisplayName) && m_mapPoints.value(canData.m_strDisplayName).count() > 1)
+		{
+			QPointF pointF = m_mapPoints.value(canData.m_strDisplayName).last();
+			m_mapPoints[canData.m_strDisplayName].append(pointF);
+		}
+		m_mapPoints[canData.m_strDisplayName].append(QPointF(x, pData[i].m_Value));
+
+		// 保持10分钟数据
+		if ((m_mapPoints[canData.m_strDisplayName].last().x() - m_mapPoints[canData.m_strDisplayName].first().x()) > TIMEDIFFER)
+		{
+			bFlag = true;
+			m_mapPoints[canData.m_strDisplayName].pop_front();
+		}
+
+		// 界面显示
+        if (!bFlag && m_lstLines.contains(canData))
         {
             for (auto& TmpData : m_lstLines)
             {
@@ -636,21 +673,31 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, un
                         TmpData.m_vecPoints.append(TmpData.m_vecPoints.last());
                     }
                     TmpData.m_vecPoints.append(mapToAxis(TmpData.m_strDisplayName, TmpPoint));
+
+					// 保持10分钟数据
+					/*if (bFlag)
+					{
+						TmpData.m_vecPoints.pop_front();
+					}*/
+
                     break;
                 }
             }
-        }
-
-        // 存储转化之前的点
-        if (m_mapPoints.keys().contains(canData.m_strDisplayName) && m_mapPoints.value(canData.m_strDisplayName).count() > 1)
-        {
-            QPointF pointF = m_mapPoints.value(canData.m_strDisplayName).last();
-            m_mapPoints[canData.m_strDisplayName].append(pointF);
-        }
-        m_mapPoints[canData.m_strDisplayName].append(QPointF(x, pData[i].m_Value));
+        }       
     }
+
+	
     m_mutex.unlock();
 
+	if (bFlag)
+	{
+		//m_dbXAxisMax = x;
+		//m_dbXAxisMin = x - TIMEDIFFER;
+		m_realXMaxDefault = x;
+		m_realXMinDefault = x - TIMEDIFFER;
+
+		ConvertPointsToAxis();
+	}
     //scene()->update();
     update(boundingRect());
 
@@ -663,6 +710,16 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, un
 void CCurveGraphicsItem::ConvertPointsToAxis()
 {
     m_mutex.lock();
+	/********** add 2017-07-07 **********/
+	if (m_dbXAxisMax <= m_realXMaxDefault)
+	{
+		m_dbXAxisMax = m_realXMaxDefault;
+	}
+	if (m_dbXAxisMin <= m_realXMinDefault)
+	{
+		m_dbXAxisMin = m_realXMinDefault;
+	}
+	/*************************************/
     m_realX = (m_dbXAxisMax - m_dbXAxisMin) / m_iXTicksCount;
     for (auto& TmpLine : m_lstLines)
     {

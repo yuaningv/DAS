@@ -7,10 +7,13 @@
 #include "CPropertyBar.h"
 #include "QtWidgets/QComboBox"
 
+#include "CExportCanData.h"
+
 class CToolBar;
 class QLabel;
 class QCheckBox;
 class CSelectedArea;
+
 
 class DAS : public QMainWindow
 {
@@ -67,6 +70,7 @@ private:
 private:
     CGraphicsView* m_pGraphicsView;
     CPropertyBar* m_pPropertyBar;
+    CExportCanData* m_pExportCanData;
 
 private slots:
     void OnOpen();

@@ -14,6 +14,7 @@ public:
 	virtual int Init(const char* storage, int channel);
 
 protected:
+	virtual void ReleaseData(void* pData);
 	virtual unsigned int Process();
 	virtual unsigned int GetFileDuration(const char* file);
 

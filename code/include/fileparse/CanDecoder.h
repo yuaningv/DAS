@@ -14,7 +14,14 @@ enum CANDATATYPE
 	CANDATATYPE_BYTE,
 	CANDATATYPE_WORD,
 	CANDATATYPE_FLOAT,
-	CANDATATYPE_MBIT,
+
+	CANDATATYPE_FBYTE,
+	CANDATATYPE_FINT16,
+	CANDATATYPE_FINT32,
+
+	CANDATATYPE_VBYTE,
+	CANDATATYPE_VINT16,
+	CANDATATYPE_VINT32,
 };
 
 class DLL_EXPORT CCanItemData
@@ -32,9 +39,42 @@ public:
 
 		m_fGetValue = NULL;
 		m_fParam = 0;
+
+		m_scale = 1.0;
+		m_IsScale = 0;
 	}
 	virtual ~CCanItemData(){}
 	
+	void SetDefaultRange()
+	{
+		switch (m_DataType)
+		{
+		case CANDATATYPE_BYTE:
+			m_minValue = 0.0;
+			m_maxValue = 255;
+			break;
+		case CANDATATYPE_WORD:
+		case CANDATATYPE_FINT16:
+		case CANDATATYPE_VINT16:
+			m_minValue = 0.0;
+			m_maxValue = 65535;
+			break;		
+		case CANDATATYPE_FINT32:
+		case CANDATATYPE_VINT32:
+			m_minValue = 0.0;
+			m_maxValue = 0xFFFFFFFF;
+			break;
+		case CANDATATYPE_FLOAT:
+			m_minValue = 0.0;
+			m_maxValue = 65535;
+			break;
+		}
+		if (m_IsScale)
+		{
+			m_minValue *= m_scale;
+			m_maxValue *= m_scale;
+		}
+	}
 public:
     string		m_Name;
     string		m_DispName;
@@ -42,7 +82,8 @@ public:
     unsigned int m_DataType;
     double		m_minValue;
     double		m_maxValue;
-
+	double		m_scale;
+	int			m_IsScale;
 	Func_GetCanValue m_fGetValue;
 	int				 m_fParam;
 };
