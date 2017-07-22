@@ -124,4 +124,7 @@ typedef struct
 } imageInfo_t;
 
 
+#define TIMEDIFFER 600000		// 10·ÖÖÓ ms
+
+
 #endif // TYPE_H

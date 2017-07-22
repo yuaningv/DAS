@@ -79,7 +79,8 @@ public:
 private:
     QPointF& mapToAxis(const QString& strKeyName, QPointF& point) const;
     qreal YFromAxis(const QString& strKeyName, qreal yreal) const;
-    qreal XFromAxis(qreal xreal) const;
+	qreal XFromAxis(qreal xreal) const;
+	qreal XToAxis(qreal xreal) const;
 
     void ConvertPointsToAxis();
 
@@ -151,6 +152,8 @@ private:
     bool m_bLeftPress = false;
     QPointF m_CurveStartPos;        // 拖动曲线起始点
     QPointF m_CurveEndPos;          // 拖动曲线结束点
+
+	QLine m_TimeLine;				// 跟随时间的线
 
 signals:
 

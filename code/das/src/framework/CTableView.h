@@ -107,6 +107,9 @@ private:
     // 创建表头
     void createHorizontalHeaders();
 
+	// 表格数据是否大于10分钟
+	void checkTableDataRange();
+
 protected:
     virtual ITEMTYPE type();
 

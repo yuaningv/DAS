@@ -17,7 +17,6 @@
 
 
 static int index = 1;
-#define TIMEDIFFER 600000		// 10分钟 ms
 
 CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
     : QGraphicsItem(parent)
@@ -54,6 +53,7 @@ CCurveGraphicsItem::CCurveGraphicsItem(QGraphicsItem * parent /*= 0*/)
     m_lstLines.clear();
 
     m_line = QLine(0, 0, 0, 0);
+	m_TimeLine = QLine(0, 0, 0, 0);
 }
 
 
@@ -178,6 +178,19 @@ qreal CCurveGraphicsItem::XFromAxis(qreal xreal) const
 }
 
 
+qreal CCurveGraphicsItem::XToAxis(qreal xreal) const
+{
+	qreal x = m_itemRectF.bottomLeft().x() + m_iOffset;
+	if (m_realX != 0)
+	{
+		qreal px = (xreal - m_dbXAxisMin) / m_realX * m_realXLength;
+		return px;
+	}
+
+	return 0;
+}
+
+
 void CCurveGraphicsItem::setLines(const QList<CurveLine_t>& lstTmpVec)
 {
     m_lstLines = lstTmpVec;
@@ -288,6 +301,12 @@ void CCurveGraphicsItem::paint(QPainter * painter, const QStyleOptionGraphicsIte
             painter->drawText(m_line.x1(), m_lstLines[n].m_strValue.toDouble(), QString::number(YFromAxis(m_lstLines[n].m_strDisplayName, m_lstLines[n].m_strValue.toDouble()), 'f', 1));
         }
     }
+	// add 2017-07-18
+	if (!m_lstLines.isEmpty())
+	{
+		painter->drawLine(m_TimeLine);
+	}
+
     m_mutex.unlock();
 }
 
@@ -634,6 +653,10 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, un
 	bool bFlag = false;
 	QDateTime dt(QDate(pTime->year, pTime->month, pTime->mday), QTime(pTime->hour, pTime->min, pTime->sec, pTime->msec));
 	quint64 x = dt.toMSecsSinceEpoch();
+	qreal xTime = XToAxis(x);
+
+	m_TimeLine.setLine(xTime, m_itemRectF.topLeft().y() + m_iOffset, xTime, m_itemRectF.bottomLeft().y() - m_iOffset);
+
     for (int i = 0; i < length; i++)
     {
         canData.m_strDisplayName = QString::fromLocal8Bit(pData[i].m_pCanItem->m_DispName.c_str());
@@ -644,24 +667,42 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, un
 
         /*QDateTime dt(QDate(pTime->year, pTime->month, pTime->mday), QTime(pTime->hour, pTime->min, pTime->sec, pTime->msec));
         quint64 x = dt.toMSecsSinceEpoch();*/
-
-		// 存储转化之前的点
-		if (m_mapPoints.keys().contains(canData.m_strDisplayName) && m_mapPoints.value(canData.m_strDisplayName).count() > 1)
+		if (!m_mapPoints.isEmpty() && !m_mapPoints.value(canData.m_strDisplayName).isEmpty())
 		{
-			QPointF pointF = m_mapPoints.value(canData.m_strDisplayName).last();
-			m_mapPoints[canData.m_strDisplayName].append(pointF);
-		}
-		m_mapPoints[canData.m_strDisplayName].append(QPointF(x, pData[i].m_Value));
+			// 跳转在范围内 不处理
+			if (x >= m_mapPoints[canData.m_strDisplayName].first().x() && x <= m_mapPoints[canData.m_strDisplayName].last().x())
+			{
+				continue;
+			}
+			// 跳转小于 要保存数据的最小值
+			else if (x < m_mapPoints[canData.m_strDisplayName].first().x())
+			{
+				m_mapPoints[canData.m_strDisplayName].clear();
+				m_mapPoints[canData.m_strDisplayName].append(QPointF(x, pData[i].m_Value));
+			}
+			else
+			{
+				// 存储转化之前的点
+				if (m_mapPoints.keys().contains(canData.m_strDisplayName) && m_mapPoints.value(canData.m_strDisplayName).count() > 1)
+				{
+					QPointF pointF = m_mapPoints.value(canData.m_strDisplayName).last();
+					m_mapPoints[canData.m_strDisplayName].append(pointF);
+				}
+				m_mapPoints[canData.m_strDisplayName].append(QPointF(x, pData[i].m_Value));
 
-		// 保持10分钟数据
-		if ((m_mapPoints[canData.m_strDisplayName].last().x() - m_mapPoints[canData.m_strDisplayName].first().x()) > TIMEDIFFER)
-		{
-			bFlag = true;
-			m_mapPoints[canData.m_strDisplayName].pop_front();
+				// 保持10分钟数据
+				if ((m_mapPoints[canData.m_strDisplayName].last().x() - m_mapPoints[canData.m_strDisplayName].first().x()) > TIMEDIFFER)
+				{
+					bFlag = true;
+					m_mapPoints[canData.m_strDisplayName].pop_front();
+				}
+			}
+
+			ConvertPointsToAxis();
 		}
 
 		// 界面显示
-        if (!bFlag && m_lstLines.contains(canData))
+        /*if (!bFlag && m_lstLines.contains(canData))
         {
             for (auto& TmpData : m_lstLines)
             {
@@ -673,17 +714,11 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, un
                         TmpData.m_vecPoints.append(TmpData.m_vecPoints.last());
                     }
                     TmpData.m_vecPoints.append(mapToAxis(TmpData.m_strDisplayName, TmpPoint));
-
-					// 保持10分钟数据
-					/*if (bFlag)
-					{
-						TmpData.m_vecPoints.pop_front();
-					}*/
-
+					
                     break;
                 }
             }
-        }       
+        } */      
     }
 
 	
@@ -696,7 +731,7 @@ void CCurveGraphicsItem::OnMedia(unsigned char* buffer, unsigned long length, un
 		m_realXMaxDefault = x;
 		m_realXMinDefault = x - TIMEDIFFER;
 
-		ConvertPointsToAxis();
+		//ConvertPointsToAxis();
 	}
     //scene()->update();
     update(boundingRect());

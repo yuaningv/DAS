@@ -159,7 +159,26 @@ void CTableView::setHorizontalHeader(QList<CurveLine_t>& lstHeader)
 
 void CTableView::insertRowData(QList<CurveLine_t>& lstRowData)
 {
-    int iRow = m_pModel->rowCount();
+	int iRow = m_pModel->rowCount();
+
+	QDateTime tmpTime = QDateTime::fromString(lstRowData.first().m_strValue, "yyyy/MM/dd hh:mm:ss.zzz");
+	if (iRow > 0)
+	{
+		QDateTime minTime = QDateTime::fromString(m_pModel->data(m_pModel->index(0, 0), Qt::DisplayRole).toString(), "yyyy/MM/dd hh:mm:ss.zzz");
+		QDateTime maxTime = QDateTime::fromString(m_pModel->data(m_pModel->index(m_pModel->rowCount() - 1, 0), Qt::DisplayRole).toString(), "yyyy/MM/dd hh:mm:ss.zzz");
+		if (tmpTime >= minTime && tmpTime < maxTime)
+		{
+			return;
+		}
+        else if (tmpTime < minTime)
+        {
+            m_pModel->removeRows(0, iRow);
+        }
+    }
+
+    checkTableDataRange();
+
+    iRow = m_pModel->rowCount();
     m_pModel->insertRow(iRow);
     m_pTableView->verticalScrollBar()->setValue(m_pTableView->verticalScrollBar()->maximum());
 
@@ -249,4 +268,19 @@ void CTableView::OnExport()
     msgBox.setWindowTitle(trFormString(cstTips));
     msgBox.setText(trFormString(cstExportSuccess));
     msgBox.exec();
+}
+
+// 表格数据是否大于10分钟
+void CTableView::checkTableDataRange()
+{
+	if (m_pModel->rowCount() > 0)
+	{
+		QDateTime minTime = QDateTime::fromString(m_pModel->data(m_pModel->index(0, 0), Qt::DisplayRole).toString(), "yyyy/MM/dd hh:mm:ss.zzz");
+		QDateTime maxTime = QDateTime::fromString(m_pModel->data(m_pModel->index(m_pModel->rowCount() - 1, 0), Qt::DisplayRole).toString(), "yyyy/MM/dd hh:mm:ss.zzz");
+
+		if (minTime.msecsTo(maxTime) > TIMEDIFFER)
+		{
+			m_pModel->removeRow(0);
+		}
+	}
 }
